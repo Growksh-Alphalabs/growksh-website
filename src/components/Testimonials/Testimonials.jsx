@@ -68,7 +68,7 @@ export default function Testimonials() {
           
           {/* Left Column - Header */}
           <div className="space-y-4">
-            <span className="text-sm font-medium text-purple-700">Trust & Impact</span>
+            <span className="text-sm font-medium text-purple-700">TRUST & IMPACT</span>
             
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
               Voices of <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Confidence</span>

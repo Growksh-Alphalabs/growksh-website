@@ -7,11 +7,14 @@ export default function Story() {
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           <div className="order-2 lg:order-1">
-             <h1 className="text-4xl sm:text-4xl lg:text-4xl xl:text-4xl font-extrabold leading-tight tracking-tight">
-              <span className="block">
-                <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">From Guidance to Growth</span>
-              </span>
-            </h1>
+            <div className="text-sm font-medium text-violet-600 uppercase tracking-wide">MEET GROWKSH</div>
+
+            <h2 className="text-4xl lg:text-4xl font-bold tracking-tight text-slate-900 mb-6">
+              From <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Guidance</span> to
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600"> Growth</span>
+            </h2>
+
+
             <p className="mt-4 text-lg text-slate-600">Founded by Krutika Kathal, a SEBI Registered Investment Adviser and Certified Financial Planner, Growksh brings together deep financial expertise and a human approach to money.</p>
 
             <p className="mt-4 text-lg text-slate-600">We’ve helped hundreds of professionals, families, and NRIs gain clarity, control, and calmness with their finances — proving that financial wellness is truly life wellness.</p>
