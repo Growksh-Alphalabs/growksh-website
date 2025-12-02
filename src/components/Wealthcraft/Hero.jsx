@@ -52,7 +52,7 @@ export default function Hero() {
                 </a>
               </div>
 
-              <div className="mt-8 flex items-center gap-6">
+              {/* <div className="mt-8 flex items-center gap-6">
                 <div>
                   <div className="text-2xl font-bold text-slate-900">5+ Cr</div>
                   <div className="text-xs text-slate-500">Wealth Advised</div>
@@ -65,7 +65,7 @@ export default function Hero() {
                   <div className="text-2xl font-bold text-slate-900">98%</div>
                   <div className="text-xs text-slate-500">satisfaction</div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -103,7 +103,7 @@ export default function Hero() {
                   }}
                 >
                   {useMemo(() => {
-                    const labels = ['Illustration', 'Graphic Design', 'Creative Branding', 'UI/UX Design']
+                    const labels = ['Plan ', 'Protect ', 'Grow ', 'Live Free']
                     const angles = [0, 90, 180, 270]
                     const orbitRadius = 280 // Distance from center in pixels
                     

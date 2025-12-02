@@ -29,70 +29,22 @@ export default function CTASection() {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
-         <div className="text-center">
-             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Ready to Start Your Journey?</span>
-            </h2>
+        <div className="text-center">
+          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Ready to Start Your Journey?</span>
+          </h2>
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">Whether you want to plan better, learn better, or grow better — Growksh has a path for you.</p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-5">
 
-           <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <div className="text-sm font-semibold text-slate-800">Looking for Execution Support?</div>
-                <div className="mt-1 text-sm text-slate-600">Explore our execution arm for managed investments and implementation.</div>
-              </div>
-             
-            </div>
-
-            <div className="mt-6 flex items-end justify-between">
-              <a
-                href="/ventures"
-                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
-                aria-label="Discover Ventures"
-              >
-                <span>Discover Ventures</span>
-                <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
-            </div>
-          </div>
-          
-          {/* Card 1 */}
-          <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
-            <div className="flex items-center justify-between w-full">
-              <div>
-                <div className="text-sm font-semibold text-slate-800">Need Personal Advice?</div>
-                <div className="mt-1 text-sm text-slate-600">Talk with an advisor to align your plan with life goals.</div>
-              </div>
-            
-            </div>
-
-           <div className="mt-6 flex items-end justify-between">
-              <a
-                href="/ventures"
-                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
-                aria-label="Discover Ventures"
-              >
-                <span>Talk to an Advisor</span>
-                <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          {/* Card 2 */}
           <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
             <div className="flex items-center justify-between w-full">
               <div>
                 <div className="text-sm font-semibold text-slate-800">Want to Learn Finance?</div>
                 <div className="mt-1 text-sm text-slate-600">Join structured courses and workshops to build practical skills.</div>
               </div>
-            
+
             </div>
 
             <div className="mt-6 flex items-end justify-between">
@@ -109,8 +61,54 @@ export default function CTASection() {
             </div>
           </div>
 
-          {/* Card 3 */}
-         
+          <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <div className="text-sm font-semibold text-slate-800">Need Personal Advice?</div>
+                <div className="mt-1 text-sm text-slate-600">Talk with an advisor to align your plan with life goals.</div>
+              </div>
+
+            </div>
+
+            <div className="mt-6 flex items-end justify-between">
+              <a
+                href="/ventures"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
+                aria-label="Discover Ventures"
+              >
+                <span>Talk to an Advisor</span>
+                <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
+            <div className="flex items-center justify-between w-full">
+              <div>
+                <div className="text-sm font-semibold text-slate-800">Looking for Execution Support?</div>
+                <div className="mt-1 text-sm text-slate-600">Explore our execution arm for managed investments and implementation.</div>
+              </div>
+
+            </div>
+
+            <div className="mt-6 flex items-end justify-between">
+              <a
+                href="/ventures"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
+                aria-label="Discover Ventures"
+              >
+                <span>Discover Ventures</span>
+                <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+
+
         </div>
       </div>
     </section>
