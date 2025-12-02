@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import PurpleClouds from '../common/PurpleClouds'
 import { COLORS } from '../../constants/colors'
 import heroImg from '../../assets/1.png'
@@ -10,64 +10,69 @@ export default function Hero() {
 
   return (
     <section className="relative overflow-hidden" style={bgStyle}>
-      <PurpleClouds className="opacity-60" />
+      <PurpleClouds className="opacity-80" />
+      {/* Add a secondary, softer cloud layer for depth */}
+      <PurpleClouds className="opacity-40 transform -translate-y-8 scale-110" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-20">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           {/* Left Content */}
           <div className="lg:w-1/2">
-            <h1 className="text-4xl lg:text-4xl xl:text-4xl font-bold leading-tight text-slate-900">
-              Let's Work
-              <br />
-              <span className="block mt-2">Together to Create</span>
-              <span className="block mt-2">Wonders with Us</span>
-            </h1>
-            
-            <p className="mt-8 text-lg text-slate-600 max-w-2xl">
-              A visionary creative, crafting captivating wonders through art and design. 
-              Adept at turning imagination into extraordinary reality.
-            </p>
-
-            <div className="mt-10 flex flex-wrap items-center gap-4">
-              <a
-                href="#contact"
-                className="inline-flex items-center px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
-                style={{ backgroundColor: COLORS.EMERALD_GREEN, color: COLORS.WHITE }}
-              >
-                Let's Talk
-              </a>
-
-              <a
-                href="#project"
-                className="inline-flex items-center px-8 py-4 rounded-full font-semibold text-lg border-2 hover:bg-gray-50 transition-colors duration-300"
-                style={{ borderColor: COLORS.EMERALD_GREEN, color: COLORS.EMERALD_GREEN }}
-              >
-                Start Project
-              </a>
-            </div>
-
-            {/* Stats Section */}
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-lg">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-slate-900">15+</div>
-                <div className="text-sm text-slate-500 mt-2">years experience</div>
+            <div className="max-w-xl">
+              <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-emerald-700 bg-emerald-50/80 ring-1 ring-emerald-100 mb-4">
+                <svg className="w-3 h-3 mr-2 text-emerald-700" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                  <path d="M12 2l3 7h7l-5.5 4 2 7L12 17l-6.5 3 2-7L2 9h7l3-7z" fill="#065A47" />
+                </svg>
+                Wealthcraft by Growksh
               </div>
 
-              <div className="text-center">
-                <div className="text-4xl font-bold text-slate-900">26K</div>
-                <div className="text-sm text-slate-500 mt-2">projects success</div>
+              <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight text-slate-900">
+                Your Trusted <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">Financial Planning Partner </span> for Life!
+               
+              </h2>
+
+              <p className="mt-6 text-lg text-slate-600">
+                Growksh Wealthcraft helps you build <b>Financial P.E.A.C.E. of Mind</b> — with structured, unbiased, and purpose-driven financial planning designed around your life.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <a
+                  href="#contact"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold text-white shadow-md hover:shadow-lg transition-all duration-150"
+                  style={{ backgroundColor: COLORS.EMERALD_GREEN }}
+                >
+                  Get Started
+                </a>
+
+                <a
+                  href="#learn"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-full font-medium border border-slate-200 text-slate-800 bg-white hover:bg-slate-50 transition-all duration-150"
+                >
+                  Learn More
+                </a>
               </div>
 
-              <div className="text-center">
-                <div className="text-4xl font-bold text-slate-900">98%</div>
-                <div className="text-sm text-slate-500 mt-2">satisfied rate</div>
+              <div className="mt-8 flex items-center gap-6">
+                <div>
+                  <div className="text-2xl font-bold text-slate-900">5+ Cr</div>
+                  <div className="text-xs text-slate-500">Wealth Advised</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-slate-900">50+</div>
+                  <div className="text-xs text-slate-500">Families Under Management</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-slate-900">98%</div>
+                  <div className="text-xs text-slate-500">satisfaction</div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Image */}
+          {/* Right Image with Orbit */}
           <div className="lg:w-1/2 relative">
             <div className="relative w-full max-w-lg mx-auto">
+              {/* Background glows */}
               <div
                 className="absolute -left-8 -top-6 w-56 h-56 rounded-full blur-3xl"
                 style={{ backgroundColor: `${COLORS.EMERALD_GREEN}44`, zIndex: 0 }}
@@ -77,22 +82,76 @@ export default function Hero() {
                 style={{ backgroundColor: `${COLORS.EMERALD_GREEN}30`, zIndex: 0 }}
               />
 
+              {/* Main Image */}
               <img
                 src={heroImg}
                 alt="Creative work"
-                className="relative z-10 w-full h-[500px] object-cover rounded-3xl shadow-2xl"
+                className="relative z-10 w-full h-[500px] object-cover rounded-3xl"
+                style={{
+                  filter: 'drop-shadow(0 48px 100px rgba(6,103,79,0.60)) drop-shadow(0 16px 40px rgba(6,103,79,0.35))'
+                }}
               />
 
-              {/* Image Tags */}
-              <div className="absolute top-6 left-6 z-30 bg-white/95 text-sm text-slate-800 px-4 py-2 rounded-full shadow-lg">
-                Illustration
+              {/* Orbit wrapper: badges rotate around the image */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
+                <div 
+                  className="relative w-[calc(100%+120px)] h-[calc(100%+120px)]"
+                  style={{ 
+                    animation: 'orbit 12s linear infinite',
+                    transformOrigin: 'center center',
+                    willChange: 'transform'
+                  }}
+                >
+                  {useMemo(() => {
+                    const labels = ['Illustration', 'Graphic Design', 'Creative Branding', 'UI/UX Design']
+                    const angles = [0, 90, 180, 270]
+                    const orbitRadius = 280 // Distance from center in pixels
+                    
+                    return labels.map((label, i) => {
+                      const angle = angles[i % angles.length]
+                      // Calculate position using trigonometry
+                      const radian = (angle * Math.PI) / 180
+                      const x = `calc(50% + ${orbitRadius * Math.cos(radian)}px)`
+                      const y = `calc(50% + ${orbitRadius * Math.sin(radian)}px)`
+                      
+                      return (
+                        <div
+                          key={i}
+                          className="absolute z-30 px-4 py-2 rounded-full text-sm text-slate-800 bg-white/95 shadow-lg backdrop-blur-sm border border-white/20"
+                          style={{ 
+                            top: y,
+                            left: x,
+                            transform: 'translate(-50%, -50%)',
+                            animation: `counterOrbit 12s linear infinite`,
+                            animationDelay: `${i * 0.5}s`
+                          }}
+                        >
+                          {label}
+                        </div>
+                      )
+                    })
+                  }, [])}
+                </div>
               </div>
-              <div className="absolute top-36 right-6 z-30 bg-white/95 text-sm text-slate-800 px-4 py-2 rounded-full shadow-lg">
-                Graphic Design
-              </div>
-              <div className="absolute bottom-6 left-6 z-30 bg-white/95 text-sm text-slate-800 px-4 py-2 rounded-full shadow-lg">
-                Creative Branding
-              </div>
+
+              <style jsx>{`
+                @keyframes orbit {
+                  from {
+                    transform: rotate(0deg);
+                  }
+                  to {
+                    transform: rotate(360deg);
+                  }
+                }
+                @keyframes counterOrbit {
+                  from {
+                    transform: translate(-50%, -50%) rotate(0deg);
+                  }
+                  to {
+                    transform: translate(-50%, -50%) rotate(-360deg);
+                  }
+                }
+              `}</style>
             </div>
           </div>
         </div>
