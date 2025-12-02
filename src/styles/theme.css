@@ -1,0 +1,44 @@
+/* Theme variables and base styles */
+:root{
+  --gk-primary: #3dc7f5;
+  --gk-purple: #cf87bf;
+  --gk-dark: #2e3b4b;
+  --gk-bg: #ffffff;
+}
+
+body{ font-family: Poppins, Lato, system-ui, sans-serif; margin:0 }
+
+.gk-btn{ padding:8px 12px; border-radius:6px }
+.gk-btn-primary{ background:var(--gk-primary); color:#012 }
+.gk-btn-secondary{ background:var(--gk-purple); color:white }
+.gk-btn-ghost{ background:transparent; border:1px solid #ddd }
+
+/* Subtle animations for hero visuals */
+@keyframes gk-float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes gk-sway {
+  0% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+  100% { transform: rotate(-6deg); }
+}
+
+.animate-gk-float { animation: gk-float 4s ease-in-out infinite; }
+.animate-gk-sway { animation: gk-sway 9s ease-in-out infinite; transform-origin: center; }
+
+.gk-hero-svg { will-change: transform; }
+.gk-hero-badge { will-change: transform; }
+
+/* Gentle blob animation for light abstract backgrounds */
+@keyframes gk-blob {
+  0% { transform: translateY(0) scale(1); opacity: .95 }
+  50% { transform: translateY(-6px) scale(1.03); opacity: .9 }
+  100% { transform: translateY(0) scale(1); opacity: .95 }
+}
+
+.animate-gk-blob { animation: gk-blob 6s ease-in-out infinite; }
+
+.bg-abstract-light { background: radial-gradient(circle at 10% 10%, rgba(61,199,245,0.08), transparent 8%), radial-gradient(circle at 90% 30%, rgba(207,135,191,0.06), transparent 12%), radial-gradient(circle at 50% 90%, rgba(0,103,79,0.04), transparent 16%); }
