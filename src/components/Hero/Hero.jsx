@@ -146,7 +146,7 @@ export default function Hero() {
               </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
               <span className="block">
                 <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">Crafting Wealth.</span>
               </span>

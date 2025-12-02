@@ -12,13 +12,21 @@ export default function Philosophy() {
           {/* Left: Copy */}
           <div>
             <div className="text-sm font-medium text-violet-600 uppercase tracking-wide">The Growksh Way</div>
-            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold leading-tight text-slate-900">We believe true wealth isn’t about numbers — it’s about peace of mind.</h2>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold leading-tight text-slate-900">We believe true wealth isn’t about numbers — it’s about P.E.A.C.E. of mind.</h2>
 
             <p className="mt-6 text-lg text-slate-600 max-w-xl">Money is deeply personal. That’s why Growksh exists — to help you build wealth that aligns with your life, not just your portfolio.</p>
 
             <p className="mt-6 text-slate-700 max-w-xl">Through our specialized verticals, we bring together every element of financial empowerment:</p>
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+               <div className="flex flex-col gap-3 p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition">
+                <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center">
+                  <img src={iconAlpha} alt="Alphalabs icon" className="w-5 h-5" />
+                </div>
+                <div className="text-sm font-semibold">Alphalabs</div>
+                <div className="text-sm text-slate-600">Helps you understand your money.</div>
+              </div>
+
               <div className="flex flex-col gap-3 p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition">
                 <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center">
                   <img src={iconWealth} alt="Wealthcraft icon" className="w-5 h-5" />
@@ -35,13 +43,7 @@ export default function Philosophy() {
                 <div className="text-sm text-slate-600">Helps you grow your money.</div>
               </div>
 
-              <div className="flex flex-col gap-3 p-4 rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-md transition">
-                <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center">
-                  <img src={iconAlpha} alt="Alphalabs icon" className="w-5 h-5" />
-                </div>
-                <div className="text-sm font-semibold">Alphalabs</div>
-                <div className="text-sm text-slate-600">Helps you understand your money.</div>
-              </div>
+             
             </div>
 
             {/* <div className="mt-8">
@@ -82,7 +84,7 @@ export default function Philosophy() {
                 {/* Center intersection: plant emblem */}
                 <g>
                   <circle cx="180" cy="150" r="30" fill="#ffffff" fillOpacity="0.95" stroke="#e9e7ff" strokeWidth="1" />
-                  <image href={plantImg} x="162" y="132" width="36" height="36" preserveAspectRatio="xMidYMid meet" alt="Plant emblem" />
+                  <image href={plantImg} x="162" y="132" width="40" height="40" preserveAspectRatio="xMidYMid meet" alt="Plant emblem" />
                 </g>
               </svg>
             </div>

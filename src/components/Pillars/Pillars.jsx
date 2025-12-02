@@ -26,17 +26,17 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
 
   const transformStyle = isFlipped
     ? {
-        transform: `perspective(1000px) rotateY(${180 + tilt.y}deg) rotateX(${tilt.x}deg)`,
-        transition: 'transform 600ms cubic-bezier(.22,.9,.32,1)',
-      }
+      transform: `perspective(1000px) rotateY(${180 + tilt.y}deg) rotateX(${tilt.x}deg)`,
+      transition: 'transform 600ms cubic-bezier(.22,.9,.32,1)',
+    }
     : {
-        transform: `perspective(1000px) rotateY(0deg)`,
-        transition: 'transform 600ms cubic-bezier(.22,.9,.32,1)',
-      }
+      transform: `perspective(1000px) rotateY(0deg)`,
+      transition: 'transform 600ms cubic-bezier(.22,.9,.32,1)',
+    }
 
   return (
     <div
-      className="relative h-[400px] cursor-pointer"
+      className="relative h-[430px] cursor-pointer"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => {
         setIsFlipped(false)
@@ -59,7 +59,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
           <div className="relative h-full p-8 flex flex-col items-center justify-center text-center">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">{title}</h3>
 
-            <p className="text-slate-600 font-medium mb-8 px-4">{tagline}</p>
+            <p className="text-slate-600 font-medium mb-8 px-4 italic">{tagline}</p>
 
             <div className={`mt-4 ${imagePosition === 'center' ? 'mx-auto' : ''}`}>
               <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-50 to-violet-100 flex items-center justify-center shadow-inner">
@@ -148,7 +148,7 @@ export default function Pillars() {
             {/* Blur filters */}
             <filter id="cloudBlur" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="60" />
-              <feColorMatrix type="matrix" values="1 0 0 0 0  0 0.9 0 0 0  0 0 1 0 0  0 0 0 0.85 0"/>
+              <feColorMatrix type="matrix" values="1 0 0 0 0  0 0.9 0 0 0  0 0 1 0 0  0 0 0 0.85 0" />
             </filter>
 
             <filter id="softCloudBlur" x="-50%" y="-50%" width="200%" height="200%">
@@ -210,27 +210,38 @@ export default function Pillars() {
 
       <div className="max-w-6xl mx-auto px-6 lg:px-8 relative">
         <div className="text-center max-w-3xl mx-auto mb-12">
-         
+
 
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 mb-6">
             How We <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Help You!</span>
           </h2>
 
           <p className="text-lg text-slate-600">
-            Three complementary pillars that work together to deliver financial clarity, execution, 
+            Three complementary pillars that work together to deliver financial clarity, execution,
             and learning — tailored for every stage of your wealth journey.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
+            iconSrc={iconAlpha}
+            title="Growksh Alphalabs"
+            tagline="The Financial Learning Studio"
+            href="/alphalabs"
+          >
+            <b>An experiential learning & coaching space where finance becomes a life skill. </b><br/>It's built on the
+            idea that alpha — true outperformance — comes from clarity and understanding. Here, learning isn't
+            about theory; it's about discovering practical ways to think, decide, and grow with your money.
+          </Card>
+
+          <Card
             iconSrc={iconWealth}
             title="Growksh Wealthcraft"
-            tagline="Your Trusted Financial Planning Partner for Life!"
+            tagline="Your Trusted Financial Partner for Life!"
             href="/wealthcraft"
           >
-            Fee-based advisory and life-aligned financial planning for working professionals, women, and NRIs. 
-            We help you achieve Financial P.E.A.C.E. of Mind — so you know your finances are aligned with 
+            <b>Fee-based advisory and life-aligned financial planning for working professionals, women, and NRIs.</b>
+            <br/>We help you achieve Financial P.E.A.C.E. of Mind — so you know your finances are aligned with
             your goals and values, today and for years to come.
           </Card>
 
@@ -240,21 +251,12 @@ export default function Pillars() {
             tagline="Where Wealth Finds Direction"
             href="/ventures"
           >
-            Execution and wealth-management arm of Growksh — focused on implementing smart, transparent, 
-            and goal-based financial solutions. Growksh Ventures is designed for individuals who want their 
+            <b>Execution and wealth-management arm of Growksh — focused on implementing smart, transparent,
+            and goal-based financial solutions. </b><br/>Growksh Ventures is designed for individuals who want their
             investments, insurance, and portfolios handled with strategy and structure.
           </Card>
 
-          <Card
-            iconSrc={iconAlpha}
-            title="Growksh Alphalabs"
-            tagline="The Financial Learning Studio"
-            href="/alphalabs"
-          >
-            An experiential learning & coaching space where finance becomes a life skill. It's built on the 
-            idea that alpha — true outperformance — comes from clarity and understanding. Here, learning isn't 
-            about theory; it's about discovering practical ways to think, decide, and grow with your money.
-          </Card>
+
         </div>
       </div>
     </section>
