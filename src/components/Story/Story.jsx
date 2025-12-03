@@ -1,5 +1,5 @@
 import React from 'react'
-import krutika from '../../assets/Website images/krutika photo.png'
+import krutika from '../../assets/Website images/Krutika photo.png'
 
 export default function Story() {
   return (
