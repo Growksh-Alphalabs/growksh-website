@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import PurpleClouds from '../common/PurpleClouds'
 import { COLORS } from '../../constants/colors'
-import heroImg from '../../assets/1.png'
+import heroImg from '../../assets/Website images/wealthcraft - hero section.png'
 
 export default function Hero() {
   const bgStyle = {

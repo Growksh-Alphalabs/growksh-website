@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import Logo1 from '../../assets/Website images/Growksh Logo 1.png'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
@@ -14,15 +15,12 @@ export default function Navbar() {
   ]
 
   return (
-    <header className="bg-slate-900/90 fixed w-full z-50">
+    <header className="bg-white/95 fixed w-full z-50 shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-3 no-underline">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-sky-500 flex items-center justify-center shadow-lg">
-                <span className="text-white font-semibold">G</span>
-              </div>
-              <span className="text-white font-bold text-lg hidden sm:inline">Growksh</span>
+              <img src={Logo1} alt="Growksh logo" className="w-35 h-35 rounded-md object-contain" />
             </Link>
           </div>
 
@@ -33,7 +31,7 @@ export default function Navbar() {
                 to={link.to}
                 end={link.end}
                 className={({ isActive }) =>
-                  `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-white' : 'text-slate-300 hover:text-white'}`
+                  `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`
                 }
               >
                 {({ isActive }) => (
@@ -41,7 +39,7 @@ export default function Navbar() {
                     <span className="relative z-10">{link.label}</span>
                     <span
                       aria-hidden
-                      className={`absolute left-0 bottom-0 h-0.5 bg-sky-400 transform transition-transform duration-200 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
+                      className={`absolute left-0 bottom-0 h-0.5 bg-sky-600 transform transition-transform duration-200 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
                       style={{ width: '100%' }}
                     />
                   </>
@@ -57,7 +55,7 @@ export default function Navbar() {
               onClick={() => setOpen(o => !o)}
               aria-expanded={open}
               aria-label="Toggle navigation"
-              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-200 hover:bg-slate-800/50"
+              className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-slate-700 hover:bg-slate-100"
             >
               {!open ? (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -75,7 +73,7 @@ export default function Navbar() {
 
       {/* Mobile panel */}
       <div className={`md:hidden transition-max-h duration-300 ease-in-out overflow-hidden ${open ? 'max-h-96' : 'max-h-0'}`}>
-        <div className="px-4 pt-4 pb-6 bg-slate-900/95 border-t border-slate-800">
+        <div className="px-4 pt-4 pb-6 bg-white/95 border-t border-slate-200">
           <div className="space-y-2">
             {navLinks.map(link => (
               <NavLink
@@ -83,7 +81,7 @@ export default function Navbar() {
                 to={link.to}
                 end={link.end}
                 onClick={() => setOpen(false)}
-                className={({ isActive }) => `block px-3 py-2 rounded-md text-base font-medium ${isActive ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'}`}
+                className={({ isActive }) => `block px-3 py-2 rounded-md text-base font-medium ${isActive ? 'bg-slate-100 text-slate-900' : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'}`}
               >
                 {link.label}
               </NavLink>

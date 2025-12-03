@@ -1,5 +1,5 @@
 import React from 'react'
-import krutika from '../../assets/krutika.jpg'
+import krutika from '../../assets/Website images/krutika photo.png'
 
 export default function Story() {
   return (
@@ -25,12 +25,22 @@ export default function Story() {
           </div>
 
           <div className="order-1 lg:order-2">
-            <div className="w-full rounded-xl overflow-visible shadow-lg bg-slate-50 relative">
-              <img src={krutika} alt="Krutika Kathal" className="w-full h-80 lg:h-96 object-cover rounded-xl" />
+            <div className="w-full flex justify-center lg:justify-end">
+              <div className="relative">
+                {/* soft teal glow behind the ring */}
+                <div className="absolute -inset-6 rounded-full bg-emerald-100/60 blur-3xl -z-10" />
 
-              <div className="absolute left-6 lg:left-8 bottom-6 bg-white rounded-2xl px-5 py-3 shadow-md border border-slate-100 flex flex-col items-start text-left max-w-xs">
-                <div className="font-semibold text-slate-900">Krutika Kathal, CFP®</div>
-                <div className="text-slate-500 text-sm">Founder & SEBI Registered Investment Adviser</div>
+                <div className="relative mx-auto w-[320px] h-[320px] lg:w-[480px] lg:h-[480px]">
+                  {/* blue ring + shadow */}
+                  <div className="rounded-full ring-8 ring-blue-400/90 overflow-hidden shadow-2xl w-full h-full">
+                    <img src={krutika} alt="Krutika Kathal" className="w-full h-full object-cover object-top" />
+                  </div>
+                </div>
+
+                <div className="absolute left-6 lg:left-8 -bottom-6 bg-white rounded-2xl px-5 py-3 shadow-md border border-slate-100 flex flex-col items-start text-left max-w-xs">
+                  <div className="font-semibold text-slate-900">Krutika Kathal, CFP®</div>
+                  <div className="text-slate-500 text-sm">Founder & SEBI Registered Investment Adviser</div>
+                </div>
               </div>
             </div>
           </div>
