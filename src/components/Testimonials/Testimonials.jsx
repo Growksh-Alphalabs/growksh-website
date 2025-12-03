@@ -2,28 +2,28 @@ import React, { useEffect, useRef, useState } from 'react'
 
 const testimonials = [
   { 
-    quote: 'Growksh helped me look at money differently. I’m finally confident about my future goals.', 
-    name: 'Priya Sharma', 
-    location: 'Pune, India',
-    role: 'Senior IT Professional',
+    quote: 'Hi team. Want to express my gratitude for the outstanding work you are doing. The expertise you bring to the table and attention to detail with which you have handled all my queries is exceptional. Am sure my finances are in trusted hands. Would be glad to recommend your services. Wishing you the very best 🙂', 
+    name: 'Aastha Sharma', 
+    location: '',
+    role: '',
     avatarColor: 'bg-purple-100',
-    initials: 'PS'
+    initials: 'AS'
   },
   { 
-    quote: 'Their personalised advice gave me clarity and control. Highly recommended for NRIs.', 
-    name: 'Rohit Kapoor', 
-    location: 'Dubai, UAE',
-    role: 'NRI Investor',
-    avatarColor: 'bg-emerald-100',
-    initials: 'RK'
+    quote: 'Hi Growksh team, first of all thank you So much for all your support and handholding. You made trading so easy that anybody can do it and enjoy the freedom of time and money in long run. You guys are simply awesome, kind hearted and always ready to help. You are strategic thinkers, and your system oriented approach is a must learn for everyone. More blessings and power to you to touch many more lives !! Thank you so much for all the knowledge and help !!', 
+    name: 'Satyawan Aglawe', 
+    location: '',
+    role: '',
+    avatarColor: 'bg-purple-100',
+    initials: 'SA'
   },
   { 
-    quote: 'Professional, empathetic and clear. I feel empowered to make better financial decisions.', 
-    name: 'Asha Patel', 
-    location: 'Bangalore, India',
-    role: 'Woman Investor',
-    avatarColor: 'bg-violet-100',
-    initials: 'AP'
+    quote: 'TRUST. CLARITY. IMPLEMENTATION \n is what describes Krutika. In the race of making money Krutika makes you pause and plan your future in a more organised and a strategic way. She would not just show you the path but also hold your hand and help you implement the same. Many times we just need that little push and confidence to take the risk while investing into different mediums and that is what you get when you work with Krutika. This is my way of saying thankyou for answering and replying to all my whatsapp queries at odd times and for educating me on things and terms that always made me feel so intimidated.', 
+    name: 'Garima Bhandari', 
+    location: '',
+    role: '',
+    avatarColor: 'bg-purple-100',
+    initials: 'GB'
   }
 ]
 
@@ -59,6 +59,12 @@ export default function Testimonials() {
 
   const goToSlide = (index) => {
     setCurrentIndex(index)
+  }
+
+  const [expandedQuoteIndex, setExpandedQuoteIndex] = useState(null)
+
+  const toggleExpanded = (idx) => {
+    setExpandedQuoteIndex(prev => (prev === idx ? null : idx))
   }
 
   return (
@@ -118,23 +124,44 @@ export default function Testimonials() {
                   className="transition-transform duration-700 ease-in-out"
                   style={{ transform: `translateY(${translateY}px)` }}
                 >
-                  {testimonials.map((testimonial, idx) => (
-                    <div key={idx} className="h-[280px] flex flex-col justify-center">
-                      <blockquote className="text-xl lg:text-2xl font-medium text-slate-800 leading-relaxed">"{testimonial.quote}"</blockquote>
+                  {testimonials.map((testimonial, idx) => {
+                    const full = String(testimonial.quote || '')
+                    const isLong = full.length > 220
+                    const isExpanded = expandedQuoteIndex === idx
+                    const truncated = isLong ? full.slice(0, 220).trimEnd() + '…' : full
 
-                      <div className="mt-8 flex items-center gap-4">
-                        <div className={`w-14 h-14 rounded-full ${testimonial.avatarColor} flex items-center justify-center`}>
-                          <span className="text-lg font-semibold text-slate-700">{testimonial.initials}</span>
-                        </div>
+                    return (
+                      <div key={idx} className="h-[280px] flex flex-col justify-center">
+                        <blockquote
+                          className={`${isLong ? 'text-base' : 'text-xl lg:text-xl'} font-medium text-slate-800 leading-relaxed whitespace-pre-wrap break-words ${isExpanded ? 'max-h-[160px] overflow-auto' : 'max-h-[140px] overflow-hidden'}`}
+                        >
+                          "{isLong && !isExpanded ? truncated : full}"
+                        </blockquote>
 
-                        <div className="flex-1">
-                          <div className="font-semibold text-slate-900 text-lg">{testimonial.name}</div>
-                          <div className="text-slate-600">{testimonial.role}</div>
-                          <div className="text-sm text-slate-500 mt-1">{testimonial.location}</div>
+                        {isLong && (
+                          <div className="mt-2">
+                            <button
+                              onClick={() => toggleExpanded(idx)}
+                              className="text-sm text-purple-600 hover:underline"
+                              aria-expanded={isExpanded}
+                            >
+                              {isExpanded ? 'Show less' : 'Read more'}
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="mt-6 flex items-center gap-4">
+                          <div className={`w-14 h-14 rounded-full ${testimonial.avatarColor} flex items-center justify-center`}>
+                            <span className="text-lg font-semibold text-slate-700">{testimonial.initials}</span>
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="font-semibold text-slate-900 text-lg">{testimonial.name}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>

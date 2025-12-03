@@ -2,7 +2,7 @@ import React from 'react'
 import iconWealth from '../../assets/i1.png'
 import iconVentures from '../../assets/i2.png'
 import iconAlpha from '../../assets/i3.png'
-import plantImg from '../../assets/plant.png'
+import img from '../../assets/Website images/Home - The Growksh Way.png'
 
 export default function Philosophy() {
   return (
@@ -81,10 +81,20 @@ export default function Philosophy() {
                   <text x="180" y="280" fontSize="11" fill="#6b7280">(Ventures)</text>
                 </g>
 
-                {/* Center intersection: plant emblem */}
                 <g>
-                  <circle cx="180" cy="150" r="30" fill="#ffffff" fillOpacity="0.95" stroke="#e9e7ff" strokeWidth="1" />
-                  <image href={plantImg} x="162" y="132" width="40" height="40" preserveAspectRatio="xMidYMid meet" alt="Plant emblem" />
+                  {/* Larger emblem: circle radius 40 (diameter 80) */}
+                  <circle cx="180" cy="150" r="40" fill="#ffffff" fillOpacity="0.95" stroke="#e9e7ff" strokeWidth="1" />
+                  {/* Place the raster emblem centered in the circle (diameter = 80) */}
+                  <image
+                    href={img}
+                    x={140}
+                    y={110}
+                    width={80}
+                    height={80}
+                    preserveAspectRatio="xMidYMid meet"
+                    role="img"
+                    aria-label="Plant emblem"
+                  />
                 </g>
               </svg>
             </div>

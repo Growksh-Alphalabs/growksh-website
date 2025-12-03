@@ -1,10 +1,26 @@
 import React from 'react'
+import Hero from '../../components/Alphalabs/Hero'
+import Philosophy from '../../components/Alphalabs/Philosophy'
+import WhatWeDo from '../../components/Alphalabs/WhatWeDo'
+import AlphaApproach from '../../components/Alphalabs/AlphaApproach'
+import Programs from '../../components/Alphalabs/Programs'
+import WhyLearn from '../../components/Alphalabs/WhyLearn'
+import Community from '../../components/Alphalabs/Community'
+import Testimonials from '../../components/Alphalabs/Testimonials'
+import FinalCTA from '../../components/Alphalabs/FinalCTA'
 
 export default function Alphalabs() {
   return (
     <div>
-      <h1>Growksh Alphalabs</h1>
-      <p>F-Cube programs, Workshops, Blog, Join the Alpha Circle</p>
+      <Hero />
+      <Philosophy />
+      <WhatWeDo />
+      <AlphaApproach />
+      <Programs />
+      <WhyLearn />
+      <Community />
+      <Testimonials />
+      <FinalCTA />
     </div>
   )
 }
