@@ -27,7 +27,7 @@ export default function Hero() {
               </div>
 
               <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight text-slate-900">
-                Your Trusted <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">Financial Planning Partner </span> for Life!
+                Your Trusted <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">Financial Partner </span> for Life!
                
               </h2>
 
@@ -41,14 +41,14 @@ export default function Hero() {
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold text-white shadow-md hover:shadow-lg transition-all duration-150"
                   style={{ backgroundColor: COLORS.EMERALD_GREEN }}
                 >
-                  Get Started
+                  Book a Discovery Call
                 </a>
 
                 <a
                   href="#learn"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full font-medium border border-slate-200 text-slate-800 bg-white hover:bg-slate-50 transition-all duration-150"
                 >
-                  Learn More
+                  Know How It Works
                 </a>
               </div>
 
