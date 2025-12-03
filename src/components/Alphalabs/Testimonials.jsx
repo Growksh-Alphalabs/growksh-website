@@ -17,14 +17,14 @@ export default function Testimonials(){
   return (
     <section className="py-12">
       <div className="max-w-6xl mx-auto px-4">
-        <h3 className="text-3xl font-extrabold mb-6 text-slate-900">Learners Who Found Their Alpha</h3>
+        <h3 className="text-3xl font-extrabold mb-6 text-black">Learners Who Found Their Alpha</h3>
 
         <div className="grid sm:grid-cols-2 gap-6">
           {testimonials.map((t, i) => (
             <article key={i} className="relative bg-gradient-to-b from-white to-slate-50 rounded-3xl p-6 shadow-lg hover:shadow-2xl transition-shadow duration-200">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-100 to-emerald-100 flex items-center justify-center text-xl font-semibold text-violet-700">{t.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+                  <div className="w-14 h-14 rounded-full bg-[#ffde21] flex items-center justify-center text-xl font-semibold text-black">{t.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
                 </div>
 
                 <div className="flex-1">
