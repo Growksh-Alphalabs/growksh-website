@@ -24,7 +24,7 @@ export default function Trust() {
     <section className="py-16 bg-white relative overflow-hidden">
       {/* Full-width decorative emerald clouds */}
       <div aria-hidden="true" className="absolute -left-40 -top-20 w-96 h-96 rounded-full bg-emerald-200/40" style={{ filter: 'blur(80px)', transform: 'scale(1.2)' }} />
-      <div aria-hidden="true" className="absolute -right-40 -bottom-24 w-[520px] h-[520px] rounded-full bg-emerald-100/30" style={{ filter: 'blur(120px)', transform: 'scale(1.05)' }} />
+      <div aria-hidden="true" className="absolute -right-40 -bottom-24 w-[520px] h-[520px] rounded-full bg-emerald-200/30" style={{ filter: 'blur(120px)', transform: 'scale(1.05)' }} />
 
       <div className="max-w-5xl mx-auto px-6">
         <div className="text-center relative z-10">

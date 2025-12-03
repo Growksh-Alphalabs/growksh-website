@@ -69,7 +69,7 @@ export default function WealthProcess() {
 
     return (
         <section className="py-12">
-            <div className="max-w-4xl mx-auto px-6">
+            <div className="max-w-6xl mx-auto px-4">
                 <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight text-slate-900 text-center">
                     The <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">W.E.A.L.T.H. </span> Process™
 
@@ -78,8 +78,8 @@ export default function WealthProcess() {
                     A structured, experience-driven process that turns financial confusion into clarity — and keeps you supported at every stage of your journey.
                 </p>
 
-                {/* Accordion (compact) */}
-                <div className="mt-6 mx-auto max-w-2xl space-y-3">
+                {/* Accordion (wider) */}
+                <div className="mt-6 mx-auto w-full max-w-6xl space-y-3">
                     {steps.map((s, i) => (
                         <div key={s.short + i} className="bg-white rounded-xl shadow-sm border border-emerald-50 overflow-hidden">
                             <button
