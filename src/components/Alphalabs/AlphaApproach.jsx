@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const rows = [
   ['A', 'Awareness', 'Start by knowing where you stand — with money, mindset, and habits.'],
@@ -103,8 +104,7 @@ export default function AlphaApproach() {
 
         {/* CTA */}
         <div className="text-center">
-          <a 
-            href="#programs" 
+          <Link to="#programs"
             className="group inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
           >
             <span>Join the Next Learning Experience</span>
@@ -116,7 +116,7 @@ export default function AlphaApproach() {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
-          </a>
+          </Link>
         
          
         </div>

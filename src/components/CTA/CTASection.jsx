@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function CTASection() {
   return (
@@ -48,8 +49,8 @@ export default function CTASection() {
             </div>
 
             <div className="mt-6 flex items-end justify-between">
-              <a
-                href="/alphalabs"
+              <Link
+                to="/alphalabs"
                 className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
                 aria-label="Join a Course"
               >
@@ -57,7 +58,7 @@ export default function CTASection() {
                 <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -71,8 +72,8 @@ export default function CTASection() {
             </div>
 
             <div className="mt-6 flex items-end justify-between">
-              <a
-                href="/ventures"
+              <Link
+                to="/ventures"
                 className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
                 aria-label="Discover Ventures"
               >
@@ -80,7 +81,7 @@ export default function CTASection() {
                 <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -94,8 +95,8 @@ export default function CTASection() {
             </div>
 
             <div className="mt-6 flex items-end justify-between">
-              <a
-                href="/ventures"
+              <Link
+                to="/ventures"
                 className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
                 aria-label="Discover Ventures"
               >
@@ -103,7 +104,7 @@ export default function CTASection() {
                 <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </div>
 

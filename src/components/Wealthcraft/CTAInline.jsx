@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function CTAInline() {
   return (
@@ -7,20 +8,20 @@ export default function CTAInline() {
         <h3 className="text-xl font-semibold">Start Your Financial <span className="bg-clip-text text-transparent bg-[#ffde21]">P.E.A.C.E.</span> Journey</h3>
         <p className="mt-2 text-slate-600">Financial freedom begins with clarity. Let’s start with a conversation.</p>
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a
-            href="#book"
+          <Link
+            to="#book"
             aria-label="Schedule a discovery call"
             className="inline-flex w-full sm:w-auto justify-center items-center px-6 py-3 bg-[#ffde21] text-black rounded-full"
           >
             Schedule a Discovery Call
-          </a>
-          <a
-            href="#brochure"
+          </Link>
+          <Link
+            to="#brochure"
             aria-label="Download the Wealthcraft brochure"
             className="inline-flex w-full sm:w-auto justify-center items-center px-6 py-3 border border-slate-200 rounded-full"
           >
             Download the Wealthcraft Brochure
-          </a>
+          </Link>
         </div>
       </div>
     </div>

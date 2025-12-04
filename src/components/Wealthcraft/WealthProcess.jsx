@@ -7,7 +7,7 @@ import imgA from '../../assets/Website images/Wealthcraft - Wealth process - A.p
 import imgL from '../../assets/Website images/Wealthcraft - Wealth process - L.png'
 import imgT from '../../assets/Website images/Wealthcraft - Wealth process - T.png'
 import imgH from '../../assets/Website images/Wealthcraft - Wealth process - H.png'
-
+import { Link } from 'react-router-dom'
 
 const steps = [
     {
@@ -148,14 +148,14 @@ export default function Peace() {
                     Ready for a financial plan that evolves with your life?
                 </p>
                 <div className="mt-6 text-center rounded-2xl">
-                    <a
-                        href="#book"
+                    <Link
+                        to="#book"
                         className="inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 rounded-full"
                         style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
                         aria-label="Book Your Discovery Call"
                     >
                         <span className="font-semibold text-lg">Book Your Discovery Call</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>

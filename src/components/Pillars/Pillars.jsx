@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import iconWealth from '../../assets/i1.png'
 import iconVentures from '../../assets/i2.png'
 import iconAlpha from '../../assets/i3.png'
+import { Link } from 'react-router-dom'
 
 function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center' }) {
   const [isFlipped, setIsFlipped] = useState(false)
@@ -81,8 +82,8 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             </div>
 
             <div className="mt-6 pt-6 border-t border-white/20">
-              <a
-                href={href}
+              <Link
+                to={href}
                 className="inline-flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-95"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -90,7 +91,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
                 <svg className="w-4 h-4 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

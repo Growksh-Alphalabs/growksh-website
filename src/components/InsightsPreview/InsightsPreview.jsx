@@ -2,6 +2,7 @@ import React from 'react'
 import img1 from '../../assets/krutika.jpg'
 import img2 from '../../assets/i1.png'
 import img3 from '../../assets/i2.png'
+import { Link } from 'react-router-dom'
 
 const posts = [
   {
@@ -52,8 +53,8 @@ export default function InsightsPreview() {
                 <p className="mt-3 text-sm text-slate-600 flex-1">{p.excerpt}</p>
 
                 <div className="mt-6">
-                  <a
-                    href="#"
+                  <Link
+                    to="#"
                     className="inline-flex items-center gap-2 text-violet-700 font-medium hover:underline"
                     aria-label={`Read ${p.title}`}
                   >
@@ -61,7 +62,7 @@ export default function InsightsPreview() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -70,15 +71,15 @@ export default function InsightsPreview() {
         </div>
 
         <div className="mt-10 text-center">
-          <a
-            href="/insights"
+          <Link
+            to="/insights"
             className="inline-flex items-center gap-3 px-6 py-3 bg-violet-700 text-white rounded-full shadow hover:bg-violet-600 transition-colors duration-200"
           >
             Explore Insights
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
-          </a>
+          </Link>
         </div>
       </div>
     </section>

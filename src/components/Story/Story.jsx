@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import krutika from '../../assets/Website images/Krutika photo.png'
 
 export default function Story() {
@@ -20,7 +21,7 @@ export default function Story() {
             <p className="mt-4 text-lg text-slate-600">We’ve helped hundreds of professionals, families, and NRIs gain clarity, control, and calmness with their finances — proving that financial wellness is truly life wellness.</p>
 
             <div className="mt-6">
-              <a href="/about" className="inline-flex items-center px-5 py-3 bg-violet-600 text-white rounded-full font-semibold shadow-sm hover:bg-violet-700 transition">Learn more about Krutika</a>
+              <Link to="/about" className="inline-flex items-center px-5 py-3 bg-violet-600 text-white rounded-full font-semibold shadow-sm hover:bg-violet-700 transition">Learn more about Krutika</Link>
             </div>
           </div>
 

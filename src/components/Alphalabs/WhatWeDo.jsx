@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 
 export default function WhatWeDo() {
   return (
@@ -41,8 +42,8 @@ export default function WhatWeDo() {
 
             {/* CTA */}
             <div className="flex flex-wrap gap-4">
-              <a 
-                href="#programs" 
+              <Link 
+                to="#programs" 
                 className="group inline-flex items-center px-6 py-3 bg-yellow-400 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
               >
                 See Our Courses
@@ -54,13 +55,13 @@ export default function WhatWeDo() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </a>
-              <a 
-                href="#about" 
+              </Link>
+              <Link 
+                to="#about" 
                 className="inline-flex items-center px-6 py-3 border-2 border-yellow-400/30 text-yellow-300 font-medium rounded-full hover:border-yellow-400/50 hover:bg-yellow-400/5 transition-all duration-300"
               >
                 Learn Our Approach
-              </a>
+              </Link>
             </div>
           </div>
 

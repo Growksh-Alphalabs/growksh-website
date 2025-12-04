@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import homeHeroImg from '../../assets/Website images/Home - hero section.png'
+import { Link } from 'react-router-dom'
 
 export default function Hero() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -160,21 +161,21 @@ export default function Hero() {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <a
-                href="/alphalabs"
+              <Link
+                to="/alphalabs"
                 className="inline-flex items-center px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold shadow-sm transition-all duration-150"
                 aria-label="Explore Education"
               >
                 Explore Education
-              </a>
+              </Link>
 
-              <a
-                href="/wealthcraft"
+              <Link
+                to="/wealthcraft"
                 className="inline-flex items-center px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold shadow-sm transition-all duration-150"
                 aria-label="Explore Advisory"
               >
                 Explore Advisory
-              </a>
+              </Link>
             </div>
           </div>
 
