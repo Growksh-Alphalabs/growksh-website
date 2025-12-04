@@ -1,6 +1,6 @@
 import React from 'react'
 import { COLORS } from '../../constants/colors'
-import img from '../../assets/2.jpg'
+import img from '../../assets/Website images/Wealthcraft - The wealthcraft way.png'
 
 export default function WhatWeDo() {
     return (
