@@ -1,34 +1,35 @@
 import React, { useState } from 'react'
-import a1 from '../../assets/i1.png'
-import a2 from '../../assets/i2.png'
-import a3 from '../../assets/i3.png'
+import a1 from '../../assets/Testimonial client Photos/Aastha Sharma.jpg'
+import a2 from '../../assets/Testimonial client Photos/Garima Bhandari.png'
+import a3 from '../../assets/Testimonial client Photos/Vikas Damare.jpg'
+import a4 from '../../assets/Testimonial client Photos/Sameer Mhaske.png'
 
 const sample = [
   { 
     quote: "Hi team. Want to express my gratitude for the outstanding work you are doing. The expertise you bring to the table and attention to detail with which you have handled all my queries is exceptional. Am sure my finances are in trusted hands. Would be glad to recommend your services. Wishing you the very best 🙂", 
     name: 'Aastha Sharma', 
-    avatar: a3, 
+    avatar: a1, 
     role: '',
     initial: 'A'
   },
   { 
     quote: "TRUST. CLARITY. IMPLEMENTATION is what describes Krutika. In the race of making money Krutika makes you pause and plan your future in a more organised and a strategic way. She would not just show you the path but also hold your hand and help you implement the same. Many times we just need that little push and confidence to take the risk while investing into different mediums and that is what you get when you work with Krutika. This is my way of saying thankyou for answering and replying to all my whatsapp queries at odd times and for educating me on things and terms that always made me feel so intimidated.", 
     name: 'Garima Bhandari', 
-    avatar: a3, 
+    avatar: a2, 
     role: '',
     initial: 'G'
   },
   { 
     quote: "I have been associated with Krutika for more than 6 mons regarding financial planning. Since I am not from finance background and don't understand much in this field, she educated me on the subject. She explained to me everything in detail and made a comprehensive financial plan for me. The plan is as per my goals and my risk appetite. We have had one review meeting since then. I'm so happy with the service she provided me. Thank you so much Krutika.🤝🙏", 
     name: 'Vikas Damare', 
-    avatar: a1, 
+    avatar: a3, 
     role: '',
     initial: 'V'
   },
   { 
     quote: "I and my wife would like to express our thanks to Krutika and her team for the work they have done for us over the past month. We were very impressed with the personalised professional service and advice given to us and how you have tailored this specifically to suit our situation and future needs. Krutika has simplified all complex financial terms to start off with our strategic investment planning. I have no hesitation in recommending your services with complete trust. Kudos to the entire team of Growksh!", 
     name: 'Sameer Mhaske', 
-    avatar: a2, 
+    avatar: a4, 
     role: '',
     initial: 'S'
   }
@@ -93,9 +94,12 @@ export default function Testimonials() {
                   >
                     {/* Initial Circle */}
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-[#ffde21] flex items-center justify-center border border-[#ffde21]/40">
-                        <span className="text-xl font-bold text-black">{s.initial}</span>
-                      </div>
+                      <img
+                        src={s.avatar}
+                        alt={`${s.name} avatar`}
+                        className="w-12 h-12 rounded-full object-cover border-2 border-slate-700"
+                        loading="lazy"
+                      />
                       <div>
                         <div className="text-lg font-bold text-slate-100">{s.name}</div>
                       </div>
@@ -113,30 +117,11 @@ export default function Testimonials() {
                         className="text-[#ffde21] text-sm font-medium hover:text-[#ffde21]/80 transition-colors mb-3 text-left self-start"
                       >
                         {isExpanded ? 'Read Less' : 'Read More'}
-                        <svg 
-                          className={`w-4 h-4 inline-block ml-1 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+                      
                       </button>
                     )}
 
-                    {/* Avatar at bottom */}
-                    <figcaption className="pt-4 border-t border-slate-100 flex items-center gap-3">
-                      <img 
-                        src={s.avatar} 
-                        alt={`${s.name} avatar`} 
-                        className="w-10 h-10 rounded-full object-cover border-2 border-slate-700" 
-                        loading="lazy" 
-                      />
-                      <div>
-                        <div className="text-sm font-semibold text-slate-100">{s.name}</div>
-                        <div className="text-xs text-slate-500">{s.role}</div>
-                      </div>
-                    </figcaption>
+                  
                   </figure>
                 </div>
               )
