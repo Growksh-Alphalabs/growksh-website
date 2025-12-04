@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { COLORS } from '../../constants/colors'
+import { Link } from 'react-router-dom'
 
 // Model 1: Pay As You Go & Pro Plans (Half Price)
 const model1 = [
@@ -368,15 +369,15 @@ export default function ServicesPricing() {
                         <div className="mx-auto">
                             <h4 className="text-2xl font-bold mb-3">Unsure what you need? Let’s talk.</h4>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                <a
-                                    href="#ad-hoc-consultation"
+                                <Link
+                                    to="#ad-hoc-consultation"
                                     className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#ffde21] rounded-full font-bold text-lg hover:scale-105 transition-transform duration-300 shadow-lg"
                                 >
                                     Book an Ad-hoc Consultation
                                     <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                </a>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -513,15 +514,15 @@ export default function ServicesPricing() {
                             Book a free 15-minute discovery call and we'll help you decide which approach works best for your needs.
                         </p>
                         <div className="space-y-4">
-                            <a
-                                href="#schedule"
+                            <Link
+                                to="#schedule"
                                 className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-[#ffde21]/20 text-[#ffde21] rounded-full font-bold text-lg hover:bg-purple-50 transition-colors shadow-md"
                             >
                                 <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Schedule a Call
-                            </a>
+                            </Link>
 
                         </div>
                     </div>

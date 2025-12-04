@@ -6,7 +6,7 @@ import imgE from '../../assets/Website images/Wealthcraft - Financial Peace - E.
 import imgA from '../../assets/Website images/Wealthcraft - Financial Peace - A.png'
 import imgC from '../../assets/Website images/Wealthcraft - Financial Peace - C.png'
 import imgE2 from '../../assets/Website images/Wealthcraft - Financial Peace - E (2).png'
-
+import { Link } from 'react-router-dom'
 const steps = [
     {
         short: 'P',
@@ -126,14 +126,14 @@ export default function Peace() {
 
 
                 <div className="mt-6 text-center rounded-2xl">
-                    <a
-                        href="#book"
+                    <Link
+                        to="#book"
                         className="inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 rounded-full" 
                         style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
                         aria-label="Book a consultation to craft your financial peace"
                     >
                         <span className="font-semibold text-lg">Let’s Craft Your Financial P.E.A.C.E.</span>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </section>

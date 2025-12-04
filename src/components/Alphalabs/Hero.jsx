@@ -1,5 +1,6 @@
 import React from 'react'
 import AlphalabsLogo from '../../assets/Website images/Alphalabs logo.png'
+import { Link } from 'react-router-dom'
 
 export default function Hero() {
   return (
@@ -60,8 +61,8 @@ export default function Hero() {
 
             {/* CTA Buttons */}
             <div className="mt-10 flex flex-wrap gap-4">
-              <a 
-                href="#programs" 
+              <Link 
+                to="#programs" 
                 className="group inline-flex items-center px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
               >
                 Explore Programs
@@ -73,13 +74,13 @@ export default function Hero() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-              </a>
-              <a 
-                href="#community" 
+              </Link>
+              <Link 
+                to="#community" 
                 className="inline-flex items-center px-6 py-4 border-2 border-yellow-400/30 text-yellow-300 font-medium rounded-full hover:border-yellow-400/50 hover:bg-yellow-400/5 transition-all duration-300"
               >
                 Join the Learning Circle
-              </a>
+              </Link>
             </div>
 
             {/* Stats */}

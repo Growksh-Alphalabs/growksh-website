@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function CTASection() {
     return (
@@ -56,8 +57,7 @@ export default function CTASection() {
 
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-                            <a
-                                href="#programs"
+                            <Link to="#programs"
                                 className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span>Explore Programs</span>
@@ -69,10 +69,9 @@ export default function CTASection() {
                                 >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
-                            </a>
+                            </Link>
 
-                            <a
-                                href="#community"
+                            <Link to="#community"
                                 className="group inline-flex items-center justify-center px-8 py-4 border-2 border-yellow-400/30 text-yellow-300 font-bold rounded-full hover:border-yellow-400/50 hover:bg-yellow-400/5 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span>Join The Community</span>
@@ -84,7 +83,7 @@ export default function CTASection() {
                                 >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                 </svg>
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

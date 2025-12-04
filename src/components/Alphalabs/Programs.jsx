@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 export default function Programs() {
   const comingSoonPrograms = [
@@ -106,12 +107,12 @@ export default function Programs() {
                       <div className="text-xs text-yellow-400 font-bold mb-2">FORMAT</div>
                       <p className="text-xs text-gray-400">Pre-recorded videos + Q&A session + practical worksheets + real-life case studies</p>
                     </div>
-                    <a 
-                      href="#" 
+                    <Link 
+                      to="#"
                       className="block w-full text-center py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
                     >
                       Enroll in Level 1
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -136,12 +137,12 @@ export default function Programs() {
                       <div className="text-xs text-yellow-400 font-bold mb-2">FORMAT</div>
                       <p className="text-xs text-gray-400">Detailed coaching videos, tools, templates, calculators and live group sessions</p>
                     </div>
-                    <a 
-                      href="#" 
+                    <Link 
+                      to="#"
                       className="block w-full text-center py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
                     >
                       Join Level 2
-                    </a>
+                    </Link>
                   </div>
                 </div>
 
@@ -166,12 +167,12 @@ export default function Programs() {
                       <div className="text-xs text-yellow-400 font-bold mb-2">FORMAT</div>
                       <p className="text-xs text-gray-400">One-on-one financial consultation and implementation via Growksh Wealthcraft</p>
                     </div>
-                    <a 
-                      href="#" 
+                    <Link 
+                      to="#"
                       className="block w-full text-center py-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
                     >
                       Apply for Level 3
-                    </a>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -202,8 +203,8 @@ export default function Programs() {
 
               {/* Main CTA */}
               <div className="text-center">
-                <a 
-                  href="#" 
+                <Link 
+                  to="#" 
                   className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
                 >
                   <span>Join The Awareness Bootcamp Today</span>
@@ -215,7 +216,7 @@ export default function Programs() {
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -259,12 +260,12 @@ export default function Programs() {
           </div>
 
           <div className="text-center mt-8">
-            <a 
-              href="#" 
+            <Link 
+              to="#" 
               className="inline-flex items-center px-6 py-3 border-2 border-yellow-400 text-yellow-400 font-medium rounded-full hover:bg-yellow-400/10 transition-all duration-300"
             >
               View All Upcoming Programs
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -280,18 +281,18 @@ export default function Programs() {
               and discover how empowering financial clarity can be.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="#" 
+              <Link 
+                to="#" 
                 className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
               >
                 Enroll in F³
-              </a>
-              <a 
-                href="#" 
+              </Link>
+              <Link 
+                to="#" 
                 className="inline-flex items-center justify-center px-8 py-4 border-2 border-yellow-400 text-yellow-400 font-bold rounded-full hover:bg-yellow-400/10 transition-all duration-300"
               >
                 Join the Alphalabs Community
-              </a>
+              </Link>
             </div>
           </div>
         </div>

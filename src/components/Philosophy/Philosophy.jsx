@@ -3,6 +3,7 @@ import iconWealth from '../../assets/i1.png'
 import iconVentures from '../../assets/i2.png'
 import iconAlpha from '../../assets/i3.png'
 import img from '../../assets/Website images/Home - The Growksh Way.png'
+import { Link } from 'react-router-dom'
 
 export default function Philosophy() {
   return (
@@ -47,7 +48,7 @@ export default function Philosophy() {
             </div>
 
             {/* <div className="mt-8">
-              <a href="/about" className="inline-flex items-center px-5 py-3 bg-violet-600 text-white rounded-full font-semibold shadow hover:bg-violet-700 transition">Learn more about our approach</a>
+              <Link to="/about" className="inline-flex items-center px-5 py-3 bg-violet-600 text-white rounded-full font-semibold shadow hover:bg-violet-700 transition">Learn more about our approach</Link>
             </div> */}
           </div>
 

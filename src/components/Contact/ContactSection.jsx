@@ -122,7 +122,7 @@ export default function ContactSection() {
                   </svg>
                   <div>
                     <div className="text-xs text-white/90">Email</div>
-                    <a href="mailto:connect@growksh.com" className="underline">connect@growksh.com</a>
+                    <Link to="mailto:connect@growksh.com" className="underline">connect@growksh.com</Link>
                   </div>
                 </li>
 

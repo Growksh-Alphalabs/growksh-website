@@ -2,6 +2,7 @@ import React from 'react'
 import { COLORS } from '../../constants/colors'
 import heroImg from '../../assets/Website images/Wealthcraft - hero section.png'
 import wealthcraftLogo from '../../assets/Website images/Wealthcraft logo.png'
+import { Link } from 'react-router-dom'
 
 export default function Hero() {
   const bgStyle = {
@@ -36,20 +37,20 @@ export default function Hero() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <a
-                  href="#contact"
+                <Link
+                  to="#contact"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-150"
                   style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
                 >
                   Book a Discovery Call
-                </a>
+                </Link>
 
-                <a
-                  href="#learn"
+                <Link
+                  to="#learn"
                   className="inline-flex items-center justify-center px-6 py-3 rounded-full font-medium border border-white/30 text-white bg-white/10 hover:bg-white/20 transition-all duration-150"
                 >
                   Know How It Works
-                </a>
+                </Link>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React from 'react'
 import { COLORS } from '../../constants/colors'
 import img from '../../assets/Website images/Wealthcraft - The wealthcraft way.png'
+import { Link } from 'react-router-dom'
 
 export default function WhatWeDo() {
     return (
@@ -39,14 +40,14 @@ export default function WhatWeDo() {
                             className="mt-8 animate-fadeUp"
                             style={{ animationDelay: '380ms' }}
                         >
-                            <a
-                                href="#consult"
+                            <Link
+                                to="#consult"
                                 className="inline-flex items-center px-6 py-3 rounded-full font-semibold text-black shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-300 hover:shadow-lg transition-shadow duration-300"
                                 style={{ backgroundColor: COLORS.YELLOW }}
                                 aria-label="Get started with a free consultation"
                             >
                                 Get Started — Free Consultation
-                            </a>
+                            </Link>
                         </div>
                     </div>
 
