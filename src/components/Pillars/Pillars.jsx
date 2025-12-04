@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import iconWealth from '../../assets/i1.png'
-import iconVentures from '../../assets/i2.png'
-import iconAlpha from '../../assets/i3.png'
+import iconWealth from '../../assets/Website images/Wealthcraft logo.png'
+import iconVentures from '../../assets/Website images/Ventures Logo.png'
+import iconAlpha from '../../assets/Website images/Alphalabs logo.png'
 import { Link } from 'react-router-dom'
 
 function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center' }) {
