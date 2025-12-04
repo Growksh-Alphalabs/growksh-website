@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
+import a1 from '../../assets/Testimonial client Photos/Aastha Sharma.jpg'
+import a2 from '../../assets/Testimonial client Photos/Satyawan Aglawe.jpg'
+import a3 from '../../assets/Testimonial client Photos/Garima Bhandari.png'
 
 const testimonials = [
   { 
@@ -7,7 +10,8 @@ const testimonials = [
     location: '',
     role: '',
     avatarColor: 'bg-purple-100',
-    initials: 'AS'
+    initials: 'AS',
+    avatar: a1
   },
   { 
     quote: 'Hi Growksh team, first of all thank you So much for all your support and handholding. You made trading so easy that anybody can do it and enjoy the freedom of time and money in long run. You guys are simply awesome, kind hearted and always ready to help. You are strategic thinkers, and your system oriented approach is a must learn for everyone. More blessings and power to you to touch many more lives !! Thank you so much for all the knowledge and help !!', 
@@ -15,7 +19,8 @@ const testimonials = [
     location: '',
     role: '',
     avatarColor: 'bg-purple-100',
-    initials: 'SA'
+    initials: 'SA',
+    avatar: a2
   },
   { 
     quote: 'TRUST. CLARITY. IMPLEMENTATION \n is what describes Krutika. In the race of making money Krutika makes you pause and plan your future in a more organised and a strategic way. She would not just show you the path but also hold your hand and help you implement the same. Many times we just need that little push and confidence to take the risk while investing into different mediums and that is what you get when you work with Krutika. This is my way of saying thankyou for answering and replying to all my whatsapp queries at odd times and for educating me on things and terms that always made me feel so intimidated.', 
@@ -23,7 +28,8 @@ const testimonials = [
     location: '',
     role: '',
     avatarColor: 'bg-purple-100',
-    initials: 'GB'
+    initials: 'GB',
+    avatar: a3
   }
 ]
 
@@ -151,9 +157,13 @@ export default function Testimonials() {
                         )}
 
                         <div className="mt-6 flex items-center gap-4">
-                          <div className={`w-14 h-14 rounded-full ${testimonial.avatarColor} flex items-center justify-center`}>
-                            <span className="text-lg font-semibold text-slate-700">{testimonial.initials}</span>
-                          </div>
+                          {testimonial.avatar ? (
+                            <img src={testimonial.avatar} alt={`${testimonial.name} avatar`} className="w-14 h-14 rounded-full object-cover border-2 border-slate-100" loading="lazy" />
+                          ) : (
+                            <div className={`w-14 h-14 rounded-full ${testimonial.avatarColor} flex items-center justify-center`}>
+                              <span className="text-lg font-semibold text-slate-700">{testimonial.initials}</span>
+                            </div>
+                          )}
 
                           <div className="flex-1">
                             <div className="font-semibold text-slate-900 text-lg">{testimonial.name}</div>
