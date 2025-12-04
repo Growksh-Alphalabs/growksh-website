@@ -1,55 +1,140 @@
 import React from 'react'
 import CTASection from '../components/CTA/CTASection'
+import krutikaImg from '../assets/Website images/Krutika photo.png'
 
 export default function About() {
   return (
-    <div className="bg-slate-50 text-slate-900">
-      {/* Hero banner */}
-      <header className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        <div className="rounded-2xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 p-12 text-center text-white shadow-lg">
-          <h1 className="text-4xl sm:text-5xl font-extrabold">Your Partner in Financial Growth</h1>
-          <p className="mt-4 max-w-2xl mx-auto text-slate-200">Growksh is dedicated to demystifying wealth management and empowering you to achieve your financial goals with confidence.</p>
+    <div className="min-h-screen w-full bg-gradient-to-b from-white via-gray-50 to-white text-gray-900">
+
+      {/* Hero */}
+      <header className="max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-24">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 mb-6">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+            <p className="text-sm font-medium text-blue-700 tracking-wide">About Us</p>
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+            Your partner in thoughtful <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">financial growth</span>
+          </h1>
+          <p className="mt-6 text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            We combine clear thinking, honest advice, and practical strategies to help you build a financial life that supports your long-term goals.
+          </p>
         </div>
       </header>
 
-      {/* Story */}
-      <section className="max-w-5xl mx-auto px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-center text-slate-900">From Guidance to Growth: Our Story</h2>
-        <p className="mt-4 text-center text-slate-600">Growksh was founded by Krutika Kathal with a simple yet powerful mission: to make expert financial guidance accessible to everyone. Frustrated by the complexities and jargon that often intimidate people, Krutika envisioned a firm that prioritizes clarity, trust, and personalized strategies. We believe in building long-term partnerships with our clients, guiding them through every stage of their financial journey with empathy and expertise.</p>
-      </section>
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 pb-20">
 
-      {/* Founder card */}
-      <section className="max-w-5xl mx-auto px-6 lg:px-8 py-6">
-        <h3 className="text-xl font-semibold text-center">Meet Our Founder</h3>
-        <div className="mt-6 bg-white rounded-xl shadow-md p-6 flex flex-col md:flex-row items-center gap-6">
-          <div className="flex-shrink-0">
-            <img src="/src/assets/placeholder-founder.jpg" alt="Krutika Kathal" className="w-36 h-36 rounded-full object-cover border-4 border-sky-200" />
+        {/* Our Story */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+          <div className="relative">
+            <div className="absolute -top-4 -left-4 w-24 h-24 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full blur-xl opacity-60"></div>
+            <div className="relative bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
+              <div className="space-y-4">
+                <p className="text-gray-600 leading-relaxed">
+                  Growksh began with a simple belief: financial guidance should be clear, human, and designed around real lives. Founded to remove complexity and bring warmth to financial conversations, we focus on building long-term relationships with clients and delivering advice that's practical and personalised.
+                </p>
+                <p className="text-gray-600 leading-relaxed">
+                  We blend evidence-based strategies with a focus on what matters most to you — not market noise. Over time, that approach builds resilience and confidence.
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <h4 className="text-xl font-bold">Krutika Kathal</h4>
-            <div className="text-sm text-rose-400">Founder & CEO</div>
-            <p className="mt-4 text-slate-700">With over 15 years in the financial industry, Krutika has dedicated her career to empowering individuals and families. Her passion lies in translating complex market dynamics into actionable strategies that align with her clients' unique dreams and aspirations.</p>
 
-            <blockquote className="mt-4 border-l-4 border-sky-300 pl-4 italic text-slate-600">“Financial empowerment isn't just about numbers; it's about giving you the freedom to live the life you've always imagined.”</blockquote>
+          <div className="flex items-center justify-center">
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+              <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-sm">
+                <div className="relative w-48 h-48 mx-auto">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full blur-md opacity-30"></div>
+                  <img 
+                    src={krutikaImg} 
+                    alt="Krutika Kathal" 
+                    className="relative w-48 h-48 rounded-full object-cover ring-4 ring-white shadow-lg"
+                  />
+                </div>
+                <div className="mt-8 text-center">
+                  <h3 className="text-xl font-bold text-gray-900">Krutika Kathal</h3>
+                  <div className="inline-flex items-center gap-2 mt-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span className="text-sm font-medium text-blue-700">Founder & CEO</span>
+                  </div>
+                  <p className="mt-4 text-gray-600 text-sm leading-relaxed">
+                    Krutika brings deep industry knowledge and a commitment to making financial planning accessible. She believes good advice should be understandable, actionable, and aligned with your life priorities.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA strip */}
-      <div className="py-12">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="rounded-2xl bg-slate-800 text-white p-10 text-center shadow-md">
-            <h3 className="text-2xl font-bold">Ready to Start Your Journey?</h3>
-            <p className="mt-3 text-slate-200">Let's build a secure and prosperous future together. Schedule a complimentary consultation to discuss your financial goals.</p>
-            <div className="mt-6">
-              <a href="/contact" className="inline-flex items-center px-6 py-3 bg-sky-400 text-slate-900 rounded-md font-semibold">Schedule a Consultation</a>
+        {/* Our Philosophy */}
+        <section className="bg-gradient-to-br from-white to-blue-50 rounded-3xl p-8 md:p-12 border border-blue-100 shadow-lg mb-20">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Philosophy</h2>
+            <p className="text-gray-600 leading-relaxed mb-10">
+              We focus on clarity, long-term thinking, and practical steps. Our guiding principles are:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-2">Clarity</h4>
+                <p className="text-gray-600 text-sm">Explain complex ideas in plain language so you can act with confidence.</p>
+              </div>
+
+              <div className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-2">Partnership</h4>
+                <p className="text-gray-600 text-sm">We build long-term relationships and plan with your whole life in mind.</p>
+              </div>
+
+              <div className="group bg-white rounded-xl p-6 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-gray-900 text-lg mb-2">Practicality</h4>
+                <p className="text-gray-600 text-sm">Advice that balances evidence and your personal priorities for real-world results.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Divider */}
+        <div className="relative my-16">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <div className="px-4 bg-white">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 flex items-center justify-center border-4 border-white">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-cyan-400"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Reuse CTASection for footer CTA if desired */}
-      <CTASection />
+        {/* CTA */}
+        <div className="mt-10">
+          <CTASection />
+        </div>
+
+      </main>
+
+      {/* Subtle gradient background elements */}
+      <div className="fixed top-0 left-0 right-0 h-96 bg-gradient-to-b from-blue-50/20 to-transparent pointer-events-none -z-10"></div>
+      <div className="fixed bottom-0 left-0 right-0 h-96 bg-gradient-to-t from-cyan-50/10 to-transparent pointer-events-none -z-10"></div>
     </div>
   )
 }

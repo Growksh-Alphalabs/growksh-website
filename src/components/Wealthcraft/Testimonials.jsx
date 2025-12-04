@@ -56,18 +56,16 @@ export default function Testimonials() {
   }
 
   return (
-    <section className="py-16 bg-slate-50 relative overflow-hidden">
-      {/* subtle emerald cloud behind the cards */}
-      <div aria-hidden="true" className="absolute -left-32 -top-20 w-80 h-80 rounded-full bg-emerald-100/40" style={{ filter: 'blur(64px)' }} />
-
+    <section className="py-16 bg-slate-900 text-white relative overflow-hidden">
+   
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
-            Real <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-emerald-400">People</span>. 
-            Real <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-emerald-400">Results</span>.
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+            Real <span className="text-[#ffde21]">People</span>. 
+            Real <span className="text-[#ffde21]">Results</span>.
           </h2>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto">
             Stories from clients who found clarity, confidence and better financial outcomes.
           </p>
         </div>
@@ -75,8 +73,8 @@ export default function Testimonials() {
         {/* Marquee Container */}
         <div className="relative overflow-hidden py-2">
           {/* Gradient Fade Effects on Sides */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none" />
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
           
           {/* Marquee Wrapper */}
           <div className="flex animate-marquee gap-6">
@@ -91,20 +89,20 @@ export default function Testimonials() {
                   className="flex-shrink-0 w-[380px]"
                 >
                   <figure 
-                    className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col"
+                    className="bg-slate-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-slate-700"
                   >
                     {/* Initial Circle */}
                     <div className="flex items-center gap-4 mb-4">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center border border-emerald-200">
-                        <span className="text-xl font-bold text-emerald-700">{s.initial}</span>
+                      <div className="w-12 h-12 rounded-full bg-[#ffde21] flex items-center justify-center border border-[#ffde21]/40">
+                        <span className="text-xl font-bold text-black">{s.initial}</span>
                       </div>
                       <div>
-                        <div className="text-lg font-bold text-slate-900">{s.name}</div>
+                        <div className="text-lg font-bold text-slate-100">{s.name}</div>
                       </div>
                     </div>
 
                     {/* Quote with Read More */}
-                    <blockquote className="text-slate-600 text-sm leading-relaxed flex-1 mb-3"> 
+                    <blockquote className="text-slate-300 text-sm leading-relaxed flex-1 mb-3"> 
                       "{displayText}"
                     </blockquote>
 
@@ -112,7 +110,7 @@ export default function Testimonials() {
                     {shouldShowReadMore && (
                       <button
                         onClick={() => toggleQuote(i)}
-                        className="text-emerald-600 text-sm font-medium hover:text-emerald-700 transition-colors mb-3 text-left self-start"
+                        className="text-[#ffde21] text-sm font-medium hover:text-[#ffde21]/80 transition-colors mb-3 text-left self-start"
                       >
                         {isExpanded ? 'Read Less' : 'Read More'}
                         <svg 
@@ -131,11 +129,11 @@ export default function Testimonials() {
                       <img 
                         src={s.avatar} 
                         alt={`${s.name} avatar`} 
-                        className="w-10 h-10 rounded-full object-cover border-2 border-emerald-100" 
+                        className="w-10 h-10 rounded-full object-cover border-2 border-slate-700" 
                         loading="lazy" 
                       />
                       <div>
-                        <div className="text-sm font-semibold text-slate-900">{s.name}</div>
+                        <div className="text-sm font-semibold text-slate-100">{s.name}</div>
                         <div className="text-xs text-slate-500">{s.role}</div>
                       </div>
                     </figcaption>

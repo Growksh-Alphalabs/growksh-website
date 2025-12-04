@@ -1,4 +1,5 @@
 import React from 'react'
+import AlphalabsLogo from '../../assets/Website images/Alphalabs logo.png'
 
 export default function Hero() {
   return (
@@ -30,7 +31,8 @@ export default function Hero() {
         <div className="grid lg:grid-cols-2 items-center gap-12">
           <div className="py-8">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full mb-6">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full mb-6">
+              <img src={AlphalabsLogo} alt="Alphalabs" className="w-6 h-6 rounded-sm" />
               <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
               <span className="text-sm font-medium text-yellow-300 uppercase tracking-wide">
                 The Financial Learning Studio

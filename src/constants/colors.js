@@ -8,5 +8,5 @@ export const COLORS = {
   WHITE: '#ffffff',
   // Backwards-compatible names
   alphalabsAccent: '#ffde21',
-  wealthcraftAccent: '#00674F',
+  wealthcraftAccent: '#ffde21',
 }
