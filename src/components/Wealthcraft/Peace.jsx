@@ -54,8 +54,8 @@ export default function Peace() {
         <section className="py-12">
             <div className="max-w-6xl mx-auto px-4">
                 <div className="text-sm font-medium text-emerald-700 mb-4 tracking-wider text-center uppercase">
-                        Our Signature Approach
-                    </div>
+                    Our Signature Approach
+                </div>
                 <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight text-slate-900 text-center">
                     Financial <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">P.E.A.C.E. </span> of Mind!
 
@@ -106,7 +106,13 @@ export default function Peace() {
 
 
                 <div className="mt-6 text-center">
-                    <a href="#book" className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold">Let’s Craft Your Financial P.E.A.C.E.</a>
+                    <a
+                        href="#book"
+                        className="inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 bg-linear-to-r from-emerald-600 to-emerald-400 text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition transform duration-200 focus:outline-none focus:ring-4 focus:ring-[#ffde21]/40"
+                        aria-label="Book a consultation to craft your financial peace"
+                    >
+                        Let’s Craft Your Financial P.E.A.C.E.
+                    </a>
                 </div>
             </div>
         </section>

@@ -118,12 +118,18 @@ export default function WealthProcess() {
                     ))}
                 </div>
 
- <p className="mt-3 mb-3 text-slate-600 max-w-xl mx-auto animate-fadeSlow text-center">
+                <p className="mt-3 mb-3 text-slate-600 max-w-xl mx-auto animate-fadeSlow text-center">
                     Ready for a financial plan that evolves with your life?
                 </p>
 
                 <div className="mt-6 text-center">
-                    <a href="#book" className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-full font-semibold">Book Your Discovery Call</a>
+                    <a
+                        href="#book"
+                        className="inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 bg-linear-to-r from-emerald-600 to-emerald-400 text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition transform duration-200 focus:outline-none focus:ring-4 focus:ring-[#ffde21]/40"
+                        aria-label="Book a consultation to craft your financial peace"
+                    >
+                        Book Your Discovery Call
+                    </a>
                 </div>
             </div>
         </section>
