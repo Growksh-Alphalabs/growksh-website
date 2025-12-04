@@ -1,4 +1,5 @@
 import React from "react";
+import venturesLogo from '../../assets/Website images/Ventures Logo.png'
 
 export default function GrowkshLanding() {
   return (
@@ -34,8 +35,8 @@ export default function GrowkshLanding() {
           {/* Divider */}
           <div className="relative my-12 md:my-16">
             <div className="h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
-            <div className="absolute left-1/2 -translate-x-1/2 -top-3 w-6 h-6 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-white"></div>
+            <div className="absolute left-1/2 -translate-x-1/2 -top-3 w-8 h-8 rounded-full bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center overflow-hidden">
+              <img src={venturesLogo} alt="Ventures" className="w-5 h-5 object-contain" />
             </div>
           </div>
 

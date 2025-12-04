@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { COLORS } from '../../constants/colors'
-import img1 from '../../assets/i1.png'
-import img2 from '../../assets/i2.png'
-import img3 from '../../assets/i3.png'
+import img1 from '../../assets/Website images/Wealthcraft - professional.png'
+import img2 from '../../assets/Website images/Wealthcraft - women.png'
+import img3 from '../../assets/Website images/Wealthcraft - NRI.png'
 
 const cards = [
     {
@@ -80,11 +80,11 @@ export default function WhoWeServe() {
         <section className="py-16 bg-slate-50">
             <div className="max-w-6xl mx-auto px-4 md:px-6">
                 <div className="text-center mb-12">
-                    <div className="text-sm font-medium text-emerald-700 mb-4 tracking-wider uppercase">
+                    <div className="text-sm font-medium text-[#ffde21] mb-4 tracking-wider uppercase">
                         People Who Choose Wealthcraft
                     </div>
                     <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
-                        <span className="text-emerald-700">W</span>ho <span className="text-emerald-700">W</span>e <span className="text-emerald-700">W</span>ork <span className="text-emerald-700">W</span>ith
+                        <span className="text-[#ffde21]">W</span>ho <span className="text-[#ffde21]">W</span>e <span className="text-[#ffde21]">W</span>ork <span className="text-[#ffde21]">W</span>ith
                     </h2>
                    
                 </div>
@@ -112,7 +112,7 @@ export default function WhoWeServe() {
                                 }`}
                             >
                                 {/* Front side */}
-                                <div className="flip-card-front absolute inset-0 bg-white rounded-2xl overflow-hidden shadow-lg border border-emerald-100 backface-hidden flex flex-col group">
+                                <div className="flip-card-front absolute inset-0 bg-white rounded-2xl overflow-hidden shadow-lg border border-[#ffde21]/20 backface-hidden flex flex-col group">
                                     <div className="relative h-2/3 overflow-hidden">
                                         <img 
                                             src={c.img} 
@@ -125,13 +125,13 @@ export default function WhoWeServe() {
                                        
 
                                         {/* Hover glow effect */}
-                                        <div className={`absolute inset-0 bg-emerald-500/10 transition-opacity duration-500 ${
+                                        <div className={`absolute inset-0 bg-[#ffde21]/10 transition-opacity duration-500 ${
                                             isFlipped(c.key) ? 'opacity-0' : 'group-hover:opacity-100'
                                         }`} />
                                     </div>
                                     
                                     <div className="p-4 flex-1 flex flex-col justify-center">
-                                        <h3 className="text-lg font-semibold text-slate-900 mb-1 text-center group-hover:text-emerald-700 transition-colors duration-300">
+                                        <h3 className="text-lg font-semibold text-slate-900 mb-1 text-center group-hover:text-[#ffde21] transition-colors duration-300">
                                             {c.title}
                                         </h3>
                                         <p className="text-sm text-slate-600 text-center">
@@ -140,8 +140,8 @@ export default function WhoWeServe() {
                                         
                                         {/* Animated arrow */}
                                         <div className="flex justify-center mt-4">
-                                            <div className="relative w-12 h-2 bg-emerald-100 rounded-full overflow-hidden">
-                                                <div className={`absolute inset-y-0 left-0 w-6 bg-emerald-400 rounded-full transition-all duration-500 ${
+                                            <div className="relative w-12 h-2 bg-[#ffde21]/10 rounded-full overflow-hidden">
+                                                <div className={`absolute inset-y-0 left-0 w-6 bg-[#ffde21]/40 rounded-full transition-all duration-500 ${
                                                     isFlipped(c.key) ? 'translate-x-6' : 'group-hover:translate-x-6'
                                                 }`} />
                                             </div>
@@ -149,7 +149,7 @@ export default function WhoWeServe() {
                                     </div>
 
                                     {/* Hover text overlay */}
-                                    <div className={`absolute inset-0 bg-emerald-600/90 flex items-center justify-center p-6 transition-all duration-500 rounded-2xl ${
+                                    <div className={`absolute inset-0 bg-[#ffde21]/90 flex items-center justify-center p-6 transition-all duration-500 rounded-2xl ${
                                         isFlipped(c.key) ? 'opacity-0 invisible' : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
                                     }`}>
                                         <div className="text-center text-white">
@@ -162,14 +162,14 @@ export default function WhoWeServe() {
                                 </div>
 
                                 {/* Back side */}
-                                <div className="flip-card-back absolute inset-0 bg-gradient-to-br from-emerald-50 to-white rounded-2xl shadow-2xl border border-emerald-200 backface-hidden rotate-y-180 p-4 overflow-y-auto">
+                                <div className="flip-card-back absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 to-white rounded-2xl shadow-2xl border border-[#ffde21]/20 backface-hidden rotate-y-180 p-4 overflow-y-auto">
                                     <div className="h-full flex flex-col">
                                         {/* Back header */}
                                         <div className="flex items-center justify-between mb-6">
-                                            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center animate-pulse-slow">
-                                                <span className="text-emerald-600 font-bold">{c.key.charAt(0).toUpperCase()}</span>
+                                            <div className="w-10 h-10 rounded-full bg-[#ffde21]/10 flex items-center justify-center animate-pulse-slow">
+                                                <span className="text-[#ffde21] font-bold">{c.key.charAt(0).toUpperCase()}</span>
                                             </div>
-                                            <div className="text-xs text-emerald-600 font-medium px-3 py-1 bg-emerald-100 rounded-full">
+                                            <div className="text-xs text-[#ffde21] font-medium px-3 py-1 bg-[#ffde21]/10 rounded-full">
                                                 {touchMode || mobileView ? '' : ''}
                                             </div>
                                         </div>
@@ -186,7 +186,7 @@ export default function WhoWeServe() {
                                                         style={{ animationDelay: `${idx * 0.1}s` }}
                                                     >
                                                         <div className="flex-shrink-0 mt-1">
-                                                            <div className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: `${idx * 0.2}s` }}></div>
+                                                            <div className="w-2 h-2 rounded-full bg-[#ffde21]/40 animate-bounce" style={{ animationDelay: `${idx * 0.2}s` }}></div>
                                                         </div>
                                                         <p className="text-slate-700 text-sm md:text-base leading-relaxed">
                                                             {line}
@@ -318,17 +318,17 @@ export default function WhoWeServe() {
                 }
                 
                 .flip-card-back::-webkit-scrollbar-track {
-                    background: rgba(6, 103, 79, 0.05);
+                    background: rgba(255, 222, 33, 0.05);
                     border-radius: 10px;
                 }
                 
                 .flip-card-back::-webkit-scrollbar-thumb {
-                    background: rgba(6, 103, 79, 0.2);
+                    background: rgba(255, 222, 33, 0.2);
                     border-radius: 10px;
                 }
                 
                 .flip-card-back::-webkit-scrollbar-thumb:hover {
-                    background: rgba(6, 103, 79, 0.3);
+                    background: rgba(255, 222, 33, 0.3);
                 }
             `}</style>
         </section>

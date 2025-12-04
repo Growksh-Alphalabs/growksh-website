@@ -194,7 +194,7 @@ export default function ServicesPricing() {
         if (!priceStr) return { full: '', half: '' }
         const num = Number(String(priceStr).replace(/[^0-9.-]/g, '')) || 0
         const fmt = (n) => n.toLocaleString('en-IN')
-        return { full: `₹ ${fmt(num)}`, half: `₹ ${fmt(Math.round(num / 2))}` }
+        return { full: `₹ ${fmt(num)}`, half: `₹ ${fmt(Math.floor(num / 2))}` }
     }
 
     const toggleCategory = (category) => {
@@ -231,7 +231,7 @@ export default function ServicesPricing() {
             <div className="max-w-7xl mx-auto px-4 md:px-6">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <div className="text-sm font-medium text-emerald-700 mb-4 tracking-wider uppercase animate-fade-in">
+                    <div className="text-sm font-medium text-[#ffde21] mb-4 tracking-wider uppercase animate-fade-in">
                         Service Models & Pricing Structure
                     </div>
                     <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">
@@ -247,14 +247,14 @@ export default function ServicesPricing() {
 
                 {/* Section 1: Pay As You Go vs Pro Plan */}
                 <div className="mb-16">
-                    <div className="bg-gradient-to-r from-emerald-50 to-white rounded-2xl p-4 shadow-md border border-emerald-100 mb-6 md:sticky md:top-20 md:z-30">
+                    <div className="bg-gradient-to-r from-[#ffde21] to-white rounded-2xl p-4 shadow-md border border-[#ffde21] mb-6 md:sticky md:top-20 md:z-30">
                         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 mb-2">
                             <div className="lg:flex-1">
-                                <h3 className="text-xl font-bold text-emerald-800 mb-1">Pay As You Go vs. Pro Plan (50% Off)</h3>
+                                <h3 className="text-xl font-bold text-[#000] mb-1">Pay As You Go vs. Pro Plan (50% Off)</h3>
                                 <p className="text-sm text-slate-700">Choose between one-time services or save 50% with our Pro Plan subscription</p>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full lg:w-auto">
+                            <div className="flex flex-col sm:flex-row items-center gap-15 w-full lg:w-auto mr-10">
                                 {/* Left: Ad-hoc / Pay As You Go */}
                                 <div className="flex-1 sm:flex-none bg-white rounded-xl border border-slate-100 p-4 text-center shadow-sm">
                                     <div className="inline-block px-3 py-0.5 rounded-full text-[11px] font-semibold text-white bg-gradient-to-r from-indigo-400 to-blue-500 mb-3">AD HOC</div>
@@ -276,22 +276,22 @@ export default function ServicesPricing() {
                     {/* Services Table - All categories collapsible */}
                     <div className="space-y-2">
                         {model1.map((category, catIndex) => (
-                            <div key={catIndex} className="bg-white rounded-lg border border-emerald-100 overflow-hidden">
+                            <div key={catIndex} className="bg-white rounded-lg border border-[#ffde21]/20 overflow-hidden">
                                 {/* Category Header - Always shows prices */}
                                 <button
                                     onClick={() => toggleCategory(category.category)}
-                                    className="w-full bg-emerald-50 p-2 border-b border-emerald-200 text-left hover:bg-emerald-100 transition-colors"
+                                    className="w-full bg-[#ffde21]/10 p-2 border-b border-[#ffde21]/30 text-left hover:bg-[#ffde21]/20 transition-colors"
                                 >
                                     <div className="grid grid-cols-12 items-center w-full gap-4">
                                         {/* Left: icon + title (matches service row col-span-6) */}
                                         <div className="col-span-6 flex flex-col sm:flex-row sm:items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 ${expandedCategories[category.category] ? 'bg-emerald-100 text-emerald-700 rotate-90' : 'bg-slate-100 text-slate-600'}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 ${expandedCategories[category.category] ? 'bg-[#ffde21]/10 text-[#ffde21] rotate-90' : 'bg-slate-100 text-slate-600'}`}>
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                 </svg>
                                             </div>
                                             <div>
-                                                <h3 className="text-xl font-bold text-emerald-800">{category.category}</h3>
+                                                <h3 className="text-xl font-bold text-[#000]">{category.category}</h3>
                                                 {category.description && (
                                                     <p className="text-sm text-slate-600 mt-1">{category.description}</p>
                                                 )}
@@ -300,23 +300,23 @@ export default function ServicesPricing() {
 
                                         {/* Desktop: align prices into the same 3+3 columns used by service rows */}
                                         <div className="hidden sm:flex col-span-3 items-center justify-center">
-                                            <div className="bg-white p-2 rounded-lg border border-emerald-200 text-center w-full max-w-[140px]">
-                                                <div className="text-lg font-bold text-emerald-800">{formatPrices(category.packagePrice).full}</div>
+                                            <div className="bg-white p-2 rounded-lg border border-[#ffde21]/30 text-center w-full max-w-[140px]">
+                                                <div className="text-lg font-bold text-[#000]">{formatPrices(category.packagePrice).full}</div>
                                             </div>
                                         </div>
                                         <div className="hidden sm:flex col-span-3 items-center justify-center">
-                                            <div className="bg-emerald-50 p-2 rounded-lg border-2 border-emerald-300 text-center w-full max-w-[140px]">
-                                                <div className="text-lg font-bold text-emerald-800">{formatPrices(category.packagePrice).half}</div>
+                                            <div className="bg-[#ffde21]/10 p-2 rounded-lg border-2 border-[#ffde21]/40 text-center w-full max-w-[140px]">
+                                                <div className="text-lg font-bold text-[#000]">{formatPrices(category.packagePrice).half}</div>
                                             </div>
                                         </div>
 
                                         {/* Mobile: stacked full-width prices below the title */}
                                         <div className="sm:hidden col-span-12 mt-2 flex flex-col gap-2">
-                                            <div className="bg-white p-2 rounded-lg border border-emerald-200 text-center">
-                                                <div className="text-sm font-bold text-emerald-800">{formatPrices(category.packagePrice).full}</div>
+                                            <div className="bg-white p-2 rounded-lg border border-[#ffde21]/30 text-center">
+                                                <div className="text-sm font-bold text-[#ffde21]">{formatPrices(category.packagePrice).full}</div>
                                             </div>
-                                            <div className="bg-emerald-50 p-2 rounded-lg border-2 border-emerald-300 text-center">
-                                                <div className="text-sm font-bold text-emerald-800">{formatPrices(category.packagePrice).half}</div>
+                                            <div className="bg-[#ffde21]/10 p-2 rounded-lg border-2 border-[#ffde21]/40 text-center">
+                                                <div className="text-sm font-bold text-[#ffde21]">{formatPrices(category.packagePrice).half}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -325,7 +325,7 @@ export default function ServicesPricing() {
                                 {/* Category Content - Shows when expanded */}
                                 {expandedCategories[category.category] && (
                                     <div className="animate-slide-down">
-                                       
+
 
                                         {/* Services List */}
                                         <div className="divide-y divide-slate-100">
@@ -338,21 +338,21 @@ export default function ServicesPricing() {
                                                         <div className="grid grid-cols-12 p-4 items-center">
                                                             <div className="col-span-6">
                                                                 <div className="flex items-start gap-3">
-                                                                    
-                                                                            <div>
-                                                                                <h4 className="font-medium text-slate-900">{service[0]}</h4>
-                                                                                {service[1] && <p className="text-sm text-slate-500 mt-1">{service[1]}</p>}
-                                                                            </div>
+
+                                                                    <div>
+                                                                        <h4 className="font-medium text-slate-900">{service[0]}</h4>
+                                                                        {service[1] && <p className="text-sm text-slate-500 mt-1">{service[1]}</p>}
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="col-span-3 text-center">
                                                                 <div className="font-semibold text-slate-700">{service[2]}</div>
                                                             </div>
                                                             <div className="col-span-3 text-center">
-                                                                <div className="font-bold text-emerald-700">{service[3]}</div>
+                                                                <div className="font-bold text-[#ffde21]">{service[3]}</div>
                                                                 <div className="text-xs text-slate-500 line-through">{service[2]}</div>
                                                             </div>
-                                                        </div>                                                     
+                                                        </div>
                                                     </div>
                                                 )
                                             })}
@@ -364,13 +364,13 @@ export default function ServicesPricing() {
                     </div>
 
                     {/* CTA: Ad-hoc consultation prompt */}
-                    <div className="mx-auto max-w-3xl bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-8 text-center text-white shadow-lg mt-8">
+                    <div className="mx-auto max-w-3xl bg-gradient-to-r from-[#ffde21] to-[#ffde21]/90 rounded-2xl p-8 text-center text-white shadow-lg mt-8">
                         <div className="mx-auto">
                             <h4 className="text-2xl font-bold mb-3">Unsure what you need? Let’s talk.</h4>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <a
                                     href="#ad-hoc-consultation"
-                                    className="inline-flex items-center justify-center px-8 py-4 bg-white text-emerald-700 rounded-full font-bold text-lg hover:scale-105 transition-transform duration-300 shadow-lg"
+                                    className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#ffde21] rounded-full font-bold text-lg hover:scale-105 transition-transform duration-300 shadow-lg"
                                 >
                                     Book an Ad-hoc Consultation
                                     <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,19 +385,19 @@ export default function ServicesPricing() {
                 {/* Section 2: Get More for Less - Bundles */}
                 <div className="mb-16">
                     <div className="text-center mb-10">
-                      
+
                         <h3 className="text-3xl font-bold text-slate-900 mb-4">Get More for Less!</h3>
                         <p className="text-lg text-slate-600 max-w-3xl mx-auto">
                             Get pocket-friendly deals designed exclusively for your business. Protect your business legally.
                         </p>
-                       
+
                     </div>
 
                     {/* Bundle Comparison Table (Essential / Advanced / Premier) */}
                     <div className="overflow-x-auto mb-10">
                         <div className="min-w-[900px] bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
                             <table className="w-full table-fixed text-sm">
-                                <thead className="bg-emerald-50">
+                                <thead className="bg-[#ffde21]/10">
                                     <tr>
                                         <th className="w-1/3 text-left py-4 px-5"></th>
                                         <th className="text-center py-4 px-5">
@@ -411,7 +411,7 @@ export default function ServicesPricing() {
                                         <th className="text-center py-4 px-5">
                                             <div className="flex items-center justify-center gap-2">
                                                 <div className="text-sm font-semibold">Premier</div>
-                                                <span className="text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full">Popular</span>
+                                                <span className="text-xs bg-[#ffde21] text-black px-2 py-0.5 rounded-full">Popular</span>
                                             </div>
                                             <div className="text-xs text-slate-600 mt-1">Comprehensive</div>
                                         </th>
@@ -502,11 +502,11 @@ export default function ServicesPricing() {
                         </div>
                     </div>
 
-                 
+
                 </div>
 
                 {/* Section CTA */}
-                <div className="mx-auto max-w-3xl bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-2xl p-8 text-center text-white shadow-lg mt-8">
+                <div className="mx-auto max-w-3xl bg-gradient-to-r from-[#ffde21]/10 to-[#ffde21]/30 rounded-2xl p-8 text-center text-slate-900 shadow-lg mt-8">
                     <div className="text-center max-w-2xl mx-auto">
                         <h5 className="font-bold text-slate-900 text-2xl mb-4">Still unsure which option fits you best?</h5>
                         <p className="text-lg text-slate-600 mb-6">
@@ -515,14 +515,14 @@ export default function ServicesPricing() {
                         <div className="space-y-4">
                             <a
                                 href="#schedule"
-                                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-emerald-100 text-emerald-400 rounded-full font-bold text-lg hover:bg-purple-50 transition-colors shadow-md"
+                                className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-[#ffde21]/20 text-[#ffde21] rounded-full font-bold text-lg hover:bg-purple-50 transition-colors shadow-md"
                             >
                                 <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                                 Schedule a Call
                             </a>
-                           
+
                         </div>
                     </div>
                 </div>

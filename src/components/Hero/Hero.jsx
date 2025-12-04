@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import homeHeroImg from '../../assets/Website images/Home - hero section.png'
 
 export default function Hero() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -311,19 +312,13 @@ export default function Hero() {
                     {/* Pulsing glow effect */}
                     <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
                     
-                    {/* Center circle */}
-                    <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-36 h-36 flex flex-col items-center justify-center shadow-2xl shadow-purple-100/50 relative z-10">
-                      <div className="text-center">
-                        <div className="text-sm font-bold bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent mb-1">
-                          Journey Path
-                        </div>
-                        {/* <div className="text-xs font-semibold text-slate-600">
-                          Learn → Plan → Grow
-                        </div>
-                        <div className="mt-2 text-[10px] text-slate-500 tracking-wide">
-                          Education → Advisory → Investment
-                        </div> */}
-                      </div>
+                    {/* Center circle with hero PNG */}
+                    <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-36 h-36 flex items-center justify-center shadow-2xl shadow-purple-100/50 relative z-10">
+                      <img
+                        src={homeHeroImg}
+                        alt="Growksh center"
+                        className="w-32 h-32 rounded-full object-cover shadow-inner"
+                      />
                     </div>
                   </div>
                 </div>
