@@ -4,16 +4,96 @@ import { Link } from 'react-router-dom'
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden py-20 bg-black">
-      {/* Animated Background Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 -z-10" />
+    <section className="relative overflow-hidden  text-slate-900">
+      {/* Abstract Green Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
       
-      {/* Animated Particles */}
+      {/* Main Abstract Pattern */}
+      <div className="absolute inset-0 -z-20 overflow-hidden opacity-30 md:opacity-40">
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 1200 800"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#00674F" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#004D36" stopOpacity="0.08" />
+            </linearGradient>
+            <linearGradient id="grad2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#009A7B" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#00674F" stopOpacity="0.06" />
+            </linearGradient>
+            <filter id="blur1" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
+            </filter>
+          </defs>
+          
+          {/* Large Organic Shapes */}
+          <g filter="url(#blur1)">
+            <path
+              d="M-200,400 Q200,100 600,400 Q1000,700 1400,200"
+              stroke="url(#grad1)"
+              strokeWidth="120"
+              strokeLinecap="round"
+              fill="none"
+            />
+            <path
+              d="M-100,600 Q300,300 700,500 Q1100,700 1500,300"
+              stroke="url(#grad2)"
+              strokeWidth="100"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.7"
+            />
+            <path
+              d="M0,200 Q400,0 800,300 Q1200,600 1600,100"
+              stroke="url(#grad1)"
+              strokeWidth="80"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.6"
+            />
+          </g>
+          
+          {/* Floating Circles */}
+          <g>
+            <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
+            <circle cx="1000" cy="650" r="80" fill="url(#grad2)" opacity="0.6" />
+            <circle cx="800" cy="200" r="40" fill="url(#grad1)" opacity="0.4" />
+            <circle cx="400" cy="600" r="50" fill="url(#grad2)" opacity="0.5" />
+            <circle cx="1200" cy="300" r="70" fill="url(#grad1)" opacity="0.3" />
+          </g>
+          
+          {/* Dots Pattern */}
+          <g>
+            {Array.from({ length: 40 }).map((_, i) => (
+              <circle
+                key={i}
+                cx={Math.random() * 1200}
+                cy={Math.random() * 800}
+                r={Math.random() * 3 + 1}
+                fill="#00674F"
+                opacity={Math.random() * 0.1 + 0.05}
+              />
+            ))}
+          </g>
+        </svg>
+      </div>
+      
+      {/* Gradient Overlays for Depth */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+      
+      {/* Animated Particles - Reduced on mobile */}
       <div className="absolute inset-0 overflow-hidden -z-10">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-yellow-400/20 rounded-full animate-float"
+            className="absolute w-1 h-1 bg-[#00674F]/20 rounded-full animate-float"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -24,50 +104,73 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Glowing Orbs */}
-      <div className="absolute -top-40 -right-40 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl" />
-      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-yellow-400/5 rounded-full blur-3xl" />
+      {/* Subtle green glows - Adjusted for mobile */}
+      <div className="absolute -top-20 -right-20 w-60 h-60 md:-top-40 md:-right-40 md:w-80 md:h-80 bg-[#00674F]/10 rounded-full blur-3xl" />
+      <div className="absolute -bottom-20 -left-20 w-60 h-60 md:-bottom-40 md:-left-40 md:w-80 md:h-80 bg-[#00674F]/5 rounded-full blur-3xl" />
 
-      <div className="max-w-6xl mx-auto px-4 lg:px-8 text-left">
-        <div className="grid lg:grid-cols-2 items-center gap-12">
-          <div className="py-8">
+      {/* Abstract green cloud - Hidden on mobile, shown on tablet+ */}
+      <svg className="hidden md:block absolute left-1/2 top-8 -translate-x-1/2 w-[1100px] max-w-none h-[420px] -z-20 pointer-events-none opacity-30" viewBox="0 0 1100 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <defs>
+          <filter id="blobBlur" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="40" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <linearGradient id="cloudGrad" x1="0" x2="1">
+            <stop offset="0%" stopColor="#00674F" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#00674F" stopOpacity="0.12" />
+          </linearGradient>
+        </defs>
+        <g filter="url(#blobBlur)">
+          <path d="M80 160C120 80 240 40 360 64C480 88 620 28 740 72C860 116 980 140 1020 196C1060 252 980 332 860 344C740 356 620 316 500 320C380 324 200 360 80 320C-40 280 40 240 80 160Z" fill="url(#cloudGrad)" />
+          <path d="M220 100C300 40 420 24 540 56C660 88 780 20 880 68C980 116 1040 176 990 232C940 288 820 312 700 312C580 312 420 292 300 304C180 316 140 220 220 100Z" fill="#00674F" fillOpacity="0.06" />
+        </g>
+      </svg>
+
+      {/* Reduced padding and better responsive container */}
+      <div className="mx-auto px-4 sm:px-5 md:px-6 max-w-7xl">
+        <div className="grid lg:grid-cols-2 items-center gap-6 md:gap-8 lg:gap-12">
+          {/* Text Content - Always first */}
+          <div className="py-4 md:py-6 lg:py-8">
             {/* Badge */}
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full mb-6">
-              <img src={AlphalabsLogo} alt="Alphalabs" className="w-6 h-6 rounded-sm" />
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-yellow-300 uppercase tracking-wide">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white/80 backdrop-blur-sm border border-[#00674F]/20 rounded-full mb-4 md:mb-6">
+              <img src={AlphalabsLogo} alt="Alphalabs" className="w-5 h-5 md:w-6 md:h-6 rounded-sm" />
+              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#00674F] rounded-full animate-pulse" />
+              <span className="text-xs md:text-sm font-medium text-[#00674F] uppercase tracking-wide">
                 The Financial Learning Studio
               </span>
             </div>
 
-            {/* Headline */}
-            <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight">
+            {/* Headline - Mobile responsive font sizes */}
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
               Where financial understanding turns into{' '}
               <span className="relative inline-block">
-                <span className="relative z-10 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 bg-clip-text text-transparent">
+                <span className="relative z-10 text-[#00674F]">
                   life confidence
                 </span>
-                <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-yellow-300/20 to-yellow-400/20 blur-xl -z-10" />
+                <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
               </span>
               .
             </h1>
 
             {/* Description */}
-            <p className="mt-6 text-lg text-gray-300 max-w-xl leading-relaxed">
+            <p className="mt-4 md:mt-6 text-base md:text-lg text-slate-700 leading-relaxed">
               Growksh Alphalabs is an experiential learning studio by Growksh — designed to help individuals think, decide, 
               and grow smarter with money. Here, finance isn't just taught — it's experienced, questioned, and understood 
               deeply, so you can make better choices in your financial life and beyond.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="mt-10 flex flex-wrap gap-4">
+            {/* CTA Buttons - Stack on mobile */}
+            <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
               <Link 
                 to="#programs" 
-                className="group inline-flex items-center px-6 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                className="group inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-sm md:text-base"
               >
                 Explore Programs
                 <svg 
-                  className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" 
+                  className="w-4 h-4 md:w-5 md:h-5 ml-2 group-hover:translate-x-1 transition-transform" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24"
@@ -77,54 +180,39 @@ export default function Hero() {
               </Link>
               <Link 
                 to="#community" 
-                className="inline-flex items-center px-6 py-4 border-2 border-yellow-400/30 text-yellow-300 font-medium rounded-full hover:border-yellow-400/50 hover:bg-yellow-400/5 transition-all duration-300"
+                className="inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 border-2 border-[#00674F]/30 text-[#00674F] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-white/50 transition-all duration-300 text-sm md:text-base"
               >
                 Join the Learning Circle
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="mt-12 grid grid-cols-3 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400 mb-1">500+</div>
-                <div className="text-sm text-gray-400">Active Learners</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400 mb-1">98%</div>
-                <div className="text-sm text-gray-400">Satisfaction Rate</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-yellow-400 mb-1">24/7</div>
-                <div className="text-sm text-gray-400">Learning Access</div>
-              </div>
-            </div>
           </div>
 
-          {/* Right Visual */}
-          <div className="relative py-8 flex items-center justify-center">
-            <div className="relative w-full max-w-lg">
+          {/* Right Visual - Always below text on mobile, side by side on desktop */}
+          <div className="relative py-4 md:py-6 lg:py-8 flex items-center justify-center">
+            <div className="relative w-full max-w-md lg:max-w-lg">
               {/* Main Container */}
-              <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-3xl border-2 border-yellow-400/20 p-8 shadow-2xl overflow-hidden">
+              <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl border-2 border-[#00674F]/10 p-4 md:p-6 lg:p-8 shadow-xl md:shadow-2xl overflow-hidden">
                 {/* Background Glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/5 via-transparent to-[#00674F]/5" />
                 
                 {/* Network Visualization */}
                 <svg 
                   viewBox="0 0 460 360" 
-                  className="w-full h-full p-4" 
+                  className="w-full h-auto max-h-[280px] md:max-h-[360px] p-2 md:p-4" 
                   role="img" 
                   aria-label="Interactive learning network showing progression from thinking to growth"
                   focusable="false"
                 >
                   <defs>
                     <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.9" />
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.7" />
+                      <stop offset="0%" stopColor="#00674F" stopOpacity="0.95" />
+                      <stop offset="100%" stopColor="#005e48" stopOpacity="0.85" />
                     </linearGradient>
                     
                     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.2" />
+                      <stop offset="0%" stopColor="#00674F" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="#005e48" stopOpacity="0.18" />
                     </linearGradient>
                     
                     <filter id="glow">
@@ -163,7 +251,7 @@ export default function Hero() {
                   </g>
 
                   {/* Labels */}
-                  <g fontSize="14" fontWeight="600" textAnchor="middle" fill="#ffffff">
+                  <g fontSize="14" fontWeight="600" textAnchor="middle" fill="#053927">
                     <text x="80" y="115" className="label">Think</text>
                     <text x="220" y="95" className="label">Learn</text>
                     <text x="340" y="155" className="label">Experiment</text>
@@ -172,22 +260,22 @@ export default function Hero() {
                   </g>
                 </svg>
 
-                {/* Decorative Elements */}
-                <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-yellow-400/30" />
-                <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-yellow-400/30" />
-                <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-yellow-400/30" />
-                <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-yellow-400/30" />
+                {/* Decorative Elements - Hidden on mobile, shown on tablet+ */}
+                <div className="hidden md:block absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-[#00674F]/20" />
+                <div className="hidden md:block absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-[#00674F]/20" />
+                <div className="hidden md:block absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-[#00674F]/20" />
+                <div className="hidden md:block absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-[#00674F]/20" />
               </div>
 
-              {/* Floating Cards */}
-              <div className="absolute -top-4 -right-4 bg-gradient-to-br from-gray-900 to-black p-4 rounded-xl border border-yellow-400/20 shadow-lg w-40">
-                <div className="text-xs text-yellow-400 font-bold mb-1">EXPERIENTIAL</div>
-                <div className="text-sm text-white">Learn by doing</div>
+              {/* Floating Cards - Hidden on mobile, shown on tablet+ */}
+              <div className="hidden md:block absolute -top-2 -right-2 md:-top-3 md:-right-3 lg:-top-4 lg:-right-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#00674F]/10 shadow-lg w-32 md:w-36 lg:w-40">
+                <div className="text-xs text-[#00674F] font-bold mb-1">EXPERIENTIAL</div>
+                <div className="text-sm text-slate-800">Learn by doing</div>
               </div>
               
-              <div className="absolute -bottom-4 -left-4 bg-gradient-to-br from-gray-900 to-black p-4 rounded-xl border border-yellow-400/20 shadow-lg w-40">
-                <div className="text-xs text-yellow-400 font-bold mb-1">PRACTICAL</div>
-                <div className="text-sm text-white">Real-world skills</div>
+              <div className="hidden md:block absolute -bottom-2 -left-2 md:-bottom-3 md:-left-3 lg:-bottom-4 lg:-left-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#00674F]/10 shadow-lg w-32 md:w-36 lg:w-40">
+                <div className="text-xs text-[#00674F] font-bold mb-1">PRACTICAL</div>
+                <div className="text-sm text-slate-800">Real-world skills</div>
               </div>
             </div>
           </div>
