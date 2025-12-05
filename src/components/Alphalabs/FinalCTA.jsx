@@ -4,52 +4,126 @@ import { Link } from 'react-router-dom'
 export default function CTASection() {
     return (
         <div className="relative">
-            {/* Dark Theme CTA Section */}
-            <section className="relative py-20 bg-black overflow-hidden">
-                {/* Background Elements */}
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 -z-10" />
-
-                {/* Animated Background Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0" style={{
-                        backgroundImage: `radial-gradient(circle at 1px 1px, #ffde21 2px, transparent 0)`,
-                        backgroundSize: '60px 60px'
-                    }} />
+            {/* Main CTA Section */}
+            <section className="relative py-16 md:py-20 overflow-hidden">
+                {/* Abstract Green Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
+                
+                {/* Main Abstract Pattern */}
+                <div className="absolute inset-0 -z-20 overflow-hidden opacity-40">
+                    <svg
+                        width="100%"
+                        height="100%"
+                        viewBox="0 0 1200 800"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        preserveAspectRatio="xMidYMid slice"
+                    >
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#00674F" stopOpacity="0.15" />
+                                <stop offset="100%" stopColor="#004D36" stopOpacity="0.08" />
+                            </linearGradient>
+                            <linearGradient id="grad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="#009A7B" stopOpacity="0.12" />
+                                <stop offset="100%" stopColor="#00674F" stopOpacity="0.06" />
+                            </linearGradient>
+                            <filter id="blur1" x="-50%" y="-50%" width="200%" height="200%">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
+                            </filter>
+                        </defs>
+                        
+                        {/* Large Organic Shapes */}
+                        <g filter="url(#blur1)">
+                            <path
+                                d="M-200,400 Q200,100 600,400 Q1000,700 1400,200"
+                                stroke="url(#grad1)"
+                                strokeWidth="120"
+                                strokeLinecap="round"
+                                fill="none"
+                            />
+                            <path
+                                d="M-100,600 Q300,300 700,500 Q1100,700 1500,300"
+                                stroke="url(#grad2)"
+                                strokeWidth="100"
+                                strokeLinecap="round"
+                                fill="none"
+                                opacity="0.7"
+                            />
+                            <path
+                                d="M0,200 Q400,0 800,300 Q1200,600 1600,100"
+                                stroke="url(#grad1)"
+                                strokeWidth="80"
+                                strokeLinecap="round"
+                                fill="none"
+                                opacity="0.6"
+                            />
+                        </g>
+                        
+                        {/* Floating Circles */}
+                        <g>
+                            <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
+                            <circle cx="1000" cy="650" r="80" fill="url(#grad2)" opacity="0.6" />
+                            <circle cx="800" cy="200" r="40" fill="url(#grad1)" opacity="0.4" />
+                            <circle cx="400" cy="600" r="50" fill="url(#grad2)" opacity="0.5" />
+                            <circle cx="1200" cy="300" r="70" fill="url(#grad1)" opacity="0.3" />
+                        </g>
+                    </svg>
+                </div>
+                
+                {/* Gradient Overlays for Depth */}
+                <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
+                <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+                
+                {/* Animated Particles */}
+                <div className="absolute inset-0 overflow-hidden -z-10">
+                    {[...Array(20)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute w-1 h-1 bg-[#00674F]/15 rounded-full animate-float"
+                            style={{
+                                left: `${Math.random() * 100}%`,
+                                top: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 5}s`,
+                                animationDuration: `${10 + Math.random() * 10}s`
+                            }}
+                        />
+                    ))}
                 </div>
 
-                {/* Glowing Orbs */}
-                <div className="absolute top-0 left-1/3 w-96 h-96 bg-gradient-to-br from-yellow-400/10 to-amber-400/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-                <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-gradient-to-tl from-yellow-400/10 to-amber-400/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+                {/* Subtle green glows */}
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#00674F]/10 rounded-full blur-3xl" />
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#00674F]/5 rounded-full blur-3xl" />
 
                 {/* Animated Rings */}
                 <div className="absolute top-1/2 left-1/2 w-full max-w-4xl h-64 -translate-x-1/2 -translate-y-1/2">
-                    <div className="absolute inset-0 border-2 border-yellow-400/10 rounded-full animate-ping-slow" />
-                    <div className="absolute inset-8 border-2 border-yellow-400/15 rounded-full animate-ping-slower" />
+                    <div className="absolute inset-0 border-2 border-[#00674F]/10 rounded-full animate-ping-slow" />
+                    <div className="absolute inset-8 border-2 border-[#00674F]/15 rounded-full animate-ping-slower" />
                 </div>
 
-                <div className="max-w-4xl mx-auto px-4 relative z-10">
+                <div className="max-w-4xl mx-auto px-4 md:px-6 relative z-10">
                     <div className="text-center">
                         {/* Badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-400/20 rounded-full mb-8">
-                            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                            <span className="text-sm font-medium text-yellow-300">YOUR JOURNEY STARTS HERE</span>
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full mb-8">
+                            <div className="w-2 h-2 bg-[#00674F] rounded-full animate-pulse" />
+                            <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">YOUR JOURNEY STARTS HERE</span>
                         </div>
 
                         {/* Headline */}
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight">
+                        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-8 leading-tight">
                             Ready to Start Your{' '}
                             <span className="relative inline-block">
-                                <span className="relative z-10 bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                                <span className="relative z-10 bg-gradient-to-r from-[#00674F] via-[#009A7B] to-[#00674F] bg-clip-text text-transparent">
                                     Learning Journey
                                 </span>
-                                <span className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-amber-300/20 to-yellow-400/20 blur-xl -z-10" />
+                                <span className="absolute inset-0 bg-gradient-to-r from-[#00674F]/20 via-[#009A7B]/20 to-[#00674F]/20 blur-xl -z-10" />
                             </span>
                             ?
                         </h2>
 
                         {/* Description */}
-                        <div className="max-w-2xl mx-auto mb-12">
-                            <p className="text-lg text-gray-300 leading-relaxed">
+                        <div className="max-w-2xl mx-auto mb-10 md:mb-12">
+                            <p className="text-lg text-slate-700 leading-relaxed">
                                 Whether you want to understand your finances, upskill for your career, or simply build more awareness around money —
                                 Growksh Alphalabs gives you the tools to think better, decide better, and live better.
                             </p>
@@ -58,11 +132,11 @@ export default function CTASection() {
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
                             <Link to="#programs"
-                                className="group inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 w-full sm:w-auto"
                             >
-                                <span>Explore Programs</span>
+                                <span className="text-sm md:text-base">Explore Programs</span>
                                 <svg
-                                    className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform"
+                                    className="w-4 h-4 md:w-5 md:h-5 ml-2 md:ml-3 group-hover:translate-x-1 transition-transform"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -72,11 +146,11 @@ export default function CTASection() {
                             </Link>
 
                             <Link to="#community"
-                                className="group inline-flex items-center justify-center px-8 py-4 border-2 border-yellow-400/30 text-yellow-300 font-bold rounded-full hover:border-yellow-400/50 hover:bg-yellow-400/5 transition-all duration-300 w-full sm:w-auto"
+                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#00674F]/30 text-[#00674F] font-bold rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300 w-full sm:w-auto"
                             >
-                                <span>Join The Community</span>
+                                <span className="text-sm md:text-base">Join The Community</span>
                                 <svg
-                                    className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform"
+                                    className="w-4 h-4 md:w-5 md:h-5 ml-2 md:ml-3 group-hover:translate-x-1 transition-transform"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -89,6 +163,15 @@ export default function CTASection() {
                 </div>
 
                 <style jsx>{`
+          @keyframes float {
+            0%, 100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-10px);
+            }
+          }
+
           @keyframes ping-slow {
             75%, 100% {
               transform: scale(1.5);
@@ -103,6 +186,10 @@ export default function CTASection() {
             }
           }
 
+          .animate-float {
+            animation: float 3s ease-in-out infinite;
+          }
+
           .animate-ping-slow {
             animation: ping-slow 4s cubic-bezier(0, 0, 0.2, 1) infinite;
           }
@@ -113,43 +200,43 @@ export default function CTASection() {
 
           /* Reduce motion support */
           @media (prefers-reduced-motion: reduce) {
+            .animate-float,
             .animate-ping-slow,
             .animate-ping-slower,
-            .animate-pulse {
+            .animate-pulse,
+            .group:hover\:scale-105 {
               animation: none;
+              transform: none;
             }
           }
         `}</style>
             </section>
 
-            {/* Light Theme Disclosure Section */}
-            <section className="relative py-16 bg-white">
+            {/* Disclosure Section */}
+            <section className="relative py-12 md:py-16 bg-[#00674F]/5">
                 {/* Background Elements */}
-                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-yellow-50/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-yellow-50/30 to-transparent" />
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#00674F]/10 to-transparent" />
+                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#00674F]/10 to-transparent" />
 
                 {/* Subtle Pattern */}
-                <div className="absolute inset-0 opacity-5">
+                <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{
-                        backgroundImage: 'linear-gradient(45deg, #ffde21 1px, transparent 1px)',
+                        backgroundImage: 'linear-gradient(45deg, #00674F 1px, transparent 1px)',
                         backgroundSize: '40px 40px'
                     }} />
                 </div>
 
-                <div className="max-w-4xl mx-auto px-4 relative z-10">
+                <div className="max-w-4xl mx-auto px-4 md:px-6 relative z-10">
                     <div className="text-center">
-
-
                         {/* Content Card */}
-                        <div className="bg-gradient-to-b from-white to-yellow-50/30 rounded-2xl border-2 border-yellow-100 p-8 md:p-12 shadow-sm">
+                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-[#00674F]/10 p-6 md:p-8 lg:p-10 shadow-lg">
 
                             {/* Main Content */}
                             <div className="max-w-2xl mx-auto">
-                                <p className="text-lg text-slate-700 leading-relaxed mb-6">
-                                    <span className="font-semibold text-slate-900">Growksh Alphalabs</span> is the learning & education arm of the Growksh ecosystem.
+                                <p className="text-base md:text-lg text-slate-700 leading-relaxed">
+                                    <span className="font-semibold text-[#00674F]">Growksh Alphalabs</span> is the learning & education arm of the Growksh ecosystem.
                                     It focuses exclusively on financial education and awareness programs.
                                     No investment advice or product distribution is offered under this vertical.
-
                                 </p>
                             </div>
                         </div>
