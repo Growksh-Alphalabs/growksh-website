@@ -1,8 +1,8 @@
 import React from 'react'
 import img1 from '../../assets/Website images/Wealthcraft - sebi logo.png'
-import img2 from '../../assets/Website images/Wealthcraft - Comprehensive Approach.png'
+import img2 from '../../assets/Website images/Wealthcraft - comprehensive approach.png'
 import img3 from '../../assets/Website images/Wealthcraft - customised planning.png'
-import img4 from '../../assets/Website images/Wealthcraft - Partnership for Life.png' 
+import img4 from '../../assets/Website images/Wealthcraft - partnership for life.png' 
 
 export default function Trust() {
   const items = [
