@@ -8,10 +8,10 @@ export default function Navbar() {
   const navLinks = [
     { to: '/', label: 'Home', end: true },
     { to: '/about', label: 'About' },
-    { to: '/wealthcraft', label: 'Wealthcraft' },
-    { to: '/alphalabs', label: 'Alphalabs' },
-    { to: '/ventures', label: 'Ventures' },
-    { to: '/insights', label: 'Insights' }
+    { to: '/wealthcraft', label: 'Advisory' },
+    { to: '/alphalabs', label: 'Education' },
+    { to: '/ventures', label: 'Asset Management' },
+    { to: '/insights', label: 'Resources' }
   ]
 
   return (
