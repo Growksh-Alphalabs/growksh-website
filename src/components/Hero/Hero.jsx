@@ -134,10 +134,10 @@ export default function Hero() {
         <div className="absolute bottom-8 left-1/2 w-60 h-60 bg-fuchsia-400/8 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 md:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-10 lg:gap-12">
+      <div className="relative z-10 w-full mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 md:gap-10 lg:gap-12">
           {/* Left: Text */}
-          <div className="w-full lg:w-1/2 order-2 lg:order-1 mt-8 lg:mt-0">
+          <div className="w-full lg:w-1/2 order-1 lg:order-1 mt-8 lg:mt-0 lg:ml-20">
             <div className="mb-4 md:mb-6">
               <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-slate-700 border border-white/60 shadow-sm">
                 <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
