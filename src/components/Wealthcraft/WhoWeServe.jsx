@@ -78,22 +78,22 @@ export default function WhoWeServe() {
 
     return (
         <section className="py-16 bg-slate-50">
-            <div className="max-w-6xl mx-auto px-4 md:px-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
                 <div className="text-center mb-12">
                     <div className="text-sm font-medium text-[#ffde21] mb-4 tracking-wider uppercase">
                         People Who Choose Wealthcraft
                     </div>
                     <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
-                        <span className="text-[#ffde21]">W</span>ho <span className="text-[#ffde21]">W</span>e <span className="text-[#ffde21]">W</span>ork <span className="text-[#ffde21]">W</span>ith
+                        Who We Work With
                     </h2>
                    
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
                     {cards.map((c) => (
                         <div
                             key={c.key}
-                            className={`flip-card h-[320px] md:h-[380px] perspective-1000 ${!touchMode ? 'cursor-pointer' : ''}`}
+                            className={`flip-card h-80 md:h-96 perspective-1000 ${!touchMode ? 'cursor-pointer' : ''}`}
                             onMouseEnter={() => handleMouseEnter(c.key)}
                             onMouseLeave={handleMouseLeave}
                             onClick={() => handleTouch(c.key)}
@@ -114,10 +114,10 @@ export default function WhoWeServe() {
                                 {/* Front side */}
                                 <div className="flip-card-front absolute inset-0 bg-white rounded-2xl overflow-hidden shadow-lg border border-[#ffde21]/20 backface-hidden flex flex-col group">
                                     <div className="relative h-2/3 overflow-hidden">
-                                        <img 
-                                            src={c.img} 
-                                            alt={c.title} 
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                        <img
+                                            src={c.img}
+                                            alt={c.title}
+                                            className="w-full h-full object-cover transition-transform duration-700 transform group-hover:-translate-y-1"
                                         />
                                         {/* Gradient overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
@@ -141,9 +141,9 @@ export default function WhoWeServe() {
                                         {/* Animated arrow */}
                                         <div className="flex justify-center mt-4">
                                             <div className="relative w-12 h-2 bg-[#ffde21]/10 rounded-full overflow-hidden">
-                                                <div className={`absolute inset-y-0 left-0 w-6 bg-[#ffde21]/40 rounded-full transition-all duration-500 ${
-                                                    isFlipped(c.key) ? 'translate-x-6' : 'group-hover:translate-x-6'
-                                                }`} />
+                                                <div className={`absolute inset-y-0 left-0 w-6 bg-[#ffde21]/40 rounded-full transition-all duration-500 transform ${
+                                                        isFlipped(c.key) ? 'translate-x-6' : 'group-hover:translate-x-6'
+                                                    }`} />
                                             </div>
                                         </div>
                                     </div>
@@ -235,15 +235,29 @@ export default function WhoWeServe() {
                     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
                 }
                 
-                /* Enhanced hover effects */
+                /* Enhanced hover effects - use translate for lift to avoid rasterizing text */
+                .flip-card-inner {
+                    will-change: transform;
+                }
+
                 .flip-card:hover .flip-card-inner:not(.rotate-y-180) {
-                    transform: rotateY(5deg);
+                    transform: translateY(-6px);
                     transition-duration: 0.3s;
                 }
-                
+
                 .flip-card:hover .flip-card-inner.rotate-y-180 {
-                    transform: rotateY(180deg) scale(1.02);
+                    transform: rotateY(180deg);
                     transition-duration: 0.5s;
+                }
+
+                /* Improve text rendering to avoid blurred appearance after transforms */
+                .flip-card-front,
+                .flip-card-back,
+                .flip-card-front * ,
+                .flip-card-back * {
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    text-rendering: optimizeLegibility;
                 }
                 
                 /* Animations */
@@ -260,10 +274,10 @@ export default function WhoWeServe() {
                 
                 @keyframes pulse-slow {
                     0%, 100% {
-                        transform: scale(1);
+                        transform: translateY(0);
                     }
                     50% {
-                        transform: scale(1.05);
+                        transform: translateY(-2px);
                     }
                 }
                 

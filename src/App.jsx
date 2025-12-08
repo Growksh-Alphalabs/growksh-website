@@ -9,7 +9,6 @@ import Alphalabs from './pages/Alphalabs/Alphalabs'
 import Ventures from './pages/Ventures/Ventures'
 import Insights from './pages/Insights/Insights'
 import Contact from './pages/Contact'
-import './styles/theme.css'
 
 export default function App() {
   return (

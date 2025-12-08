@@ -143,7 +143,7 @@ export default function Community() {
               </div>
               
               {/* Icon Container */}
-              <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br ${benefit.gradient} mb-6 flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+              <div className={`w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br ${benefit.gradient} mb-6 flex items-center justify-center group-hover:-translate-y-1 transition-transform duration-300`}>
                 <span className="text-2xl md:text-3xl">{benefit.icon}</span>
               </div>
               
@@ -174,7 +174,7 @@ export default function Community() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="#"
-              className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <span className="text-sm md:text-base">Join The Alpha Circle</span>
               <svg 
@@ -208,8 +208,7 @@ export default function Community() {
         @media (prefers-reduced-motion: reduce) {
           .animate-float,
           .group:hover\:-translate-y-2,
-          .group:hover\:scale-110,
-          .group:hover\:scale-105 {
+          .group:hover\:-translate-y-1 {
             animation: none;
             transform: none;
           }

@@ -229,7 +229,7 @@ export default function AlphaApproach() {
         {/* CTA */}
         <div className="text-center">
           <Link to="#programs"
-            className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+            className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
           >
             <span className="text-sm md:text-base">Join the Next Learning Experience</span>
             <svg 
@@ -256,7 +256,7 @@ export default function AlphaApproach() {
 
         @keyframes ping {
           75%, 100% {
-            transform: scale(2);
+            transform: translateY(-12px);
             opacity: 0;
           }
         }

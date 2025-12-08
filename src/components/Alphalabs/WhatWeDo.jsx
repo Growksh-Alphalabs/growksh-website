@@ -134,7 +134,7 @@ export default function WhatWeDo() {
             <div className="flex flex-wrap gap-4">
               <Link 
                 to="#programs" 
-                className="group inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                className="group inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 See Our Courses
                 <svg 
@@ -158,7 +158,7 @@ export default function WhatWeDo() {
           {/* Right Cards */}
           <div className="space-y-6">
             {/* Card 1 */}
-            <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-xl">
+            <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl">
               {/* Number Badge */}
               <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">01</span>
@@ -177,7 +177,7 @@ export default function WhatWeDo() {
             </div>
 
             {/* Card 2 */}
-            <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-xl">
+            <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl">
               {/* Number Badge */}
               <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">02</span>
@@ -196,7 +196,7 @@ export default function WhatWeDo() {
             </div>
 
             {/* Card 3 */}
-            <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg hover:shadow-xl">
+            <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl">
               {/* Number Badge */}
               <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">03</span>
@@ -234,7 +234,7 @@ export default function WhatWeDo() {
         /* Reduce motion support */
         @media (prefers-reduced-motion: reduce) {
           .animate-float,
-          .group:hover\:scale-\[1\.02\] {
+          .group:hover\:-translate-y-1 {
             animation: none;
             transform: none;
           }

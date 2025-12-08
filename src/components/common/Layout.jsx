@@ -4,7 +4,7 @@ import Footer from '../Footer/Footer'
 
 export default function Layout({ children }) {
   return (
-    <div className="gk-app">
+    <div >
       <Navbar />
       <main className="gk-main">{children}</main>
       <Footer />
