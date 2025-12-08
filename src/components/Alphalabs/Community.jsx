@@ -5,20 +5,20 @@ export default function Community() {
   const benefits = [
     {
       icon: '🎯',
-      title: 'Exclusive invites to free mini-sessions and guest talks',
-      description: 'Get invites to free workshops, guest talks, and expert Q&A sessions reserved for community members.',
+      title: 'The F³ Circle',
+      description: 'A supportive group of like-minded women who are learning, sharing, and growing together in their financial journey.​ A safe, judgment-free space to ask questions, learn from real stories, and build confidence. ',
       gradient: 'from-[#00674F]/10 to-[#009A7B]/10'
     },
     {
       icon: '📚',
-      title: 'Access to worksheets, templates, and toolkits',
-      description: 'Access curated worksheets, financial templates, calculators, and practical toolkits for real-world application.',
+      title: 'Resource Library – Worksheets, Templates & Toolkits',
+      description: 'Download-ready worksheets, templates, calculators, and trackers that help you apply what you learn — without overwhelm.​ Simple tools you can use instantly to organize your money better. ',
       gradient: 'from-[#00674F]/10 to-[#005e48]/10'
     },
     {
       icon: '🤝',
-      title: 'Networking with educators, professionals, and investors',
-      description: 'Engage with educators, finance professionals, investors, and like-minded learners in a supportive space.',
+      title: 'The Alpha Letter',
+      description: 'A short, thoughtful monthly newsletter with practical personal finance insights, money habits, and relatable examples.​ No jargon — just clear, useful ideas to help you make better decisions. ',
       gradient: 'from-[#009A7B]/10 to-[#00674F]/10'
     }
   ]
@@ -126,7 +126,8 @@ export default function Community() {
           </h2>
           
           <p className="text-lg md:text-xl text-slate-700 max-w-3xl mx-auto leading-relaxed mb-8">
-            A vibrant, like-minded community of learners who are curious about money, growth, and self-improvement.
+            A free learning community — designed for individuals who want to stay financially aware, inspired, 
+and connected. 
           </p>
         </div>
 
