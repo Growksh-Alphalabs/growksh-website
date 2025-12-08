@@ -129,22 +129,22 @@ export default function Hero() {
         </g>
       </svg>
 
-      {/* Reduced padding and better responsive container */}
-      <div className="mx-auto px-4 sm:px-5 md:px-6 max-w-7xl">
+      {/* Wider, full-width container with outer margins */}
+      <div className="w-full mx-auto px-6 sm:px-8 lg:px-12">
         <div className="grid lg:grid-cols-2 items-center gap-6 md:gap-8 lg:gap-12">
-          {/* Text Content - Always first */}
-          <div className="py-4 md:py-6 lg:py-8">
+          {/* Text Content - Slightly larger spacing */}
+          <div className="py-6 md:py-8 lg:py-10">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-white/80 backdrop-blur-sm border border-[#00674F]/20 rounded-full mb-4 md:mb-6">
-              <img src={AlphalabsLogo} alt="Alphalabs" className="w-5 h-5 md:w-6 md:h-6 rounded-sm" />
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#00674F] rounded-full animate-pulse" />
-              <span className="text-xs md:text-sm font-medium text-[#00674F] uppercase tracking-wide">
+            <div className="inline-flex items-center gap-3 px-4 py-2 md:px-5 md:py-3 bg-white/80 backdrop-blur-sm border border-[#00674F]/20 rounded-full mb-4 md:mb-6">
+              <img src={AlphalabsLogo} alt="Alphalabs" className="w-6 h-6 md:w-7 md:h-7 rounded-sm" />
+              <div className="w-2 h-2 md:w-2.5 md:h-2.5 bg-[#00674F] rounded-full animate-pulse" />
+              <span className="text-sm md:text-base font-medium text-[#00674F] uppercase tracking-wide">
                 Alphalabs by Growksh
               </span>
             </div>
 
             {/* Headline - Mobile responsive font sizes */}
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
               Your{' '}
               <span className="relative inline-block">
                 <span className="relative z-10 text-[#00674F]">
@@ -153,16 +153,16 @@ export default function Hero() {
                 <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
               </span> <br/>
                <span className="relative inline-block">
-                <span className="relative z-10 text-[#00674F]">
+                 <span className="relative z-10 text-[#00674F]">
                    learning{' '}
-                </span>
-                <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
+                 </span>
+                 <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
               </span>
              {' '} studio.
             </h1>
 
             {/* Description */}
-            <p className="mt-4 md:mt-6 text-base md:text-lg text-slate-700 leading-relaxed">
+            <p className="mt-4 md:mt-6 text-lg md:text-xl text-slate-700 leading-relaxed">
               Growksh Alphalabs is an experiential learning studio by Growksh — designed to help individuals think, decide, 
               and grow smarter with money. Here, finance isn't just taught — it's experienced, questioned, and understood 
               deeply, so you can make better choices in your financial life and beyond.
@@ -172,7 +172,7 @@ export default function Hero() {
             <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
               <Link 
                 to="#programs" 
-                className="group inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
+                className="group inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
               >
                 Explore Programs
                 <svg 
@@ -196,7 +196,7 @@ export default function Hero() {
 
           {/* Right Visual - Always below text on mobile, side by side on desktop */}
           <div className="relative py-4 md:py-6 lg:py-8 flex items-center justify-center">
-            <div className="relative w-full max-w-md lg:max-w-lg">
+            <div className="relative w-full max-w-lg lg:max-w-2xl">
               {/* Main Container */}
               <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl border-2 border-[#00674F]/10 p-4 md:p-6 lg:p-8 shadow-xl md:shadow-2xl overflow-hidden">
                 {/* Background Glow */}
