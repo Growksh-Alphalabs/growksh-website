@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { COLORS } from '../../constants/colors'
 import defaultPeace from '../../assets/Website images/Wealthcraft - WEALTH process.png'
 import imgW from '../../assets/Website images/Wealthcraft - Wealth process - W.png'
@@ -68,8 +68,6 @@ const steps = [
 export default function Peace() {
     const [active, setActive] = useState(null)
     const [reduceMotion, setReduceMotion] = useState(false)
-    const [accordionHeight1, setAccordionHeight] = useState('auto')
-    const accordionRef = useRef(null)
 
     useEffect(() => {
         const media = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -79,13 +77,7 @@ export default function Peace() {
         return () => media && media.removeEventListener && media.removeEventListener('change', handler)
     }, [])
 
-    // Update accordion height when active changes
-    useEffect(() => {
-        if (accordionRef.current) {
-            const height = accordionRef.current.offsetHeight
-            setAccordionHeight(`${height}px`)
-        }
-    }, [active])
+    // No JS-driven height syncing — visual sizing handled via CSS (50vh)
 
     return (
         <section className="py-6 sm:py-8 bg-black text-white"> {/* Reduced py-12 to py-6 sm:py-8 */}
@@ -103,7 +95,7 @@ export default function Peace() {
                 {/* Accordion - removed unnecessary gaps */}
                 <div className="mt-4 sm:mt-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8"> {/* Reduced gap-8 to gap-4 sm:gap-6 md:gap-8 */}
                     {/* Left: Accordion */}
-                    <div ref={accordionRef} className="space-y-1 sm:space-y-2"> {/* Reduced space-y-2 to space-y-1 sm:space-y-2 */}
+                    <div className="space-y-1 sm:space-y-2"> {/* Reduced space-y-2 to space-y-1 sm:space-y-2 */}
                         {steps.map((s, i) => (
                             <div key={s.short + i} className="bg-slate-800 rounded-lg shadow-sm border border-slate-700 overflow-hidden">
                                 <button
@@ -142,9 +134,9 @@ export default function Peace() {
                         ))}
                     </div>
 
-                    {/* Right: image that matches accordion height */}
-                    <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15" style={{ height: accordionHeight1 }}> {/* Reduced padding/margin */}
-                        <div className="w-full max-w-2xl h-[50vh] rounded-2xl overflow-hidden shadow-lg bg-slate-800">
+                    {/* Right: image with fixed responsive height (50vh) */}
+                    <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15 h-[50vh]"> {/* Fixed responsive height */}
+                        <div className="w-full max-w-2xl h-full rounded-2xl overflow-hidden shadow-lg bg-slate-800">
                             <img
                                 src={active === null ? defaultPeace : [imgW, imgE, imgA, imgL, imgT, imgH][active]}
                                 alt={`Wealthcraft ${active === null ? 'Wealth' : steps[active].short}`}

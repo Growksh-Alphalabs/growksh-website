@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { COLORS } from '../../constants/colors'
 import defaultPeace from '../../assets/Website images/Wealthcraft - Financial Peace.png'
 import imgP from '../../assets/Website images/Wealthcraft - Financial Peace - P.png'
@@ -48,8 +48,7 @@ const steps = [
 export default function Peace() {
     const [active, setActive] = useState(null)
     const [reduceMotion, setReduceMotion] = useState(false)
-    const [accordionHeight, setAccordionHeight] = useState('auto')
-    const accordionRef = useRef(null)
+    
 
     useEffect(() => {
         const media = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -59,13 +58,7 @@ export default function Peace() {
         return () => media && media.removeEventListener && media.removeEventListener('change', handler)
     }, [])
 
-    // Update accordion height when active changes
-    useEffect(() => {
-        if (accordionRef.current) {
-            const height = accordionRef.current.offsetHeight
-            setAccordionHeight(`${height}px`)
-        }
-    }, [active])
+    // (Removed dynamic accordion/image height syncing - using fixed responsive image height)
 
     return (
         <section className="py-6 sm:py-8 bg-black text-white"> {/* Reduced padding */}
@@ -82,7 +75,7 @@ export default function Peace() {
 
                 {/* Accordion */}
                 <div className="mt-4 sm:mt-6 w-full grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6"> {/* Reduced gap and margin */}
-                    <div ref={accordionRef} className="space-y-1 sm:space-y-2"> {/* Reduced space between items */}
+                    <div className="space-y-1 sm:space-y-2"> {/* Reduced space between items */}
                         {steps.map((s, i) => (
                             <div key={s.short + i} className="bg-slate-800 rounded-lg shadow-sm border border-slate-700 overflow-hidden">
                                 <button
@@ -122,7 +115,7 @@ export default function Peace() {
                     </div>
 
                     {/* Right: image that matches accordion height */}
-                    <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15" style={{ height: accordionHeight }}> {/* Reduced padding/margin */}
+                    <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15"> {/* Reduced padding/margin */}
                             <div className="w-full max-w-2xl h-[50vh] rounded-2xl overflow-hidden shadow-lg bg-slate-800">
                                 <img
                                     src={active === null ? defaultPeace : [imgP, imgE, imgA, imgC, imgE2][active]}
