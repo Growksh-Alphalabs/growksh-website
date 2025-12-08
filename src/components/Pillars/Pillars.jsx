@@ -37,7 +37,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
 
   return (
     <div
-      className="relative h-[430px] cursor-pointer"
+      className="relative min-h-[28rem] cursor-pointer"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => {
         setIsFlipped(false)
@@ -84,7 +84,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             <div className="mt-6 pt-6 border-t border-white/20">
               <Link
                 to={href}
-                className="inline-flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-95"
+                className="inline-flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 onClick={(e) => e.stopPropagation()}
               >
                 <span>Explore {title}</span>

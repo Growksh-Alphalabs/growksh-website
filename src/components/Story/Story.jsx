@@ -31,7 +31,7 @@ export default function Story() {
                 {/* soft teal glow behind the ring */}
                 <div className="absolute -inset-6 rounded-full bg-emerald-100/60 blur-3xl -z-10" />
 
-                <div className="relative mx-auto w-[320px] h-[320px] lg:w-[480px] lg:h-[480px]">
+                <div className="relative mx-auto w-full max-w-[20rem] sm:max-w-[30rem] lg:max-w-[30rem] aspect-square">
                   {/* blue ring + shadow */}
                   <div className="rounded-full ring-8 ring-blue-400/90 overflow-hidden shadow-2xl w-full h-full">
                     <img src={krutika} alt="Krutika Kathal" className="w-full h-full object-cover object-top" />

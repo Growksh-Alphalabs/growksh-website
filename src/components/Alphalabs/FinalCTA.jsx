@@ -132,7 +132,7 @@ export default function CTASection() {
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
                             <Link to="#programs"
-                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span className="text-sm md:text-base">Explore Programs</span>
                                 <svg
@@ -172,19 +172,19 @@ export default function CTASection() {
             }
           }
 
-          @keyframes ping-slow {
-            75%, 100% {
-              transform: scale(1.5);
-              opacity: 0;
-            }
-          }
+                    @keyframes ping-slow {
+                        75%, 100% {
+                            transform: translateY(-8px);
+                            opacity: 0;
+                        }
+                    }
 
-          @keyframes ping-slower {
-            75%, 100% {
-              transform: scale(2);
-              opacity: 0;
-            }
-          }
+                    @keyframes ping-slower {
+                        75%, 100% {
+                            transform: translateY(-12px);
+                            opacity: 0;
+                        }
+                    }
 
           .animate-float {
             animation: float 3s ease-in-out infinite;
@@ -204,10 +204,10 @@ export default function CTASection() {
             .animate-ping-slow,
             .animate-ping-slower,
             .animate-pulse,
-            .group:hover\:scale-105 {
-              animation: none;
-              transform: none;
-            }
+                    .group:hover\:-translate-y-1 {
+                        animation: none;
+                        transform: none;
+                    }
           }
         `}</style>
             </section>

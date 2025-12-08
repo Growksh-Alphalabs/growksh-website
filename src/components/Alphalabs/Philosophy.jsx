@@ -122,22 +122,22 @@ export default function Philosophy() {
         @keyframes pulse-slow {
           0%, 100% {
             opacity: 0.3;
-            transform: scale(1);
+            transform: translateY(0);
           }
           50% {
             opacity: 0.1;
-            transform: scale(1.05);
+            transform: translateY(-3px);
           }
         }
 
         @keyframes pulse-slower {
           0%, 100% {
             opacity: 0.2;
-            transform: scale(1);
+            transform: translateY(0);
           }
           50% {
             opacity: 0.05;
-            transform: scale(1.08);
+            transform: translateY(-4px);
           }
         }
 

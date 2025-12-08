@@ -5,19 +5,18 @@ import { Link } from 'react-router-dom'
 
 export default function WhatWeDo() {
     return (
-        <section className="py-16 bg-white">
-            <div className="max-w-6xl mx-auto px-4 md:px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
-                    {/* Left: content */}
-                    <div className="px-2 sm:px-0">
+        <section className="py-12 sm:py-16 bg-white">
+            {/* Normalized container and reduced mobile padding */}
+            <div className="max-w-max mx-auto px-4 sm:px-6 md:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 lg:gap-20 xl:gap-24 items-center">
+                    {/* Left: content - removed inner padding */}
+                    <div className="px-0">
                         <div className="text-sm font-medium text-[#ffde21] mb-4 tracking-wider uppercase">
                             The Growksh Wealthcraft Way
                         </div>
                         <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight animate-fadeUp">
                             Life changes.{' '}
-                            <span className="text-[#ffde21]">
                                 Your money should move with it.
-                            </span>
                         </h2>
 
                         <p
@@ -51,10 +50,10 @@ export default function WhatWeDo() {
                         </div>
                     </div>
 
-                    {/* Right: illustration / image */}
-                    <div className="relative px-2 sm:px-0">
-                        <div className="bg-yellow-50 rounded-2xl p-4 sm:p-6 shadow-lg overflow-hidden">
-                            <div className="relative rounded-xl bg-white/60 border border-yellow-100 p-3 sm:p-4">
+                    {/* Right: illustration / image - removed inner padding */}
+                    <div className="relative px-0">
+                        <div className="bg-yellow-50 rounded-2xl p-3 sm:p-4 shadow-lg overflow-hidden">
+                            <div className="relative rounded-xl bg-white/60 border border-yellow-100 p-2 sm:p-3">
                                 {/* Decorative yellow smoke / blob */}
                                 <div
                                     className="absolute -right-6 -top-4 w-40 h-40 bg-yellow-200/30 rounded-full filter blur-3xl opacity-80 pointer-events-none"

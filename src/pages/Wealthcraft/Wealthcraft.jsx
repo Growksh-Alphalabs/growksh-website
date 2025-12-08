@@ -23,7 +23,7 @@ export default function Wealthcraft() {
         <Trust />
         <Testimonials />
         <CTAInline />
-        <Compliance />
+        {/* <Compliance /> */}
       </div>
   )
 }

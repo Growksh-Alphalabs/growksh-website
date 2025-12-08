@@ -21,7 +21,7 @@ export default function Hero() {
   }, [words.length]);
 
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-50 to-white text-slate-500 relative overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-br from-purple-50 to-white text-slate-500 relative overflow-hidden">
       {/* Modern abstract purple background */}
       <svg className="pointer-events-none absolute inset-0 w-full h-full -z-10" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <defs>
@@ -134,36 +134,36 @@ export default function Hero() {
         <div className="absolute bottom-8 left-1/2 w-60 h-60 bg-fuchsia-400/8 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-12">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-5 md:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-10 lg:gap-12">
           {/* Left: Text */}
-          <div className="w-full lg:w-1/2">
-            <div className="mb-6">
-              <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm text-slate-700 border border-white/60 shadow-sm">
-                <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
-                <span className="text-sm font-medium">Explore Wealth Management</span>
-                <svg className="w-4 h-4 text-purple-600 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div className="w-full lg:w-1/2 order-2 lg:order-1 mt-8 lg:mt-0">
+            <div className="mb-4 md:mb-6">
+              <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-slate-700 border border-white/60 shadow-sm">
+                <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
+                <span className="text-xs sm:text-sm font-medium">Explore Wealth Management</span>
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                 </svg>
               </div>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
               <span className="block">
                 <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">Crafting Wealth.</span>
               </span>
 
-              <span className="block mt-1 text-slate-800 text-3xl sm:text-4xl lg:text-5xl font-semibold">Creating Confidence.</span>
+              <span className="block mt-1 sm:mt-2 text-slate-800 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold">Creating Confidence.</span>
             </h1>
 
-            <p className="mt-4 text-lg text-slate-600 max-w-2xl">
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl">
               At Growksh, we help you take charge of your money — through education, planning, and purposeful action.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 to="/alphalabs"
-                className="inline-flex items-center px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
                 aria-label="Explore Education"
               >
                 Explore Education
@@ -171,7 +171,7 @@ export default function Hero() {
 
               <Link
                 to="/wealthcraft"
-                className="inline-flex items-center px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
                 aria-label="Explore Advisory"
               >
                 Explore Advisory
@@ -180,10 +180,10 @@ export default function Hero() {
           </div>
 
           {/* Right: Enhanced circular flow visual */}
-          <div className="w-full lg:w-1/2 flex justify-center">
-            <div className="relative w-full max-w-lg lg:max-w-2xl">
+          <div className="w-full lg:w-1/2 flex justify-center order-1 lg:order-2">
+            <div className="relative w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
               {/* Animated circular flow */}
-              <div className="relative w-full h-96 lg:h-[500px]">
+              <div className="relative w-full h-64 sm:h-80 md:h-96 lg:h-[500px]">
                 {/* Outer circular path */}
                 <svg viewBox="0 0 400 400" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                   <defs>
@@ -249,7 +249,7 @@ export default function Hero() {
                   </g>
                   
                   {/* Labels */}
-                  <g fontSize="14" fontWeight="500" textAnchor="middle" fill="#4c1d95">
+                  <g fontSize="12" fontWeight="500" textAnchor="middle" fill="#4c1d95">
                     {/* Alphalabs label - moves along orbit */}
                     <text className="font-semibold">
                       <tspan fill="#7c3aed">Alphalabs</tspan>
@@ -284,21 +284,21 @@ export default function Hero() {
 
                   {/* Rotating center label along the inner orbit */}
                   <g>
-                    <text fontSize="12" fill="#5b21b6" fontWeight="600" textAnchor="middle">
+                    <text fontSize="10" fill="#5b21b6" fontWeight="600" textAnchor="middle">
                       <tspan>Learn</tspan>
                       <animateMotion dur="6s" repeatCount="indefinite" begin="0s" rotate="0">
                         <mpath xlinkHref="#innerOrbit" />
                       </animateMotion>
                     </text>
 
-                    <text fontSize="12" fill="#5b21b6" fontWeight="600" textAnchor="middle">
+                    <text fontSize="10" fill="#5b21b6" fontWeight="600" textAnchor="middle">
                       <tspan>Plan</tspan>
                       <animateMotion dur="6s" repeatCount="indefinite" begin="2s" rotate="0">
                         <mpath xlinkHref="#innerOrbit" />
                       </animateMotion>
                     </text>
 
-                    <text fontSize="12" fill="#5b21b6" fontWeight="600" textAnchor="middle">
+                    <text fontSize="10" fill="#5b21b6" fontWeight="600" textAnchor="middle">
                       <tspan>Grow</tspan>
                       <animateMotion dur="6s" repeatCount="indefinite" begin="4s" rotate="0">
                         <mpath xlinkHref="#innerOrbit" />
@@ -314,19 +314,19 @@ export default function Hero() {
                     <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
                     
                     {/* Center circle with hero PNG */}
-                    <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-36 h-36 flex items-center justify-center shadow-2xl shadow-purple-100/50 relative z-10">
+                    <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 flex items-center justify-center shadow-2xl shadow-purple-100/50 relative z-10">
                       <img
                         src={homeHeroImg}
                         alt="Growksh center"
-                        className="w-32 h-32 rounded-full object-cover shadow-inner"
+                        className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full object-cover shadow-inner"
                       />
                     </div>
                   </div>
                 </div>
                 
                 {/* Background blur effects */}
-                <div className="absolute -right-12 -bottom-8 w-60 h-60 rounded-full bg-gradient-to-br from-violet-400/10 to-purple-400/10 blur-3xl" />
-                <div className="absolute -left-12 -top-8 w-48 h-48 rounded-full bg-gradient-to-tr from-purple-300/8 to-pink-300/8 blur-3xl" />
+                <div className="absolute -right-6 sm:-right-8 md:-right-12 -bottom-4 sm:-bottom-6 md:-bottom-8 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-60 lg:h-60 rounded-full bg-gradient-to-br from-violet-400/10 to-purple-400/10 blur-3xl" />
+                <div className="absolute -left-6 sm:-left-8 md:-left-12 -top-4 sm:-top-6 md:-top-8 w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-full bg-gradient-to-tr from-purple-300/8 to-pink-300/8 blur-3xl" />
               </div>
             </div>
           </div>

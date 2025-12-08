@@ -139,8 +139,8 @@ export default function WhyLearn() {
                 </p>
               </div>
               
-              {/* Hover Effect Line */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#00674F] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform scale-x-0 group-hover:scale-x-100 origin-center" />
+              {/* Hover Effect Line (use width transition instead of scaleX) */}
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#00674F] to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 w-0 group-hover:w-full origin-center" />
             </div>
           ))}
         </div>

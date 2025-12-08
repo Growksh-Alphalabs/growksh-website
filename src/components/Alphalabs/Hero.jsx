@@ -109,7 +109,7 @@ export default function Hero() {
       <div className="absolute -bottom-20 -left-20 w-60 h-60 md:-bottom-40 md:-left-40 md:w-80 md:h-80 bg-[#00674F]/5 rounded-full blur-3xl" />
 
       {/* Abstract green cloud - Hidden on mobile, shown on tablet+ */}
-      <svg className="hidden md:block absolute left-1/2 top-8 -translate-x-1/2 w-[1100px] max-w-none h-[420px] -z-20 pointer-events-none opacity-30" viewBox="0 0 1100 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <svg className="hidden md:block absolute left-1/2 top-8 -translate-x-1/2 w-full max-w-6xl h-auto -z-20 pointer-events-none opacity-30" viewBox="0 0 1100 420" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <defs>
           <filter id="blobBlur" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="40" result="blur" />
@@ -166,7 +166,7 @@ export default function Hero() {
             <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
               <Link 
                 to="#programs" 
-                className="group inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-sm md:text-base"
+                className="group inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
               >
                 Explore Programs
                 <svg 
@@ -199,7 +199,7 @@ export default function Hero() {
                 {/* Network Visualization */}
                 <svg 
                   viewBox="0 0 460 360" 
-                  className="w-full h-auto max-h-[280px] md:max-h-[360px] p-2 md:p-4" 
+                  className="w-full h-auto max-h-72 md:max-h-80 p-2 md:p-4" 
                   role="img" 
                   aria-label="Interactive learning network showing progression from thinking to growth"
                   focusable="false"
@@ -294,10 +294,10 @@ export default function Hero() {
 
         @keyframes pop {
           0%, 100% {
-            transform: scale(1);
+            transform: translateY(0);
           }
           50% {
-            transform: scale(1.08);
+            transform: translateY(-4px);
           }
         }
 
@@ -310,19 +310,19 @@ export default function Hero() {
         @keyframes pulseTravel {
           0% {
             opacity: 0;
-            transform: scale(0.5);
+            transform: translateY(8px);
           }
           10% {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0);
           }
           90% {
             opacity: 1;
-            transform: scale(1);
+            transform: translateY(0);
           }
           100% {
             opacity: 0;
-            transform: scale(1.5);
+            transform: translateY(-12px);
           }
         }
 

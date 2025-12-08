@@ -51,7 +51,7 @@ export default function CTASection() {
             <div className="mt-6 flex items-end justify-between">
               <Link
                 to="/alphalabs"
-                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:-translate-y-1 transition-transform duration-200"
                 aria-label="Join a Course"
               >
                 <span>Join a Course</span>
@@ -74,7 +74,7 @@ export default function CTASection() {
             <div className="mt-6 flex items-end justify-between">
               <Link
                 to="/ventures"
-                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:-translate-y-1 transition-transform duration-200"
                 aria-label="Discover Ventures"
               >
                 <span>Talk to an Advisor</span>
@@ -97,7 +97,7 @@ export default function CTASection() {
             <div className="mt-6 flex items-end justify-between">
               <Link
                 to="/ventures"
-                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:scale-[1.02] transition-transform duration-200"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white/90 text-violet-700 rounded-lg font-medium shadow hover:-translate-y-1 transition-transform duration-200"
                 aria-label="Discover Ventures"
               >
                 <span>Discover Ventures</span>

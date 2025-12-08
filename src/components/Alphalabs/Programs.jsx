@@ -158,7 +158,7 @@ export default function Programs() {
               {/* Levels Grid */}
               <div className="grid md:grid-cols-3 gap-6 mb-10">
                 {/* Level 1 */}
-                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg">
+                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
                   <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-[#00674F] to-[#005e48] rounded-xl flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold">01</span>
                   </div>
@@ -180,7 +180,7 @@ export default function Programs() {
                     </div>
                     <Link 
                       to="#"
-                      className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                      className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       Enroll in Level 1
                     </Link>
@@ -188,7 +188,7 @@ export default function Programs() {
                 </div>
 
                 {/* Level 2 */}
-                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg">
+                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
                   <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-[#00674F] to-[#005e48] rounded-xl flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold">02</span>
                   </div>
@@ -210,7 +210,7 @@ export default function Programs() {
                     </div>
                     <Link 
                       to="#"
-                      className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                      className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       Join Level 2
                     </Link>
@@ -218,7 +218,7 @@ export default function Programs() {
                 </div>
 
                 {/* Level 3 */}
-                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg">
+                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
                   <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-[#00674F] to-[#005e48] rounded-xl flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold">03</span>
                   </div>
@@ -240,7 +240,7 @@ export default function Programs() {
                     </div>
                     <Link 
                       to="#"
-                      className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                      className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
                       Apply for Level 3
                     </Link>
@@ -274,15 +274,16 @@ export default function Programs() {
 
               {/* Main CTA */}
               <div className="text-center">
-                <Link 
-                  to="#" 
-                  className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                <Link
+                  to="#"
+                  aria-label="Join The Awareness Bootcamp Today"
+                  className="group inline-flex items-center justify-center gap-3 relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
                 >
                   <span>Join The Awareness Bootcamp Today</span>
-                  <svg 
-                    className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="w-5 h-5 transition-transform transform group-hover:translate-x-1"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -311,7 +312,7 @@ export default function Programs() {
             {comingSoonPrograms.map((program, idx) => (
               <div 
                 key={idx} 
-                className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-2 border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:scale-[1.02] shadow-lg"
+                className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-2 border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
               >
                 <div className="absolute -top-3 -right-3">
                   <div className="px-3 py-1 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full">
@@ -354,7 +355,7 @@ export default function Programs() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link 
                 to="#" 
-                className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 Enroll in F³
               </Link>
@@ -386,9 +387,9 @@ export default function Programs() {
         /* Reduce motion support */
         @media (prefers-reduced-motion: reduce) {
           .animate-float,
-          .group:hover\:scale-\[1\.02\],
-          .group:hover\:scale-105,
-          .hover\:scale-105 {
+          .group:hover\:-translate-y-1,
+          .hover\:-translate-y-1,
+          .group:hover .group-hover\:translate-x-1 {
             animation: none;
             transform: none;
           }

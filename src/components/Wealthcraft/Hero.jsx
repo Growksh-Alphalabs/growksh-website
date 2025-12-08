@@ -13,14 +13,14 @@ export default function Hero() {
     minHeight: '80vh',
   }
   return (
-    <section className="relative overflow-hidden w-full" style={bgStyle}>
+    <section className="relative overflow-hidden w-full z-10" style={bgStyle}>
       {/* Overlay for legibility */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/40 to-black/45 pointer-events-none" />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           {/* Left Content */}
-          <div className="lg:w-1/2">
+          <div className="w-full lg:absolute lg:top-1/2 lg:left-6 lg:-translate-y-1/2 lg:max-w-xl z-20">
             {/* Blurred translucent panel behind text for legibility */}
             <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white/10 max-w-xl">
               <div className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-black bg-yellow-400/95 ring-1 ring-yellow-400/50 mb-4">
