@@ -123,13 +123,13 @@ export default function Peace() {
 
                     {/* Right: image that matches accordion height */}
                     <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15" style={{ height: accordionHeight }}> {/* Reduced padding/margin */}
-                        <div className="w-full  rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-lg bg-slate-800"> {/* Reduced rounded corners on mobile */}
-                            <img
-                                src={active === null ? defaultPeace : [imgP, imgE, imgA, imgC, imgE2][active]}
-                                alt={`Wealthcraft ${active === null ? 'Peace' : steps[active].short}`}
-                                className="w-full h-full object-cover transition-opacity duration-500"
-                            />
-                        </div>
+                            <div className="w-full max-w-2xl h-[50vh] rounded-2xl overflow-hidden shadow-lg bg-slate-800">
+                                <img
+                                    src={active === null ? defaultPeace : [imgP, imgE, imgA, imgC, imgE2][active]}
+                                    alt={`Wealthcraft ${active === null ? 'Peace' : steps[active].short}`}
+                                    className="w-full h-full object-cover transition-opacity duration-500"
+                                />
+                            </div>
                     </div>
                 </div>
 

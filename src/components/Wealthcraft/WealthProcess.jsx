@@ -129,7 +129,7 @@ export default function Peace() {
 
                                 <div
                                     id={`wealth-panel-${i}`}
-                                    className={`px-3 pb-2 sm:pb-3 transition-[max-height,opacity,padding] ${reduceMotion ? '' : 'duration-300 ease-in-out'}`} 
+                                    className={`px-3 pb-2 sm:pb-3 transition-[max-height,opacity,padding] ${reduceMotion ? '' : 'duration-300 ease-in-out'}`}
                                     style={{ maxHeight: active === i ? '200px' : '0px', opacity: active === i ? 1 : 0, paddingTop: active === i ? '0.25rem' : 0 }}
                                 >
                                     <div className="text-xs sm:text-sm text-slate-300"> {/* Reduced text size on mobile */}
@@ -144,7 +144,7 @@ export default function Peace() {
 
                     {/* Right: image that matches accordion height */}
                     <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15" style={{ height: accordionHeight1 }}> {/* Reduced padding/margin */}
-                        <div className="w-full h-full rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden shadow-lg bg-slate-800"> {/* Reduced rounded corners on mobile */}
+                        <div className="w-full max-w-2xl h-[50vh] rounded-2xl overflow-hidden shadow-lg bg-slate-800">
                             <img
                                 src={active === null ? defaultPeace : [imgW, imgE, imgA, imgL, imgT, imgH][active]}
                                 alt={`Wealthcraft ${active === null ? 'Wealth' : steps[active].short}`}
@@ -160,7 +160,7 @@ export default function Peace() {
                 <div className="mt-4 sm:mt-6 text-center rounded-2xl"> {/* Reduced mt-6 to mt-4 sm:mt-6 */}
                     <Link
                         to="#book"
-                        className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 sm:px-10 sm:py-4 rounded-full" 
+                        className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 sm:px-10 sm:py-4 rounded-full"
                         style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
                         aria-label="Book Your Discovery Call"
                     >
