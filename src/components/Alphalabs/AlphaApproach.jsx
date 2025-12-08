@@ -13,7 +13,7 @@ export default function AlphaApproach() {
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
       
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-40">
@@ -195,7 +195,7 @@ export default function AlphaApproach() {
               )}
               
               {/* Large Letter Background */}
-              <div className="absolute -top-2 -right-2 text-6xl md:text-8xl font-black text-[#00674F]/20 group-hover:text-[#00674F]/30 transition-colors duration-300">
+              <div className="absolute -top-2 -right-2 text-6xl md:text-8xl font-black text-[#ffde21]/20 group-hover:text-[#ffde21] transition-colors duration-300">
                 {letter}
               </div>
               

@@ -148,7 +148,7 @@ export default function WhatWeDo() {
               </Link>
               <Link 
                 to="#about" 
-                className="inline-flex items-center px-6 py-3 border-2 border-[#00674F]/30 text-[#00674F] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300"
+                className="inline-flex items-center px-6 py-3 border-2 border-[#ffde21] text-[#000] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300"
               >
                 Learn Our Approach
               </Link>
@@ -160,7 +160,7 @@ export default function WhatWeDo() {
             {/* Card 1 */}
             <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl">
               {/* Number Badge */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#ffde21] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">01</span>
               </div>
               
@@ -179,7 +179,7 @@ export default function WhatWeDo() {
             {/* Card 2 */}
             <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl">
               {/* Number Badge */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#ffde21] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">02</span>
               </div>
               
@@ -198,7 +198,7 @@ export default function WhatWeDo() {
             {/* Card 3 */}
             <div className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-xl">
               {/* Number Badge */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
+              <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#ffde21] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">03</span>
               </div>
               

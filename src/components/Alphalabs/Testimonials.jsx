@@ -17,7 +17,7 @@ export default function Testimonials(){
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
       
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-30">
@@ -121,7 +121,7 @@ export default function Testimonials(){
           {testimonials.map((t, i) => (
             <article key={i} className="group relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
               {/* Green Corner Accent */}
-              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-[#00674F]/10 to-[#009A7B]/10 rounded-bl-3xl rounded-tr-3xl" />
+              <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-[#ffde21]/10 to-[#ffde21]/10 rounded-bl-3xl rounded-tr-3xl" />
               
               {/* Quote Icon */}
               <div className="absolute -top-3 -left-3 w-8 h-8 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
@@ -161,7 +161,7 @@ export default function Testimonials(){
 
         {/* View More CTA */}
         <div className="text-center mt-12">
-          <button className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#00674F]/30 text-[#00674F] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300">
+          <button className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#ffde21]/30 text-[#00674F] font-medium rounded-full hover:border-[#ffde21]/50 hover:bg-[#00674F]/5 transition-all duration-300">
             <span>View More Testimonials</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />

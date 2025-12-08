@@ -314,10 +314,10 @@ export default function ServicesPricing() {
                                         {/* Mobile: stacked full-width prices below the title */}
                                         <div className="sm:hidden col-span-12 mt-2 flex flex-col gap-2">
                                             <div className="bg-white p-2 rounded-lg border border-[#ffde21]/30 text-center">
-                                                <div className="text-sm font-bold text-[#ffde21]">{formatPrices(category.packagePrice).full}</div>
+                                                <div className="text-sm font-bold text-[#000]">{formatPrices(category.packagePrice).full}</div>
                                             </div>
                                             <div className="bg-[#ffde21]/10 p-2 rounded-lg border-2 border-[#ffde21]/40 text-center">
-                                                <div className="text-sm font-bold text-[#ffde21]">{formatPrices(category.packagePrice).half}</div>
+                                                <div className="text-sm font-bold text-[#000]">{formatPrices(category.packagePrice).half}</div>
                                             </div>
                                         </div>
                                     </div>

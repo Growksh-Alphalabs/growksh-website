@@ -13,7 +13,7 @@ export default function Programs() {
     <section id="programs" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
-      
+
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-30">
         <svg
@@ -37,7 +37,7 @@ export default function Programs() {
               <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
             </filter>
           </defs>
-          
+
           {/* Large Organic Shapes */}
           <g filter="url(#blur1)">
             <path
@@ -64,7 +64,7 @@ export default function Programs() {
               opacity="0.6"
             />
           </g>
-          
+
           {/* Floating Circles */}
           <g>
             <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
@@ -75,11 +75,11 @@ export default function Programs() {
           </g>
         </svg>
       </div>
-      
+
       {/* Gradient Overlays for Depth */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
+
       {/* Animated Particles */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         {[...Array(20)].map((_, i) => (
@@ -105,7 +105,7 @@ export default function Programs() {
               <span className="absolute bottom-2 left-0 right-0 h-3 bg-[#00674F]/20 -z-10" />
             </span>
           </h2>
-          
+
           <p className="text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed">
             Each program at Alphalabs is designed to meet learners where they are — from foundational money skills to advanced financial understanding.
           </p>
@@ -115,17 +115,17 @@ export default function Programs() {
         <div className="relative mb-16 md:mb-20">
           {/* Badge */}
           <div className="absolute -top-4 left-4 z-20">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00674F] to-[#005e48] rounded-full shadow-lg">
+            <div className="flex items-center gap-2 px-4 py-2 bg-[#ffde21] rounded-full shadow-lg">
               <span className="text-lg">💎</span>
-              <span className="text-sm font-bold text-white">FLAGSHIP PROGRAM</span>
+              <span className="text-sm font-bold text-black">FLAGSHIP PROGRAM</span>
             </div>
           </div>
-          
+
           {/* Main Card */}
           <div className="relative bg-white/80 backdrop-blur-sm rounded-3xl border-2 border-[#00674F]/20 p-6 md:p-12 overflow-hidden shadow-xl">
             {/* Background Pattern */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#00674F]/5 rounded-full -translate-y-32 translate-x-32" />
-            
+
             <div className="relative z-10">
               {/* Header */}
               <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-8 mb-10">
@@ -133,12 +133,12 @@ export default function Programs() {
                   <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-3">
                     F³ <span className="text-[#00674F]">(Financial Fitness for Females)</span>
                   </h3>
-                  <p className="text-lg text-[#00674F] font-medium mb-4">
+                  <p className="text-lg text-[#ffde21]/80 font-medium mb-4">
                     Making women Financially Aware • Financially Able • Financially Assured
                   </p>
                   <p className="text-slate-700 leading-relaxed">
-                    F³ is a three-level journey that helps women move from confusion to confidence with their finances. 
-                    It combines structured coaching, real-life examples, and actionable tools that make money management 
+                    F³ is a three-level journey that helps women move from confusion to confidence with their finances.
+                    It combines structured coaching, real-life examples, and actionable tools that make money management
                     simple, practical, and empowering.
                   </p>
                 </div>
@@ -158,13 +158,13 @@ export default function Programs() {
               {/* Levels Grid */}
               <div className="grid md:grid-cols-3 gap-6 mb-10">
                 {/* Level 1 */}
-                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col h-full">
                   <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-[#00674F] to-[#005e48] rounded-xl flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold">01</span>
                   </div>
-                  <div className="pt-4">
+                  <div className="pt-4 flex-grow">
                     <h4 className="text-xl font-bold text-slate-900 mb-3">The Awareness Bootcamp</h4>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ffde21]/10 border border-[#ffde21]/20 rounded-full mb-4">
                       <span className="text-xs font-medium text-[#00674F]">Build clarity • Break confusion</span>
                     </div>
                     <p className="text-slate-600 text-sm mb-4">
@@ -178,7 +178,9 @@ export default function Programs() {
                       <div className="text-xs text-[#00674F] font-bold mb-2">FORMAT</div>
                       <p className="text-xs text-slate-600">Pre-recorded videos + Q&A session + practical worksheets + real-life case studies</p>
                     </div>
-                    <Link 
+                  </div>
+                  <div className="mt-auto">
+                    <Link
                       to="#"
                       className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
@@ -188,13 +190,13 @@ export default function Programs() {
                 </div>
 
                 {/* Level 2 */}
-                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col h-full">
                   <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-[#00674F] to-[#005e48] rounded-xl flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold">02</span>
                   </div>
-                  <div className="pt-4">
+                  <div className="pt-4 flex-grow">
                     <h4 className="text-xl font-bold text-slate-900 mb-3">The Ability Accelerator</h4>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ffde21]/10 border border-[#ffde21]/20 rounded-full mb-4">
                       <span className="text-xs font-medium text-[#00674F]">From knowing to doing</span>
                     </div>
                     <p className="text-slate-600 text-sm mb-4">
@@ -208,7 +210,9 @@ export default function Programs() {
                       <div className="text-xs text-[#00674F] font-bold mb-2">FORMAT</div>
                       <p className="text-xs text-slate-600">Detailed coaching videos, tools, templates, calculators and live group sessions</p>
                     </div>
-                    <Link 
+                  </div>
+                  <div className="mt-auto">
+                    <Link
                       to="#"
                       className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
@@ -218,13 +222,13 @@ export default function Programs() {
                 </div>
 
                 {/* Level 3 */}
-                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg">
+                <div className="group relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg flex flex-col h-full">
                   <div className="absolute -top-3 -left-3 w-12 h-12 bg-gradient-to-br from-[#00674F] to-[#005e48] rounded-xl flex items-center justify-center shadow-lg">
                     <span className="text-white font-bold">03</span>
                   </div>
-                  <div className="pt-4">
+                  <div className="pt-4 flex-grow">
                     <h4 className="text-xl font-bold text-slate-900 mb-3">The Assurance Advantage</h4>
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#ffde21]/10 border border-[#ffde21]/20 rounded-full mb-4">
                       <span className="text-xs font-medium text-[#00674F]">Expert care for your money</span>
                     </div>
                     <p className="text-slate-600 text-sm mb-4">
@@ -238,7 +242,9 @@ export default function Programs() {
                       <div className="text-xs text-[#00674F] font-bold mb-2">FORMAT</div>
                       <p className="text-xs text-slate-600">One-on-one financial consultation and implementation via Growksh Wealthcraft</p>
                     </div>
-                    <Link 
+                  </div>
+                  <div className="mt-auto">
+                    <Link
                       to="#"
                       className="block w-full text-center py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                     >
@@ -249,7 +255,7 @@ export default function Programs() {
               </div>
 
               {/* Why Women Love F³ */}
-              <div className="bg-[#00674F]/5 border border-[#00674F]/10 rounded-2xl p-6 mb-8">
+              <div className="bg-[#ffde21]/5 border border-[#ffde21]/10 rounded-2xl p-6 mb-8">
                 <h4 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                   <span className="text-[#00674F]">✨</span>
                   Why Women Love F³
@@ -277,7 +283,7 @@ export default function Programs() {
                 <Link
                   to="#"
                   aria-label="Join The Awareness Bootcamp Today"
-                  className="group inline-flex items-center justify-center gap-3 relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
+                  className="group inline-flex items-center justify-center gap-3 relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#ffde21]/10 hover:border-[#ffde21]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
                 >
                   <span>Join The Awareness Bootcamp Today</span>
                   <svg
@@ -310,12 +316,12 @@ export default function Programs() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {comingSoonPrograms.map((program, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className="group relative bg-white/80 backdrop-blur-sm p-6 rounded-2xl border-2 border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
               >
                 <div className="absolute -top-3 -right-3">
-                  <div className="px-3 py-1 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full">
+                  <div className="px-3 py-1 bg-[#ffde21]/10 border border-[#ffde21]/20 rounded-full">
                     <span className="text-xs font-medium text-[#00674F]">{program.status}</span>
                   </div>
                 </div>
@@ -332,9 +338,9 @@ export default function Programs() {
           </div>
 
           <div className="text-center mt-8">
-            <Link 
-              to="#" 
-              className="inline-flex items-center px-6 py-3 border-2 border-[#00674F] text-[#00674F] font-medium rounded-full hover:bg-[#00674F]/10 transition-all duration-300"
+            <Link
+              to="#"
+              className="inline-flex items-center px-6 py-3 border-2 border-[#ffde21] text-[#00674F] font-medium rounded-full hover:bg-[#00674F]/10 transition-all duration-300"
             >
               View All Upcoming Programs
             </Link>
@@ -348,20 +354,20 @@ export default function Programs() {
               Your Financial Learning Journey Starts Here.
             </h3>
             <p className="text-lg text-slate-700 mb-8 leading-relaxed">
-              Whether you're learning to manage your own money or preparing to build a career in finance, 
-              Alphalabs gives you the space to explore, learn, and evolve. Start with our flagship F³ program 
+              Whether you're learning to manage your own money or preparing to build a career in finance,
+              Alphalabs gives you the space to explore, learn, and evolve. Start with our flagship F³ program
               and discover how empowering financial clarity can be.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link 
-                to="#" 
+              <Link
+                to="#"
                 className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 Enroll in F³
               </Link>
-              <Link 
-                to="#" 
-                className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#00674F] text-[#00674F] font-bold rounded-full hover:bg-[#00674F]/10 transition-all duration-300"
+              <Link
+                to="#"
+                className="inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#ffde21] text-[#00674F] font-bold rounded-full hover:bg-[#00674F]/10 transition-all duration-300"
               >
                 Join the Alphalabs Community
               </Link>
