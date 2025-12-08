@@ -39,7 +39,7 @@ export default function Philosophy() {
             {/* Quote */}
             <div className="relative">
               <div className="absolute -left-6 top-0 text-5xl text-[#00674F]/30 font-serif">"</div>
-              <blockquote className="text-lg text-slate-700 pl-4 border-l-4 border-[#00674F]/20 italic leading-relaxed">
+              <blockquote className="text-lg text-slate-700 pl-4 border-l-4 border-[#ffde21] italic leading-relaxed">
                 In investing, alpha means outperformance. In life, we believe alpha comes from awareness — the ability to connect dots, make informed choices, and stay grounded under uncertainty.
               </blockquote>
             </div>
@@ -68,7 +68,7 @@ export default function Philosophy() {
                 <div className="relative mx-auto w-48 h-48">
                   <div className="absolute inset-0 bg-[#00674F]/8 rounded-full blur-xl" />
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="text-8xl font-bold bg-gradient-to-r from-[#00674F] to-[#00A67A] bg-clip-text text-transparent">
+                    <div className="text-8xl font-bold bg-gradient-to-r from-[#ffde21] to-[#00A67A] bg-clip-text text-transparent">
                       α
                     </div>
                   </div>

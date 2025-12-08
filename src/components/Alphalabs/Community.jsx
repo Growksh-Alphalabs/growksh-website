@@ -27,7 +27,7 @@ export default function Community() {
   return (
     <section id="community" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
       
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-30">
@@ -135,7 +135,7 @@ export default function Community() {
           {benefits.map((benefit, index) => (
             <div 
               key={index}
-              className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-xl"
+              className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 md:p-8 border-2 border-[#ffde21]/10 hover:border-[#ffde21]/30 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-xl"
             >
               {/* Corner Number */}
               <div className="absolute top-4 right-4 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-[#00674F]/20 flex items-center justify-center shadow-sm">

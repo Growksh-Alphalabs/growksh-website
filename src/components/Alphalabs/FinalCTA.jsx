@@ -146,7 +146,7 @@ export default function CTASection() {
                             </Link>
 
                             <Link to="#community"
-                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#00674F]/30 text-[#00674F] font-bold rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300 w-full sm:w-auto"
+                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#ffde21]/30 text-[#00674F] font-bold rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span className="text-sm md:text-base">Join The Community</span>
                                 <svg
@@ -212,37 +212,7 @@ export default function CTASection() {
         `}</style>
             </section>
 
-            {/* Disclosure Section */}
-            <section className="relative py-12 md:py-16 bg-[#00674F]/5">
-                {/* Background Elements */}
-                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#00674F]/10 to-transparent" />
-                <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#00674F]/10 to-transparent" />
-
-                {/* Subtle Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0" style={{
-                        backgroundImage: 'linear-gradient(45deg, #00674F 1px, transparent 1px)',
-                        backgroundSize: '40px 40px'
-                    }} />
-                </div>
-
-                <div className="max-w-4xl mx-auto px-4 md:px-6 relative z-10">
-                    <div className="text-center">
-                        {/* Content Card */}
-                        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-[#00674F]/10 p-6 md:p-8 lg:p-10 shadow-lg">
-
-                            {/* Main Content */}
-                            <div className="max-w-2xl mx-auto">
-                                <p className="text-base md:text-lg text-slate-700 leading-relaxed">
-                                    <span className="font-semibold text-[#00674F]">Growksh Alphalabs</span> is the learning & education arm of the Growksh ecosystem.
-                                    It focuses exclusively on financial education and awareness programs.
-                                    No investment advice or product distribution is offered under this vertical.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+         
         </div>
     )
 }

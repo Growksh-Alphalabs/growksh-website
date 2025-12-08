@@ -31,7 +31,7 @@ export default function WhyLearn() {
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
       
       {/* Green Cloud Blur Background */}
       <div className="absolute inset-0 -z-20 opacity-40">
@@ -120,7 +120,7 @@ export default function WhyLearn() {
               
               {/* Icon Container */}
               <div className="relative mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-white/90 backdrop-blur-sm border-2 border-[#00674F]/10 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
+                <div className="w-16 h-16 rounded-2xl bg-white/90 backdrop-blur-sm border-2 border-[#ffde21]/60 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
                   <span className="text-3xl">{feature.icon}</span>
                 </div>
                 <div className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-white border-2 border-[#00674F] flex items-center justify-center shadow-sm">

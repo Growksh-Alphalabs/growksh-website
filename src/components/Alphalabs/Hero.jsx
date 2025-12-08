@@ -139,20 +139,26 @@ export default function Hero() {
               <img src={AlphalabsLogo} alt="Alphalabs" className="w-5 h-5 md:w-6 md:h-6 rounded-sm" />
               <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#00674F] rounded-full animate-pulse" />
               <span className="text-xs md:text-sm font-medium text-[#00674F] uppercase tracking-wide">
-                The Financial Learning Studio
+                Alphalabs by Growksh
               </span>
             </div>
 
             {/* Headline - Mobile responsive font sizes */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
-              Where financial understanding turns into{' '}
+              Your{' '}
               <span className="relative inline-block">
                 <span className="relative z-10 text-[#00674F]">
-                  life confidence
+                  financial
+                </span>
+                <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
+              </span> <br/>
+               <span className="relative inline-block">
+                <span className="relative z-10 text-[#00674F]">
+                   learning{' '}
                 </span>
                 <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
               </span>
-              .
+             {' '} studio.
             </h1>
 
             {/* Description */}
@@ -180,7 +186,7 @@ export default function Hero() {
               </Link>
               <Link 
                 to="#community" 
-                className="inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 border-2 border-[#00674F]/30 text-[#00674F] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-white/50 transition-all duration-300 text-sm md:text-base"
+                className="inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 border-2 border-[#ffde21] text-[#000] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-white/50 transition-all duration-300 text-sm md:text-base"
               >
                 Join the Learning Circle
               </Link>
@@ -268,12 +274,12 @@ export default function Hero() {
               </div>
 
               {/* Floating Cards - Hidden on mobile, shown on tablet+ */}
-              <div className="hidden md:block absolute -top-2 -right-2 md:-top-3 md:-right-3 lg:-top-4 lg:-right-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#00674F]/10 shadow-lg w-32 md:w-36 lg:w-40">
+              <div className="hidden md:block absolute -top-2 -right-2 md:-top-3 md:-right-3 lg:-top-4 lg:-right-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#ffde21] shadow-lg w-32 md:w-36 lg:w-40">
                 <div className="text-xs text-[#00674F] font-bold mb-1">EXPERIENTIAL</div>
                 <div className="text-sm text-slate-800">Learn by doing</div>
               </div>
               
-              <div className="hidden md:block absolute -bottom-2 -left-2 md:-bottom-3 md:-left-3 lg:-bottom-4 lg:-left-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#00674F]/10 shadow-lg w-32 md:w-36 lg:w-40">
+              <div className="hidden md:block absolute -bottom-2 -left-2 md:-bottom-3 md:-left-3 lg:-bottom-4 lg:-left-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#ffde21] shadow-lg w-32 md:w-36 lg:w-40">
                 <div className="text-xs text-[#00674F] font-bold mb-1">PRACTICAL</div>
                 <div className="text-sm text-slate-800">Real-world skills</div>
               </div>
