@@ -163,7 +163,7 @@ export default function Hero() {
             <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 to="/alphalabs"
-                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
                 aria-label="Explore Education"
               >
                 Explore Education
@@ -171,7 +171,7 @@ export default function Hero() {
 
               <Link
                 to="/wealthcraft"
-                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
                 aria-label="Explore Advisory"
               >
                 Explore Advisory

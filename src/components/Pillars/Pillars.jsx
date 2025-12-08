@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import iconWealth from '../../assets/Website images/Wealthcraft logo.png'
-import iconVentures from '../../assets/Website images/Ventures Logo.png'
-import iconAlpha from '../../assets/Website images/Alphalabs logo.png'
+import iconWealth from '../../assets/Website images/Growksh Wealthcraft logo.png'
+import iconVentures from '../../assets/Website images/Growksh Logo 2.png'
+import iconAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
 import { Link } from 'react-router-dom'
 
 function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center' }) {
@@ -226,7 +226,7 @@ export default function Pillars() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card
             iconSrc={iconAlpha}
-            title="Growksh Alphalabs"
+            title="Education"
             tagline="The Financial Learning Studio"
             href="/alphalabs"
           >
@@ -237,7 +237,7 @@ export default function Pillars() {
 
           <Card
             iconSrc={iconWealth}
-            title="Growksh Wealthcraft"
+            title="Advisory "
             tagline="Your Trusted Financial Partner for Life!"
             href="/wealthcraft"
           >
@@ -248,7 +248,7 @@ export default function Pillars() {
 
           <Card
             iconSrc={iconVentures}
-            title="Growksh Ventures"
+            title="Asset Management"
             tagline="Where Wealth Finds Direction"
             href="/ventures"
           >
