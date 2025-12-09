@@ -112,7 +112,7 @@ export default function CTASection() {
                                 </span>
                                 <span className="absolute inset-0 bg-gradient-to-r from-[#ffde21]/20 via-[#ffde21]/20 to-[#ffde21]/20 blur-xl -z-10" />
                             </span>
-                            ?
+                            !
                         </h2>
 
                         {/* Description */}
