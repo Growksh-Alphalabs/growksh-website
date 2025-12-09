@@ -7,6 +7,8 @@ import LogoVentures from '../../assets/Website images/Growksh Logo 2.png'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const [mobileAlphaOpen, setMobileAlphaOpen] = useState(false)
+  const [mobileWealthOpen, setMobileWealthOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -60,7 +62,7 @@ export default function Navbar() {
 
   const alphalabsMenu = [
     { to: '/alphalabs#what-we-do', label: 'What we do' },
-        { to: '/alphalabs#alpha-approach', label: 'Learning Model' },
+    { to: '/alphalabs#alpha-approach', label: 'Learning Model' },
     { to: '/alphalabs#programs', label: 'Programs' },
     { to: '/alphalabs#why-learn', label: 'Why learn' },
     { to: '/alphalabs#community', label: 'Community' }
@@ -217,7 +219,7 @@ export default function Navbar() {
       </div>
 
       {/* Mobile panel */}
-      <div className={`md:hidden transition-max-h duration-300 ease-in-out overflow-hidden ${open ? 'max-h-96' : 'max-h-0'}`}>
+          <div className={`md:hidden transition-max-h duration-300 ease-in-out overflow-hidden ${open ? 'max-h-96' : 'max-h-0'}`}>
         <div className="px-4 pt-4 pb-6 bg-white/95 border-t border-slate-200">
           <div className="space-y-2">
             {navLinks.map(link => (
@@ -231,6 +233,51 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
+
+            {/* Mobile submenus for Alphalabs + Wealthcraft (collapsible) */}
+            <div className="mt-2 pt-2 border-t border-slate-100">
+              <button
+                aria-expanded={mobileAlphaOpen}
+                onClick={() => setMobileAlphaOpen(v => !v)}
+                className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 rounded-md hover:bg-slate-50"
+              >
+                <span>Education</span>
+                <span className={`transform transition-transform ${mobileAlphaOpen ? 'rotate-180' : 'rotate-0'}`} aria-hidden>▾</span>
+              </button>
+
+              <div className={`${mobileAlphaOpen ? 'block' : 'hidden'} mt-1 space-y-1`}>
+                {alphalabsMenu.map(item => (
+                  <button
+                    key={item.to}
+                    onClick={() => { handleAnchor(item.to); setOpen(false); setMobileAlphaOpen(false) }}
+                    className="w-full text-left px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                aria-expanded={mobileWealthOpen}
+                onClick={() => setMobileWealthOpen(v => !v)}
+                className="mt-3 w-full flex items-center justify-between px-3 py-2 text-sm font-semibold text-slate-700 rounded-md hover:bg-slate-50"
+              >
+                <span>Advisory</span>
+                <span className={`transform transition-transform ${mobileWealthOpen ? 'rotate-180' : 'rotate-0'}`} aria-hidden>▾</span>
+              </button>
+
+              <div className={`${mobileWealthOpen ? 'block' : 'hidden'} mt-1 space-y-1`}>
+                {wealthMenu.map(item => (
+                  <button
+                    key={item.to}
+                    onClick={() => { handleAnchor(item.to); setOpen(false); setMobileWealthOpen(false) }}
+                    className="w-full text-left px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="mt-2">
               <Link to="/contact" onClick={() => setOpen(false)} className="block text-center px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full">Schedule a Call</Link>
