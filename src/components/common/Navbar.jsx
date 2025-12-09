@@ -1,9 +1,53 @@
 import React, { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Logo1 from '../../assets/Website images/Growksh Logo 1.png'
+import LogoWealth from '../../assets/Website images/Growksh Wealthcraft logo.png'
+import LogoAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
+import LogoVentures from '../../assets/Website images/Growksh Logo 2.png'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // Navigate to a path that may include a hash, then scroll to the anchor if present.
+  const handleAnchor = (to) => {
+    if (!to) return
+    const [pathPart, hashPart] = to.split('#')
+    const targetId = hashPart
+
+    // If we're already on the path, just scroll to the element.
+    if (location.pathname === (pathPart || '/')) {
+      if (targetId) {
+        const el = document.getElementById(targetId)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          el.focus && el.focus()
+          return
+        }
+        // fallback set hash
+        window.location.hash = targetId
+      } else {
+        navigate(pathPart || '/')
+      }
+      return
+    }
+
+    // Navigate to the path first, then attempt to scroll after a short delay.
+    navigate(pathPart || '/')
+    if (targetId) {
+      setTimeout(() => {
+        const el = document.getElementById(targetId)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          el.focus && el.focus()
+        } else {
+          // set the hash so browser can handle it on load
+          window.location.hash = targetId
+        }
+      }, 120)
+    }
+  }
 
   const navLinks = [
     { to: '/', label: 'Home', end: true },
@@ -14,42 +58,143 @@ export default function Navbar() {
     { to: '/insights', label: 'Resources' }
   ]
 
+  const alphalabsMenu = [
+    { to: '/alphalabs#what-we-do', label: 'What we do' },
+        { to: '/alphalabs#alpha-approach', label: 'Learning Model' },
+    { to: '/alphalabs#programs', label: 'Programs' },
+    { to: '/alphalabs#why-learn', label: 'Why learn' },
+    { to: '/alphalabs#community', label: 'Community' }
+  ]
+
+  const wealthMenu = [
+    { to: '/wealthcraft#peace', label: 'P.E.A.C.E.' },
+    { to: '/wealthcraft#wealth-process', label: 'Wealth process' },
+    { to: '/wealthcraft#wealthcraft-pricing', label: 'Pricing' }
+  ]
+
   return (
     <header className="bg-white/95 fixed w-full z-50 shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-14 md:h-16 lg:h-20">
           <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-center gap-3 no-underline">
-              <img src={Logo1} alt="Growksh logo" className="w-35 h-35 rounded-md object-contain" />
-            </Link>
+            {/* Choose logo and link based on current route */}
+            {(() => {
+              const path = location.pathname || '/'
+
+              let logoSrc = Logo1
+              let logoAlt = 'Growksh'
+              let logoLink = '/'
+
+              if (path.startsWith('/wealthcraft')) {
+                logoSrc = LogoWealth
+                logoAlt = 'Growksh Wealthcraft'
+                logoLink = '/wealthcraft'
+              } else if (path.startsWith('/alphalabs')) {
+                logoSrc = LogoAlpha
+                logoAlt = 'Growksh Alphalabs'
+                logoLink = '/alphalabs'
+              } else if (path.startsWith('/ventures')) {
+                logoSrc = LogoVentures
+                logoAlt = 'Growksh Ventures'
+                logoLink = '/ventures'
+              }
+
+              return (
+                <Link to={logoLink} className="flex items-center gap-3 no-underline">
+                  <img
+                    src={logoSrc}
+                    alt={`${logoAlt} logo`}
+                    className="w-20 h-full sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-md object-contain"
+                  />
+                </Link>
+              )
+            })()}
           </div>
 
           <nav className="hidden md:flex items-center space-x-6">
             {navLinks.map(link => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={({ isActive }) =>
-                  `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <span className="relative z-10">{link.label}</span>
-                    <span
-                      aria-hidden
-                      className={`absolute left-0 bottom-0 h-0.5 bg-sky-600 transform transition-transform duration-200 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
-                      style={{ width: '100%' }}
-                    />
-                  </>
+              <div key={link.to} className="relative">
+                {link.to === '/alphalabs' ? (
+                  <div className="group">
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        `relative px-3 py-2 text-base md:text-lg font-medium transition-colors ${isActive ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <span className="relative z-10">{link.label}</span>
+                          <span
+                            aria-hidden
+                            className={`absolute left-0 bottom-0 h-0.5 bg-sky-600 transform transition-transform duration-200 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
+                            style={{ width: '100%' }}
+                          />
+                        </>
+                      )}
+                    </NavLink>
+
+                    <div className="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-slate-100 p-2 invisible group-hover:visible group-hover:opacity-100 opacity-0 transform translate-y-1 group-hover:translate-y-0 transition-all duration-150 z-40">
+                      {alphalabsMenu.map(item => (
+                        <button key={item.to} onClick={() => handleAnchor(item.to)} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md">{item.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                ) : link.to === '/wealthcraft' ? (
+                  <div className="group">
+                    <NavLink
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        `relative px-3 py-2 text-base md:text-lg font-medium transition-colors ${isActive ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <span className="relative z-10">{link.label}</span>
+                          <span
+                            aria-hidden
+                            className={`absolute left-0 bottom-0 h-0.5 bg-sky-600 transform transition-transform duration-200 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
+                            style={{ width: '100%' }}
+                          />
+                        </>
+                      )}
+                    </NavLink>
+
+                    <div className="absolute left-0 mt-2 w-56 bg-white rounded-md shadow-lg border border-slate-100 p-2 invisible group-hover:visible group-hover:opacity-100 opacity-0 transform translate-y-1 group-hover:translate-y-0 transition-all duration-150 z-40">
+                      {wealthMenu.map(item => (
+                        <button key={item.to} onClick={() => handleAnchor(item.to)} className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md">{item.label}</button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    end={link.end}
+                    className={({ isActive }) =>
+                      `relative px-3 py-2 text-base md:text-lg font-medium transition-colors ${isActive ? 'text-slate-900' : 'text-slate-600 hover:text-slate-900'}`
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span className="relative z-10">{link.label}</span>
+                        <span
+                          aria-hidden
+                          className={`absolute left-0 bottom-0 h-0.5 bg-sky-600 transform transition-transform duration-200 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0'}`}
+                          style={{ width: '100%' }}
+                        />
+                      </>
+                    )}
+                  </NavLink>
                 )}
-              </NavLink>
+              </div>
             ))}
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link to="/contact" className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full text-sm shadow hover:opacity-95 transition">Contact</Link>
+            <Link to="/contact" className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full text-base md:text-lg shadow hover:opacity-95 transition">Contact</Link>
 
             <button
               onClick={() => setOpen(o => !o)}

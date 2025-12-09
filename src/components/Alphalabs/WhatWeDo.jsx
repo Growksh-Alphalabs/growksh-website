@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function WhatWeDo() {
   return (
-    <section className="relative py-16 md:py-20 overflow-hidden">
+    <section id="what-we-do" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
       

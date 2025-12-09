@@ -29,7 +29,7 @@ export default function WhyLearn() {
   ]
 
   return (
-    <section className="relative py-16 md:py-20 overflow-hidden">
+    <section id="why-learn" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
       

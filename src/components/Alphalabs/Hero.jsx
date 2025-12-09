@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden  text-slate-900">
+    <section id="alphalabs-hero" className="relative overflow-hidden  text-slate-900">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
       

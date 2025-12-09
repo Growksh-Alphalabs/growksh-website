@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Philosophy() {
   return (
-    <section className="relative py-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden text-slate-900">
+    <section id="philosophy" className="relative py-20 bg-gradient-to-b from-white to-slate-50 overflow-hidden text-slate-900">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#00674F]/8 to-[#00674F]/4 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-[#00674F]/6 to-[#00674F]/3 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />

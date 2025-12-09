@@ -228,7 +228,7 @@ export default function ServicesPricing() {
     }
 
     return (
-        <section className="py-16 bg-gradient-to-b from-slate-50 to-white">
+        <section id="wealthcraft-pricing" className="py-16 bg-gradient-to-b from-slate-50 to-white">
             <div className="max-w-7xl mx-auto px-4 md:px-6">
                 {/* Header */}
                 <div className="text-center mb-12">
