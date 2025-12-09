@@ -132,7 +132,7 @@ export default function CTASection() {
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
                             <Link to="#programs"
-                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
+                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#ffde21] to-[#ffde21]/50 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span className="text-sm md:text-base">Explore Programs</span>
                                 <svg
@@ -146,7 +146,7 @@ export default function CTASection() {
                             </Link>
 
                             <Link to="#community"
-                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#ffde21]/30 text-[#00674F] font-bold rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300 w-full sm:w-auto"
+                                className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#00674F]/30 text-[#00674F] font-bold rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span className="text-sm md:text-base">Join The Community</span>
                                 <svg

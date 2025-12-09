@@ -88,7 +88,7 @@ export default function WhyLearn() {
         <div className="text-center mb-12 md:mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#00674F]/10 border border-[#00674F]/20 rounded-full mb-6">
             <div className="w-2 h-2 bg-[#00674F] rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">WHY LEARN WITH GROWKSH ALPHALABS</span>
+            <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">WHY LEARN WITH US </span>
           </div>
           
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
