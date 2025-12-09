@@ -61,7 +61,7 @@ export default function Peace() {
     // (Removed dynamic accordion/image height syncing - using fixed responsive image height)
 
     return (
-        <section className="py-6 sm:py-8 bg-black text-white"> {/* Reduced padding */}
+        <section id="peace" className="py-6 sm:py-8 bg-black text-white"> {/* Reduced padding */}
             <div className="max-w-max px-2 mx-2 sm:mx-4 md:mx-15"> {/* Reduced margins */}
                 <div className="text-sm font-medium text-[#ffde21] mb-3 sm:mb-4 tracking-wider text-center uppercase"> {/* Reduced margin */}
                     Our Signature Approach

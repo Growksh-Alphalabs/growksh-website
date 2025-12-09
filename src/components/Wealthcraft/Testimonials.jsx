@@ -57,7 +57,7 @@ export default function Testimonials() {
   }
 
   return (
-    <section className="py-16 bg-black text-white relative overflow-hidden">
+    <section id="testimonials" className="py-16 bg-black text-white relative overflow-hidden">
    
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}

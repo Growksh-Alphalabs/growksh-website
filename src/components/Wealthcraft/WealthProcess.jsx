@@ -80,7 +80,7 @@ export default function Peace() {
     // No JS-driven height syncing — visual sizing handled via CSS (50vh)
 
     return (
-        <section className="py-6 sm:py-8 bg-black text-white"> {/* Reduced py-12 to py-6 sm:py-8 */}
+        <section id="wealth-process" className="py-6 sm:py-8 bg-black text-white"> {/* Reduced py-12 to py-6 sm:py-8 */}
             <div className="max-w-max px-2 mx-2 sm:mx-4 md:mx-15"> {/* Changed px-2 md:px-4 to px-2, removed md:px-4, reduced margins */}
                 <div className="text-sm font-medium text-[#ffde21] mb-3 sm:mb-4 tracking-wider text-center uppercase"> {/* Reduced mb-4 to mb-3 sm:mb-4 */}
                     Our 6-Step Advisory Framework

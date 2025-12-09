@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 
 export default function WhatWeDo() {
     return (
-        <section className="py-12 sm:py-16 bg-white">
+        <section id="wealth-what-we-do" className="py-12 sm:py-16 bg-white">
             {/* Normalized container and reduced mobile padding */}
             <div className="max-w-max mx-auto px-4 sm:px-6 md:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 md:gap-16 lg:gap-20 xl:gap-24 items-center">
