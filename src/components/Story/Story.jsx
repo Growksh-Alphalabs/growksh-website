@@ -8,11 +8,11 @@ export default function Story() {
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-10 items-center">
           <div className="order-2 lg:order-1">
-            <div className="text-sm font-medium text-violet-600 uppercase tracking-wide">MEET GROWKSH</div>
+            <div className="text-sm font-medium text-[#cf87bf] uppercase tracking-wide">MEET GROWKSH</div>
 
             <h2 className="text-4xl lg:text-4xl font-bold tracking-tight text-slate-900 mb-6">
-              From <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Guidance</span> to
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600"> Growth</span>
+              From <span className="text-[#cf87bf]">Guidance</span> to
+              <span className="text-[#cf87bf]"> Growth</span>
             </h2>
 
 
@@ -21,19 +21,19 @@ export default function Story() {
             <p className="mt-4 text-lg text-slate-600">We’ve helped hundreds of professionals, families, and NRIs gain clarity, control, and calmness with their finances — proving that financial wellness is truly life wellness.</p>
 
             <div className="mt-6">
-              <Link to="/about" className="inline-flex items-center px-5 py-3 bg-violet-600 text-white rounded-full font-semibold shadow-sm hover:bg-violet-700 transition">Learn more about Krutika</Link>
+              <Link to="/about" className="inline-flex items-center px-5 py-3 bg-[#3dc7f5] text-white rounded-full font-semibold shadow-sm hover:opacity-90 transition">Learn more about Krutika</Link>
             </div>
           </div>
 
           <div className="order-1 lg:order-2">
             <div className="w-full flex justify-center lg:justify-end">
               <div className="relative">
-                {/* soft teal glow behind the ring */}
-                <div className="absolute -inset-6 rounded-full bg-emerald-100/60 blur-3xl -z-10" />
+                {/* soft main-color glow behind the ring */}
+                <div className="absolute -inset-6 rounded-full bg-[#3dc7f5] opacity-10 blur-3xl -z-10" />
 
                 <div className="relative mx-auto w-full max-w-[20rem] sm:max-w-[30rem] lg:max-w-[30rem] aspect-square">
-                  {/* blue ring + shadow */}
-                  <div className="rounded-full ring-8 ring-blue-400/90 overflow-hidden shadow-2xl w-full h-full">
+                  {/* main-color ring + shadow (solid, no gradient) */}
+                  <div className="rounded-full overflow-hidden shadow-2xl w-full h-full" style={{ boxShadow: '0 0 0 8px rgba(61,199,245,0.9), 0 25px 50px rgba(0,0,0,0.12)' }}>
                     <img src={krutika} alt="Krutika Kathal" className="w-full h-full object-cover object-top" />
                   </div>
                 </div>

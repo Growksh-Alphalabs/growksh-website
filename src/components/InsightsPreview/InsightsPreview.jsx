@@ -31,7 +31,7 @@ export default function InsightsPreview() {
       <div className="max-w-5xl mx-auto px-6 lg:px-8">
         <div className="text-center">
              <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-              Insights to Keep You <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Financially Fit</span>
+              Insights to Keep You <span className="text-[#cf87bf]">Financially Fit</span>
             </h2>
           <p className="mt-3 text-slate-600 max-w-2xl mx-auto">Read our latest articles and guides on personal finance, investments, and wealth planning.</p>
         </div>
@@ -55,7 +55,7 @@ export default function InsightsPreview() {
                 <div className="mt-6">
                   <Link
                     to="#"
-                    className="inline-flex items-center gap-2 text-violet-700 font-medium hover:underline"
+                    className="inline-flex items-center gap-2 text-[#cf87bf] font-medium hover:underline"
                     aria-label={`Read ${p.title}`}
                   >
                     Read article
@@ -73,7 +73,7 @@ export default function InsightsPreview() {
         <div className="mt-10 text-center">
           <Link
             to="/insights"
-            className="inline-flex items-center gap-3 px-6 py-3 bg-violet-700 text-white rounded-full shadow hover:bg-violet-600 transition-colors duration-200"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-[#3dc7f5] text-white rounded-full shadow hover:opacity-90 transition-colors duration-200"
           >
             Explore Insights
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
