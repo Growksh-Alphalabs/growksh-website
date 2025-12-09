@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 
 export default function CTASection() {
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden bg-[#0b2545] text-white">
       {/* Purple smoke background (decorative) */}
       <div className="pointer-events-none absolute inset-0 -z-10 opacity-95" aria-hidden="true">
         <svg className="w-full h-full" viewBox="0 0 1440 480" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           {/* Solid soft shapes using the theme colors (no gradients) */}
-          <rect width="100%" height="100%" fill="#f7feff" />
+          <rect width="100%" height="100%" fill="#0b2545" />
           <g opacity="0.36">
             <ellipse cx="220" cy="120" rx="380" ry="200" fill="#3dc7f5" fillOpacity="0.08" />
             <ellipse cx="1200" cy="160" rx="360" ry="220" fill="#cf87bf" fillOpacity="0.06" />
@@ -19,19 +19,19 @@ export default function CTASection() {
 
       <div className="max-w-6xl mx-auto px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-white">
             <span className="text-[#cf87bf]">Ready to Start Your Journey?</span>
           </h2>
-          <p className="mt-3 text-slate-600 max-w-2xl mx-auto">Whether you want to plan better, learn better, or grow better — Growksh has a path for you.</p>
+          <p className="mt-3 text-slate-200 max-w-2xl mx-auto">Whether you want to plan better, learn better, or grow better — Growksh has a path for you.</p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-5">
 
-          <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
+          <div className="group relative bg-white/6 backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
             <div className="flex items-center justify-between w-full">
               <div>
-                <div className="text-sm font-semibold text-slate-800">Want to Learn Finance?</div>
-                <div className="mt-1 text-sm text-slate-600">Join structured courses and workshops to build practical skills.</div>
+                <div className="text-sm font-semibold text-white">Want to Learn Finance?</div>
+                <div className="mt-1 text-sm text-slate-200">Join structured courses and workshops to build practical skills.</div>
               </div>
 
             </div>
@@ -50,11 +50,11 @@ export default function CTASection() {
             </div>
           </div>
 
-          <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
+          <div className="group relative bg-white/6 backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
             <div className="flex items-center justify-between w-full">
               <div>
-                <div className="text-sm font-semibold text-slate-800">Need Personal Advice?</div>
-                <div className="mt-1 text-sm text-slate-600">Talk with an advisor to align your plan with life goals.</div>
+                <div className="text-sm font-semibold text-white">Need Personal Advice?</div>
+                <div className="mt-1 text-sm text-slate-200">Talk with an advisor to align your plan with life goals.</div>
               </div>
 
             </div>
@@ -73,11 +73,11 @@ export default function CTASection() {
             </div>
           </div>
 
-          <div className="group relative bg-white/60 backdrop-blur-sm border border-white/20 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
+          <div className="group relative bg-white/6 backdrop-blur-sm border border-white/10 rounded-2xl p-6 flex flex-col h-full transform transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl">
             <div className="flex items-center justify-between w-full">
               <div>
-                <div className="text-sm font-semibold text-slate-800">Looking for Execution Support?</div>
-                <div className="mt-1 text-sm text-slate-600">Explore our execution arm for managed investments and implementation.</div>
+                <div className="text-sm font-semibold text-white">Looking for Execution Support?</div>
+                <div className="mt-1 text-sm text-slate-200">Explore our execution arm for managed investments and implementation.</div>
               </div>
 
             </div>
