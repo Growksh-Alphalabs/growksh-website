@@ -9,10 +9,10 @@ export default function Philosophy() {
   return (
     <section className="py-20 bg-white text-slate-900">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
           {/* Left: Copy */}
           <div>
-            <div className="text-sm font-medium text-[#2e3b4b] uppercase tracking-wide">The Growksh Way</div>
+            <div className="text-sm font-medium text-[#cf87bf] uppercase tracking-wide">The Growksh Way</div>
             <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold leading-tight text-[#2e3b4b]">We believe true wealth isn’t about numbers — it’s about P.E.A.C.E. of mind.</h2>
 
             <p className="mt-6 text-lg text-slate-600 max-w-xl">Money is deeply personal. That’s why Growksh exists — to help you build wealth that aligns with your life, not just your portfolio.</p>
@@ -22,21 +22,21 @@ export default function Philosophy() {
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
                <div className="flex flex-col gap-3 p-4 rounded-2xl border border-[#3dc7f5]/10 bg-white shadow-sm hover:shadow-md transition">
                 <div className="w-10 h-10 rounded-lg bg-[#3dc7f5]/10 flex items-center justify-center">
-                  <img src={iconAlpha} alt="Alphalabs icon" className="w-5 h-5" />
+                  <img src={iconAlpha} alt="Alphalabs icon" className="w-10 h-10" />
                 </div>
                 <div className="text-sm font-semibold">Alphalabs</div>
                 <div className="text-sm text-slate-600">Helps you understand your money.</div>
               </div>
               <div className="flex flex-col gap-3 p-4 rounded-2xl border border-[#cf87bf]/10 bg-white shadow-sm hover:shadow-md transition">
                 <div className="w-10 h-10 rounded-lg bg-[#cf87bf]/10 flex items-center justify-center">
-                  <img src={iconWealth} alt="Wealthcraft icon" className="w-5 h-5" />
+                  <img src={iconWealth} alt="Wealthcraft icon" className="w-10 h-10" />
                 </div>
                 <div className="text-sm font-semibold">Wealthcraft</div>
                 <div className="text-sm text-slate-600">Helps you plan your money.</div>
               </div>
               <div className="flex flex-col gap-3 p-4 rounded-2xl border border-[#2e3b4b]/10 bg-white shadow-sm hover:shadow-md transition">
                 <div className="w-10 h-10 rounded-lg bg-[#2e3b4b]/10 flex items-center justify-center">
-                  <img src={iconVentures} alt="Ventures icon" className="w-5 h-5" />
+                  <img src={iconVentures} alt="Ventures icon" className="w-10 h-10" />
                 </div>
                 <div className="text-sm font-semibold">Ventures</div>
                 <div className="text-sm text-slate-600">Helps you grow your money.</div>
@@ -52,7 +52,7 @@ export default function Philosophy() {
 
           {/* Right: Ecosystem graphic (three overlapping circles) */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-80 h-80 lg:w-112 lg:h-112">
+            <div className="relative w-[26rem] h-[26rem] sm:w-[30rem] sm:h-[30rem] md:w-[36rem] md:h-[36rem] lg:w-[44rem] lg:h-[44rem]">
               <svg viewBox="0 0 360 360" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="philosophy-ecosystem-title" preserveAspectRatio="xMidYMid meet">
                 <title id="philosophy-ecosystem-title">Growksh ecosystem — Learn, Plan, Grow</title>
                 {/* defs removed — using solid fills for circles (no gradients) */}

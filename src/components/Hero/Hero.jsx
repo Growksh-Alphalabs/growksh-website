@@ -101,10 +101,10 @@ export default function Hero() {
       </div>
 
       <div className="relative z-10 w-full mx-auto px-6 sm:px-8 lg:px-12">
-        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 md:gap-10 lg:gap-12">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 md:gap-8 lg:gap-8">
           {/* Left: Text */}
-          <div className="w-full lg:w-1/2 order-1 lg:order-1 mt-8 lg:mt-0 lg:ml-20">
-          <Link to="/ventures" className="inline-block mb-6">
+          <div className="w-full lg:w-1/2 order-1 lg:order-1 mt-4 lg:mt-0 lg:ml-16">
+          {/* <Link to="/ventures" className="inline-block mb-6">
             <div className="mb-4 md:mb-6">
               <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-slate-700 border border-white/60 shadow-sm">
                 <span className="bg-[#cf87bf] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
@@ -114,21 +114,21 @@ export default function Hero() {
                 </svg>
               </div>
             </div>
-          </Link>
+          </Link> */}
 
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
               <span className="block">
                 <span className="text-[#3dc7f5]">Crafting Wealth.</span>
               </span>
 
-              <span className="block mt-1 sm:mt-2 text-slate-800 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold">Creating Confidence.</span>
+              <span className="block mt-1 sm:mt-1 text-slate-800 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold">Creating Confidence.</span>
             </h1>
 
-            <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl">
+            <p className="mt-2 sm:mt-3 text-lg sm:text-xl md:text-2xl text-slate-600 max-w-3xl">
               At Growksh, we help you take charge of your money — through education, planning, and purposeful action.
             </p>
 
-            <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-2 sm:gap-3">
+            <div className="mt-4 sm:mt-6 flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 to="/alphalabs"
                 className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#00674F] hover:bg-[#00674F]/90 text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
@@ -143,6 +143,14 @@ export default function Hero() {
                 aria-label="Explore Advisory"
               >
                 Explore Advisory
+              </Link>
+
+                <Link
+                to="/ventures"
+                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5  bg-gray-800 hover:bg-gray-800/90 text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
+                aria-label="Explore Asset Management"
+              >
+                Explore Asset Management
               </Link>
             </div>
           </div>

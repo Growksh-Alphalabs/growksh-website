@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import iconWealth from '../../assets/Website images/Growksh Wealthcraft logo.png'
 import iconVentures from '../../assets/Website images/Growksh Logo 2.png'
-import iconAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
+import iconAlpha from '../../assets/Website images/Growksh AlphaLabs - Final Logo - V1.png'
 import { Link } from 'react-router-dom'
 
 function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center' }) {
@@ -63,8 +63,8 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             <p className="text-slate-600 font-medium mb-8 px-4 italic">{tagline}</p>
 
             <div className={`mt-4 ${imagePosition === 'center' ? 'mx-auto' : ''}`}>
-              <div className="w-40 h-40 rounded-full flex items-center justify-center shadow-inner" style={{ backgroundColor: 'rgba(61,199,245,0.06)' }}>
-                <img src={iconSrc} alt={`${title} visual`} className="w-28 h-28 opacity-90 object-cover" />
+              <div className="w-50 h-50  flex items-center justify-center shadow-inner" style={{ backgroundColor: 'rgba(61,199,245,0.06)' }}>
+                <img src={iconSrc} alt={`${title} visual`} className="w-full h-full opacity-90 object-cover" />
               </div>
             </div>
           </div>
@@ -78,7 +78,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             </div>
 
             <div className="flex-1 overflow-y-auto pr-2">
-              <p className="text-slate-600 leading-relaxed">{children}</p>
+              <div className="text-slate-600 leading-relaxed space-y-4">{children}</div>
             </div>
 
             <div className="mt-6 pt-6 border-t border-white/20">
@@ -175,9 +175,10 @@ export default function Pillars() {
             tagline="The Financial Learning Studio"
             href="/alphalabs"
           >
-            <b>An experiential learning & coaching space where finance becomes a life skill. </b><br/>It's built on the
-            idea that alpha — true outperformance — comes from clarity and understanding. Here, learning isn't
-            about theory; it's about discovering practical ways to think, decide, and grow with your money.
+            <>
+              <p><b>An experiential learning & coaching space where finance becomes a life skill.</b></p>
+              <p>It's built on the idea that alpha — true outperformance — comes from clarity and understanding.</p> <b/> Here, learning isn't about theory; it's about discovering practical ways to think, decide, and grow with your money.
+            </>
           </Card>
 
           <Card
@@ -186,9 +187,10 @@ export default function Pillars() {
             tagline="Your Trusted Financial Partner for Life!"
             href="/wealthcraft"
           >
-            <b>Fee-based advisory and life-aligned financial planning for working professionals, women, and NRIs.</b>
-            <br/>We help you achieve Financial P.E.A.C.E. of Mind — so you know your finances are aligned with
-            your goals and values, today and for years to come.
+            <>
+              <p><b>Fee-based advisory and life-aligned financial planning for working professionals, women, and NRIs.</b></p>
+              <p>We help you achieve Financial P.E.A.C.E. of Mind — so you know your finances are aligned with your goals and values, today and for years to come.</p>
+            </>
           </Card>
 
           <Card
@@ -197,9 +199,10 @@ export default function Pillars() {
             tagline="Where Wealth Finds Direction"
             href="/ventures"
           >
-            <b>Execution and wealth-management arm of Growksh — focused on implementing smart, transparent,
-            and goal-based financial solutions. </b><br/>Growksh Ventures is designed for individuals who want their
-            investments, insurance, and portfolios handled with strategy and structure.
+            <>
+              <p><b>Execution and wealth-management arm of Growksh — focused on implementing smart, transparent, and goal-based financial solutions.</b></p>
+              <p>Growksh Ventures is designed for individuals who want their investments, insurance, and portfolios handled with strategy and structure.</p>
+            </>
           </Card>
 
 
