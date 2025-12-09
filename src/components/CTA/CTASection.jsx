@@ -61,7 +61,7 @@ export default function CTASection() {
 
             <div className="mt-6 flex items-end justify-between">
               <Link
-                to="/ventures"
+                to="/wealthcraft"
                 className="inline-flex items-center gap-3 px-4 py-2 bg-[#3dc7f5] text-white rounded-lg font-medium shadow hover:opacity-90 transition-transform duration-200"
                 aria-label="Discover Ventures"
               >
