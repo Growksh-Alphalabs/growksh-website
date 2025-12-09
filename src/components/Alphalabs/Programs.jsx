@@ -133,7 +133,7 @@ export default function Programs() {
                   <h3 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 mb-3">
                     F³ <span className="text-[#00674F]">(Financial Fitness for Females)</span>
                   </h3>
-                  <p className="text-lg text-[#ffde21]/80 font-medium mb-4">
+                  <p className="text-lg text-[#00674F]/80 font-medium mb-4">
                     Making women Financially Aware • Financially Able • Financially Assured
                   </p>
                   <p className="text-slate-700 leading-relaxed">
@@ -283,7 +283,7 @@ export default function Programs() {
                 <Link
                   to="#"
                   aria-label="Join The Awareness Bootcamp Today"
-                  className="group inline-flex items-center justify-center gap-3 relative bg-white/90 backdrop-blur-sm p-6 rounded-2xl border border-[#ffde21]/10 hover:border-[#ffde21]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
+                  className="group inline-flex items-center justify-center gap-3 relative bg-[#ffde21] backdrop-blur-sm p-6 rounded-2xl border border-[#ffde21]/10 hover:border-[#ffde21]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
                 >
                   <span>Join The Awareness Bootcamp Today</span>
                   <svg

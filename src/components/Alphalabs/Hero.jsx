@@ -97,8 +97,8 @@ export default function Hero() {
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${10 + Math.random() * 10}s`
+              animationDelay: `${Math.random() * 4}s`,
+              animationDuration: `${4 + Math.random() * 4}s`
             }}
           />
         ))}
@@ -333,11 +333,11 @@ export default function Hero() {
         }
 
         .animate-float {
-          animation: float 5s ease-in-out infinite;
+          animation: float 3s ease-in-out infinite;
         }
 
         .nodes .node {
-          animation: pop 4s ease-in-out infinite;
+          animation: pop 3s ease-in-out infinite;
         }
 
         .nodes .node.a { animation-delay: 0s; }
@@ -358,7 +358,7 @@ export default function Hero() {
 
         .pulse {
           fill: url(#grad2);
-          animation: pulseTravel 3s linear infinite;
+          animation: pulseTravel 1.6s linear infinite;
           opacity: 0;
         }
 

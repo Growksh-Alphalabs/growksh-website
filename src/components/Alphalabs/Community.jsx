@@ -175,7 +175,7 @@ and connected.
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link to="#"
-              className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+              className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#ffde21] to-[#ffde21]/50 text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
               <span className="text-sm md:text-base">Join The Alpha Circle</span>
               <svg 

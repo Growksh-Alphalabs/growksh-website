@@ -1,15 +1,19 @@
 import React from 'react'
+import nehaImg from '../../assets/Testimonial client Photos/Neha Gangrade.jpg'
+import satyawanImg from '../../assets/Testimonial client Photos/Satyawan Aglawe.jpg'
 
 const testimonials = [
   {
     name: 'Neha Gangrade',
     quote: `Thank you Growksh team, specially Krutika, for providing help and support at each and every step in my journey of learning basics about trading. You guys have been extremely patient in answering all the queries.`,
     role: 'Learner',
+    avatar: nehaImg
   },
   {
     name: 'Satyawan Aglawe',
     quote: `Hi Growksh team, first of all thank you So much for all your support and handholding. You made trading so easy that anybody can do it and enjoy the freedom of time and money in long run. You guys are simply awesome, kind hearted and always ready to help. You are strategic thinkers, and your system oriented approach is a must learn for everyone. More blessings and power to you to touch many more lives !! Thank you so much for all the knowledge and help !!`,
     role: 'Learner',
+    avatar: satyawanImg
   }
 ]
 
@@ -132,13 +136,21 @@ export default function Testimonials(){
               
               <div className="flex items-start gap-4 md:gap-6">
                 <div className="flex-shrink-0">
-                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#00674F] to-[#005e48] flex items-center justify-center text-xl font-semibold text-white shadow-lg">
-                    {t.name.split(' ').map(n=>n[0]).slice(0,2).join('')}
-                  </div>
+                  {t.avatar ? (
+                    <img
+                      src={t.avatar}
+                      alt={t.name}
+                      className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#00674F] to-[#005e48] flex items-center justify-center text-xl font-semibold text-white shadow-lg">
+                      {t.name.split(' ').map(n=>n[0]).slice(0,2).join('')}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex-1">
-                  <div className="text-sm text-[#00674F] font-medium mb-1">{t.role}</div>
+                  {/* <div className="text-sm text-[#00674F] font-medium mb-1">{t.role}</div> */}
                   <p className="mt-3 text-slate-700 leading-relaxed text-sm md:text-base">"{t.quote}"</p>
                   
                   {/* Name Badge */}

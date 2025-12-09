@@ -15,13 +15,13 @@ export default function Philosophy() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-12 items-stretch">
           {/* Left Content */}
           <div className="space-y-8">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/70 backdrop-blur-sm rounded-full border border-[#00674F]/8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 backdrop-blur-sm rounded-full bg-[#00674F]/10 border border-[#00674F]/20 ">
               <div className="w-2 h-2 bg-[#00674F] rounded-full animate-pulse" />
-              <span className="text-sm font-medium text-[#00674F]">Our Philosophy</span>
+              <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">Our Philosophy</span>
             </div>
 
             {/* Heading with gradient */}
@@ -56,8 +56,8 @@ export default function Philosophy() {
           </div>
 
           {/* Right Visual */}
-          <div className="relative">
-            <div className="relative bg-gradient-to-br from-white to-[#00674F]/12 rounded-3xl p-8 shadow-2xl border border-[#00674F]/12 overflow-hidden">
+          <div className="relative h-full">
+            <div className="relative bg-gradient-to-br from-white to-[#00674F]/12 rounded-3xl p-8 shadow-2xl border border-[#00674F]/12 overflow-hidden h-full flex flex-col justify-center">
               {/* Floating Elements */}
               <div className="absolute top-6 right-6 w-16 h-16 bg-[#00674F]/8 rounded-2xl rotate-12" />
               <div className="absolute bottom-8 left-8 w-12 h-12 bg-[#00674F]/6 rounded-full" />
@@ -68,7 +68,7 @@ export default function Philosophy() {
                 <div className="relative mx-auto w-48 h-48">
                   <div className="absolute inset-0 bg-[#00674F]/8 rounded-full blur-xl" />
                   <div className="relative w-full h-full flex items-center justify-center">
-                    <div className="text-8xl font-bold bg-gradient-to-r from-[#ffde21] to-[#00A67A] bg-clip-text text-transparent">
+                    <div className="text-[6rem] sm:text-[7.5rem] md:text-[9rem] lg:text-[10.5rem] xl:text-[12rem] font-bold bg-gradient-to-r from-[#00A67A] to-[#00A67A]/20 bg-clip-text text-transparent leading-none">
                       α
                     </div>
                   </div>
