@@ -166,9 +166,9 @@ export default function WhoWeServe() {
                                     <div className="h-full flex flex-col">
                                         {/* Back header */}
                                         <div className="flex items-center justify-between mb-6">
-                                            <div className="w-10 h-10 rounded-full bg-[#ffde21]/10 flex items-center justify-center animate-pulse-slow">
+                                            {/* <div className="w-10 h-10 rounded-full bg-[#ffde21]/10 flex items-center justify-center animate-pulse-slow">
                                                 <span className="text-[#ffde21] font-bold">{c.key.charAt(0).toUpperCase()}</span>
-                                            </div>
+                                            </div> */}
                                             <div className="text-xs text-[#ffde21] font-medium px-3 py-1 bg-[#ffde21]/10 rounded-full">
                                                 {touchMode || mobileView ? '' : ''}
                                             </div>

@@ -89,7 +89,7 @@ export default function Peace() {
                                     <div className="flex items-center gap-2 sm:gap-3"> {/* Reduced gap on mobile */}
                                         <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#ffde21] text-black flex items-center justify-center font-bold text-xs sm:text-sm`}>{s.short}</div> {/* Smaller on mobile */}
                                         <div>
-                                            <div className="font-semibold text-xs sm:text-sm text-white">{s.title}</div> {/* Smaller text on mobile */}
+                                            <div className="font-semibold text-lg sm:text-xl text-white">{s.title}</div> {/* Smaller text on mobile */}
                                         </div>
                                     </div>
                                     <div className={`transition-transform ${active === i ? 'rotate-180' : 'rotate-0'}`}>
@@ -116,7 +116,7 @@ export default function Peace() {
 
                     {/* Right: image that matches accordion height */}
                     <div className="flex items-center justify-center px-1 sm:px-0 mx-1 sm:mx-2 md:mx-15"> {/* Reduced padding/margin */}
-                            <div className="w-full max-w-2xl h-[50vh] rounded-2xl overflow-hidden shadow-lg bg-slate-800">
+                            <div className="w-full max-w-2xl h-[40vh] rounded-2xl overflow-hidden shadow-lg bg-slate-800">
                                 <img
                                     src={active === null ? defaultPeace : [imgP, imgE, imgA, imgC, imgE2][active]}
                                     alt={`Wealthcraft ${active === null ? 'Peace' : steps[active].short}`}
@@ -126,14 +126,14 @@ export default function Peace() {
                     </div>
                 </div>
 
-                <div className="mt-4 sm:mt-6 text-center"> {/* Reduced margin */}
+                <div className="mt-8 sm:mt-8 text-center"> {/* Slightly larger margin for breathing room */}
                     <Link
                         to="#book"
-                        className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-3 rounded-full" 
+                        className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-4 rounded-full shadow-lg" 
                         style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
                         aria-label="Book a consultation to craft your financial peace"
                     >
-                        <span className="font-semibold text-sm sm:text-base">Let's Craft Your Financial P.E.A.C.E.</span> {/* Smaller text on mobile */}
+                        <span className="font-semibold text-base sm:text-lg">Let's Craft Your Financial P.E.A.C.E.</span>
                     </Link>
                 </div>
             </div>

@@ -373,7 +373,7 @@ export default function ServicesPricing() {
                                     to="#ad-hoc-consultation"
                                     className="inline-flex items-center justify-center px-8 py-4 bg-white text-[#000] rounded-full font-bold text-lg hover:-translate-y-1 transition-transform duration-300 shadow-lg"
                                 >
-                                    Book an Ad-hoc Consultation
+                                    Book a Discovery Call
                                     <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
@@ -386,212 +386,218 @@ export default function ServicesPricing() {
                 {/* Section 2: Get More for Less - Bundles */}
                 <div className="mb-16">
                     <div className="text-center mb-10">
-                        <h3 className="text-3xl font-bold text-slate-900 mb-4">Get More for Less!</h3>
+                        <h3 className="text-3xl font-bold text-slate-900 mb-4">For Clients Who Want Ongoing Partnership & Long-Term Clarity</h3>
                         <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-                            Get pocket-friendly deals designed exclusively for your business. Protect your business legally.
+                            If you want structured support, periodic reviews, and continuous guidance as your life
+                            evolves, our retainer plans give you deeper access and better savings.
+
+                            Choose the level of support that fits your goals:
                         </p>
                     </div>
 
                     {/* Pricing Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-10">
-                        {/* Essential Card */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                            <div className="p-6 text-center">
-                                <div className="mb-6">
-                                    <h4 className="text-2xl font-bold text-slate-900">Essential</h4>
-                                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 mb-10">
+  {/* Label for the entire section */}
+  <div className="md:col-span-3 text-center mb-6">
+    <span className="inline-block bg-red-100 text-red-800 text-sm font-semibold px-4 py-2 rounded-full border border-red-200 shadow-sm">
+      Limited Offer
+    </span>
+  </div>
 
-                                <div className="mb-6">
-                                    <div className="flex items-baseline justify-center">
-                                        <span className="text-4xl font-bold text-slate-900">₹4,999</span>
-                                        <span className="text-slate-500 ml-2">/year</span>
-                                    </div>
-                                    <div className="text-sm text-slate-500 mt-2">Pause/Cancel anytime</div>
-                                </div>
+  {/* Essential Card */}
+  <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className="p-6 text-center">
+      <div className="mb-6">
+        <h4 className="text-2xl font-bold text-slate-900">Essential</h4>
+      </div>
 
-                                <button className="w-full py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900 transition-colors duration-300 mb-8">
-                                    SELECT PLAN
-                                </button>
+      <div className="mb-6">
+        <div className="flex items-baseline justify-center gap-4">
+          <span className="text-lg text-slate-500 line-through">₹14,999</span>
+          <span className="text-5xl font-extrabold text-slate-900">₹9,999</span>
+        </div>
+        <div className="text-sm text-slate-500 mt-2">/year • Pause/Cancel anytime</div>
+      </div>
 
-                                <div className="space-y-4 text-left">
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Any 2 components</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">3 months association</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Only CFP team support</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-slate-400 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-500">No personal sessions</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Monthly educational sessions</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">1 review session after 4 months</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      <button className="w-full py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900 transition-colors duration-300 mb-8">
+        SELECT PLAN
+      </button>
 
-                        {/* Advanced Card */}
-                        <div className="bg-white rounded-2xl shadow-xl border-2 border-[#ffde21] overflow-visible transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative">
-                            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2">
-                                <div className="bg-[#ffde21] text-black text-xs font-bold px-4 py-1 rounded-full">
-                                    POPULAR
-                                </div>
-                            </div>
+      <div className="space-y-3 text-left">
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Any 2 components</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">3 months association</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Only CFP team support</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Monthly Educational Sessions</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">Personal sessions</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">No discount on further services</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">No carry forward</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">Comprehensive financial plan</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">Review sessions</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                            <div className="p-6 text-center">
-                                <div className="mb-6">
-                                    <h4 className="text-2xl font-bold text-slate-900">Advanced</h4>
-                                </div>
+  {/* Advanced Card */}
+  <div className="bg-white rounded-2xl shadow-xl border-2 border-[#ffde21] overflow-visible transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 relative">
+    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2">
+      <div className="bg-[#ffde21] text-black text-xs font-bold px-4 py-1 rounded-full">
+        POPULAR
+      </div>
+    </div>
 
-                                <div className="mb-6">
-                                    <div className="flex items-baseline justify-center">
-                                        <span className="text-4xl font-bold text-slate-900">₹9,999</span>
-                                        <span className="text-slate-500 ml-2">/year</span>
-                                    </div>
-                                    <div className="text-sm text-slate-500 mt-2">Pause/Cancel anytime</div>
-                                </div>
+    <div className="p-6 text-center">
+      <div className="mb-6">
+        <h4 className="text-2xl font-bold text-slate-900">Advanced</h4>
+      </div>
 
-                                <button className="w-full py-3 bg-[#ffde21] text-black font-semibold rounded-lg hover:bg-[#e6c81e] transition-colors duration-300 mb-8">
-                                    SELECT PLAN
-                                </button>
+      <div className="mb-6">
+        <div className="flex items-baseline justify-center gap-4">
+          <span className="text-lg text-slate-500 line-through">₹17,999</span>
+          <span className="text-5xl font-extrabold text-slate-900">₹12,999</span>
+        </div>
+        <div className="text-sm text-slate-500 mt-2">/year • Pause/Cancel anytime</div>
+      </div>
 
-                                <div className="space-y-4 text-left">
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Any 4 components</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">6 months association</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">CFP + any 1 service provider</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">1 personal session — 30 mins (phone)</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Monthly educational sessions</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">1 review after 4 months + monthly Zoom</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">10% discount on further services</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+      <button className="w-full py-3 bg-[#ffde21] text-black font-semibold rounded-lg hover:bg-[#e6c81e] transition-colors duration-300 mb-8">
+        SELECT PLAN
+      </button>
 
-                        {/* Premier Card */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
-                            <div className="p-6 text-center">
-                                <div className="mb-6">
-                                    <h4 className="text-2xl font-bold text-slate-900">Premier</h4>
-                                </div>
+      <div className="space-y-3 text-left">
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Any 4 components</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">8 months association</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">CFP + any 1 service provider</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Monthly Educational Sessions</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">2 Personal sessions</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">2 Review Sessions</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">15% discount on further services</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">1 time Carry Forward</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">Reminders about important dates & renewals</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+          <span className="text-slate-500">Comprehensive financial plan</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-                                <div className="mb-6">
-                                    <div className="flex items-baseline justify-center">
-                                        <span className="text-4xl font-bold text-slate-900">₹19,999</span>
-                                        <span className="text-slate-500 ml-2">/year</span>
-                                    </div>
-                                    <div className="text-sm text-slate-500 mt-2">Pause/Cancel anytime</div>
-                                </div>
+  {/* Premier Card */}
+  <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+    <div className="p-6 text-center">
+      <div className="mb-6">
+        <h4 className="text-2xl font-bold text-slate-900">Premier</h4>
+      </div>
 
-                                <button className="w-full py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900 transition-colors duration-300 mb-8">
-                                    SELECT PLAN
-                                </button>
+      <div className="mb-6">
+        <div className="flex items-baseline justify-center gap-4">
+          <span className="text-lg text-slate-500 line-through">₹25,999</span>
+          <span className="text-5xl font-extrabold text-slate-900">₹18,999</span>
+        </div>
+        <div className="text-sm text-slate-500 mt-2">/year • Pause/Cancel anytime</div>
+      </div>
 
-                                <div className="space-y-4 text-left">
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">All components included</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">One year association</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Full team: CFP + CA + LA + RA + InsA + EA</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">3 personal sessions — 30 mins (Zoom)</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">Monthly + 6 trainer sessions</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">1 Zoom each provider + CFP</span>
-                                    </div>
-                                    <div className="flex items-start">
-                                        <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="text-slate-700">15-20% discount on further services</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+      <button className="w-full py-3 bg-slate-800 text-white font-semibold rounded-lg hover:bg-slate-900 transition-colors duration-300 mb-8">
+        SELECT PLAN
+      </button>
+
+      <div className="space-y-3 text-left">
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">All components included</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">12 months association</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">CFP + full team of service providers</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Monthly Educational Sessions</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Personal sessions every month</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Review Sessions every quarter</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">20% discount on further services</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">2 times Carry Forward</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Reminders about important dates & renewals, goal achievement</span>
+        </div>
+        <div className="flex items-start">
+          <svg className="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+          <span className="text-slate-700">Comprehensive financial plan</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
                 </div>
 
                 {/* Section CTA */}
