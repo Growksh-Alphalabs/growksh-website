@@ -104,15 +104,17 @@ export default function Hero() {
         <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 md:gap-10 lg:gap-12">
           {/* Left: Text */}
           <div className="w-full lg:w-1/2 order-1 lg:order-1 mt-8 lg:mt-0 lg:ml-20">
+          <Link to="/ventures" className="inline-block mb-6">
             <div className="mb-4 md:mb-6">
               <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-slate-700 border border-white/60 shadow-sm">
                 <span className="bg-[#cf87bf] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
-                <span className="text-xs sm:text-sm font-medium">Explore Wealth Management</span>
+                <span className="text-xs sm:text-sm font-medium">Explore Asset Management</span>
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#2e3b4b] ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                 </svg>
               </div>
             </div>
+          </Link>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
               <span className="block">
@@ -129,7 +131,7 @@ export default function Hero() {
             <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 to="/alphalabs"
-                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#3dc7f5] hover:bg-[#2fbff1] text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#00674F] hover:bg-[#00674F]/90 text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
                 aria-label="Explore Education"
               >
                 Explore Education
@@ -137,7 +139,7 @@ export default function Hero() {
 
               <Link
                 to="/wealthcraft"
-                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#2e3b4b] hover:bg-[#232c35] text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#ffde21] hover:bg-[#ffde21]/90 text-black rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
                 aria-label="Explore Advisory"
               >
                 Explore Advisory

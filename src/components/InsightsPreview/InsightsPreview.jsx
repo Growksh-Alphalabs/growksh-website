@@ -54,7 +54,7 @@ export default function InsightsPreview() {
 
                 <div className="mt-6">
                   <Link
-                    to="#"
+                    to="/insights"
                     className="inline-flex items-center gap-2 text-[#cf87bf] font-medium hover:underline"
                     aria-label={`Read ${p.title}`}
                   >
