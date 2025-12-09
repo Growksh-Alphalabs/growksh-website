@@ -53,9 +53,9 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
       >
         {/* FRONT */}
         <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl overflow-hidden [backface-visibility:hidden]">
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-violet-50/40 to-white"></div>
+          <div className="absolute inset-0 bg-white/5"></div>
 
-          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-purple-500 via-violet-500 to-purple-500"></div>
+          <div className="absolute top-0 left-0 right-0 h-2 bg-[#3dc7f5]"></div>
 
           <div className="relative h-full p-8 flex flex-col items-center justify-center text-center">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">{title}</h3>
@@ -63,7 +63,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             <p className="text-slate-600 font-medium mb-8 px-4 italic">{tagline}</p>
 
             <div className={`mt-4 ${imagePosition === 'center' ? 'mx-auto' : ''}`}>
-              <div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-50 to-violet-100 flex items-center justify-center shadow-inner">
+              <div className="w-40 h-40 rounded-full flex items-center justify-center shadow-inner" style={{ backgroundColor: 'rgba(61,199,245,0.06)' }}>
                 <img src={iconSrc} alt={`${title} visual`} className="w-28 h-28 opacity-90 object-cover" />
               </div>
             </div>
@@ -74,7 +74,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
         <div className="absolute inset-0 bg-white/95 backdrop-blur-sm rounded-2xl border border-white/20 shadow-2xl overflow-hidden [backface-visibility:hidden] [transform:rotateY(180deg)]">
           <div className="h-full p-8 flex flex-col">
             <div className="mb-6">
-              <div className="h-1 w-12 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full"></div>
+              <div className="h-1 w-12 bg-[#3dc7f5] rounded-full"></div>
             </div>
 
             <div className="flex-1 overflow-y-auto pr-2">
@@ -84,7 +84,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             <div className="mt-6 pt-6 border-t border-white/20">
               <Link
                 to={href}
-                className="inline-flex items-center justify-center w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className="inline-flex items-center justify-center w-full px-6 py-3 bg-[#3dc7f5] text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                 onClick={(e) => e.stopPropagation()}
               >
                 <span>Explore {title}</span>
@@ -106,107 +106,52 @@ export default function Pillars() {
       {/* Enhanced purple smoky/cloudy background */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <svg className="w-full h-full" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-          <defs>
-            {/* Base gradient */}
-            <linearGradient id="cloudBase" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#faf5ff" stopOpacity="1" />
-              <stop offset="30%" stopColor="#f3e8ff" stopOpacity="1" />
-              <stop offset="70%" stopColor="#e9d5ff" stopOpacity="1" />
-              <stop offset="100%" stopColor="#faf5ff" stopOpacity="1" />
-            </linearGradient>
+          {/* Solid, subtle background using the new theme colors (no gradients) */}
+          <rect width="100%" height="100%" fill="#f0fbff" />
 
-            {/* Cloud gradients */}
-            <radialGradient id="cloud1" cx="15%" cy="25%" r="50%">
-              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.22" />
-              <stop offset="50%" stopColor="#a855f7" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#c084fc" stopOpacity="0.04" />
-            </radialGradient>
-
-            <radialGradient id="cloud2" cx="85%" cy="65%" r="45%">
-              <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.18" />
-              <stop offset="60%" stopColor="#a78bfa" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#ddd6fe" stopOpacity="0.02" />
-            </radialGradient>
-
-            <radialGradient id="cloud3" cx="50%" cy="50%" r="40%">
-              <stop offset="0%" stopColor="#a855f7" stopOpacity="0.14" />
-              <stop offset="70%" stopColor="#d8b4fe" stopOpacity="0.06" />
-              <stop offset="100%" stopColor="#f3e8ff" stopOpacity="0" />
-            </radialGradient>
-
-            <radialGradient id="cloud4" cx="70%" cy="30%" r="35%">
-              <stop offset="0%" stopColor="#c084fc" stopOpacity="0.12" />
-              <stop offset="80%" stopColor="#e9d5ff" stopOpacity="0.04" />
-              <stop offset="100%" stopColor="#faf5ff" stopOpacity="0" />
-            </radialGradient>
-
-            <radialGradient id="cloud5" cx="30%" cy="70%" r="30%">
-              <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.10" />
-              <stop offset="90%" stopColor="#a78bfa" stopOpacity="0.03" />
-              <stop offset="100%" stopColor="#f3e8ff" stopOpacity="0" />
-            </radialGradient>
-
-            {/* Blur filters */}
-            <filter id="cloudBlur" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="60" />
-              <feColorMatrix type="matrix" values="1 0 0 0 0  0 0.9 0 0 0  0 0 1 0 0  0 0 0 0.85 0" />
-            </filter>
-
-            <filter id="softCloudBlur" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="40" />
-            </filter>
-
-            <filter id="lightCloudBlur" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="20" />
-            </filter>
-          </defs>
-
-          {/* Base gradient */}
-          <rect width="100%" height="100%" fill="url(#cloudBase)" />
-
-          {/* Main clouds - heavily blurred (lightened) */}
-          <g filter="url(#cloudBlur)" opacity="0.45">
-            <ellipse cx="15%" cy="25%" rx="450" ry="350" fill="url(#cloud1)" />
-            <ellipse cx="85%" cy="65%" rx="400" ry="300" fill="url(#cloud2)" />
-            <circle cx="50%" cy="50%" r="350" fill="url(#cloud3)" />
-            <ellipse cx="70%" cy="30%" rx="300" ry="250" fill="url(#cloud4)" />
-            <ellipse cx="30%" cy="70%" rx="280" ry="220" fill="url(#cloud5)" />
+          {/* Main soft shapes — solid fills with low opacity, using palette colors */}
+          <g opacity="0.38">
+            <ellipse cx="15%" cy="25%" rx="450" ry="350" fill="#3dc7f5" fillOpacity="0.08" />
+            <ellipse cx="85%" cy="65%" rx="400" ry="300" fill="#cf87bf" fillOpacity="0.06" />
+            <circle cx="50%" cy="50%" r="350" fill="#3dc7f5" fillOpacity="0.06" />
+            <ellipse cx="70%" cy="30%" rx="300" ry="250" fill="#2e3b4b" fillOpacity="0.04" />
+            <ellipse cx="30%" cy="70%" rx="280" ry="220" fill="#3dc7f5" fillOpacity="0.05" />
           </g>
 
-          {/* Floating cloud wisps (lightened) */}
-          <g opacity="0.22" filter="url(#softCloudBlur)">
-            <circle cx="10%" cy="10%" r="120" fill="#8b5cf6" fillOpacity="0.12" />
-            <circle cx="90%" cy="20%" r="100" fill="#7c3aed" fillOpacity="0.10" />
-            <circle cx="25%" cy="85%" r="150" fill="#a855f7" fillOpacity="0.08" />
-            <circle cx="75%" cy="45%" r="80" fill="#c084fc" fillOpacity="0.06" />
-            <circle cx="60%" cy="15%" r="70" fill="#8b5cf6" fillOpacity="0.07" />
-            <circle cx="40%" cy="90%" r="90" fill="#7c3aed" fillOpacity="0.09" />
+          {/* Floating wisps — solid color circles with low opacity */}
+          <g opacity="0.22">
+            <circle cx="10%" cy="10%" r="120" fill="#3dc7f5" fillOpacity="0.08" />
+            <circle cx="90%" cy="20%" r="100" fill="#cf87bf" fillOpacity="0.06" />
+            <circle cx="25%" cy="85%" r="150" fill="#3dc7f5" fillOpacity="0.05" />
+            <circle cx="75%" cy="45%" r="80" fill="#2e3b4b" fillOpacity="0.04" />
+            <circle cx="60%" cy="15%" r="70" fill="#3dc7f5" fillOpacity="0.05" />
+            <circle cx="40%" cy="90%" r="90" fill="#cf87bf" fillOpacity="0.05" />
           </g>
 
-          {/* Subtle cloud accents (lightened) */}
-          <g opacity="0.18" filter="url(#lightCloudBlur)">
-            <circle cx="5%" cy="40%" r="60" fill="#a855f7" fillOpacity="0.05" />
-            <circle cx="95%" cy="80%" r="50" fill="#8b5cf6" fillOpacity="0.04" />
-            <circle cx="20%" cy="60%" r="40" fill="#c084fc" fillOpacity="0.03" />
-            <circle cx="80%" cy="10%" r="35" fill="#7c3aed" fillOpacity="0.03" />
-            <ellipse cx="45%" cy="20%" rx="70" ry="50" fill="#a855f7" fillOpacity="0.04" />
-            <ellipse cx="55%" cy="75%" rx="60" ry="40" fill="#8b5cf6" fillOpacity="0.03" />
+          {/* Subtle accents */}
+          <g opacity="0.14">
+            <circle cx="5%" cy="40%" r="60" fill="#cf87bf" fillOpacity="0.03" />
+            <circle cx="95%" cy="80%" r="50" fill="#3dc7f5" fillOpacity="0.03" />
+            <circle cx="20%" cy="60%" r="40" fill="#2e3b4b" fillOpacity="0.02" />
+            <circle cx="80%" cy="10%" r="35" fill="#3dc7f5" fillOpacity="0.02" />
+            <ellipse cx="45%" cy="20%" rx="70" ry="50" fill="#cf87bf" fillOpacity="0.03" />
+            <ellipse cx="55%" cy="75%" rx="60" ry="40" fill="#3dc7f5" fillOpacity="0.02" />
           </g>
 
-          {/* Very subtle overlay */}
-          <rect width="100%" height="100%" fill="url(#cloudBase)" fillOpacity="0.08" />
+          {/* Very subtle overlay as a solid tint */}
+          <rect width="100%" height="100%" fill="#f8fdff" fillOpacity="0.06" />
         </svg>
 
         {/* Animated floating clouds */}
-        <div className="absolute top-1/4 left-10 w-64 h-64 bg-gradient-to-br from-purple-200/12 to-violet-100/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/3 right-20 w-80 h-80 bg-gradient-to-tr from-violet-300/10 to-purple-100/8 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute top-2/3 left-1/3 w-48 h-48 bg-gradient-to-r from-purple-600/6 to-pink-100/6 rounded-full blur-2xl animate-pulse delay-500" />
+        <div className="absolute top-1/4 left-10 w-64 h-64 bg-[#3dc7f5] opacity-10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/3 right-20 w-80 h-80 bg-[#cf87bf] opacity-10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-2/3 left-1/3 w-48 h-48 bg-[#2e3b4b] opacity-6 rounded-full blur-2xl animate-pulse delay-500" />
 
         {/* Gradient fades */}
-        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-white to-transparent opacity-40"></div>
-        <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white to-transparent opacity-40"></div>
-        <div className="absolute left-0 top-0 h-full w-32 bg-gradient-to-r from-white to-transparent opacity-30"></div>
-        <div className="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-white to-transparent opacity-30"></div>
+        <div className="absolute top-0 left-0 w-full h-40 bg-white/40"></div>
+        <div className="absolute bottom-0 left-0 w-full h-40 bg-white/40"></div>
+        <div className="absolute left-0 top-0 h-full w-32 bg-white/30"></div>
+        <div className="absolute right-0 top-0 h-full w-32 bg-white/30"></div>
       </div>
 
       <div className="max-w-6xl mx-auto px-6 lg:px-8 relative">
@@ -214,7 +159,7 @@ export default function Pillars() {
 
 
           <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 mb-6">
-            How We <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Help You!</span>
+            How We <span className="text-[#cf87bf]">Help You!</span>
           </h2>
 
           <p className="text-lg text-slate-600">

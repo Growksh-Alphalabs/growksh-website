@@ -21,45 +21,11 @@ export default function Hero() {
   }, [words.length]);
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-gradient-to-br from-purple-50 to-white text-slate-500 relative overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-white text-slate-500 relative overflow-hidden">
       {/* Modern abstract purple background */}
       <svg className="pointer-events-none absolute inset-0 w-full h-full -z-10" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <defs>
-          <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fbf8ff" stopOpacity="1" />
-            <stop offset="50%" stopColor="#f7f3ff" stopOpacity="1" />
-            <stop offset="100%" stopColor="#fbf8ff" stopOpacity="1" />
-          </linearGradient>
-
-          <radialGradient id="softBloom1" cx="85%" cy="15%" r="65%">
-            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.12" />
-            <stop offset="60%" stopColor="#c4b5fd" stopOpacity="0.06" />
-            <stop offset="100%" stopColor="#f7f3ff" stopOpacity="0" />
-          </radialGradient>
-
-          <radialGradient id="softBloom2" cx="15%" cy="75%" r="55%">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.1" />
-            <stop offset="70%" stopColor="#a78bfa" stopOpacity="0.04" />
-            <stop offset="100%" stopColor="#f7f3ff" stopOpacity="0" />
-          </radialGradient>
-
-          <radialGradient id="softBloom3" cx="60%" cy="40%" r="50%">
-            <stop offset="0%" stopColor="#a855f7" stopOpacity="0.08" />
-            <stop offset="80%" stopColor="#d8b4fe" stopOpacity="0.03" />
-            <stop offset="100%" stopColor="#f7f3ff" stopOpacity="0" />
-          </radialGradient>
-
-          <radialGradient id="softBloom4" cx="75%" cy="60%" r="45%">
-            <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.08" />
-            <stop offset="60%" stopColor="#b794f4" stopOpacity="0.03" />
-            <stop offset="100%" stopColor="#f7f3ff" stopOpacity="0" />
-          </radialGradient>
-
-          <radialGradient id="softBloom5" cx="40%" cy="25%" r="40%">
-            <stop offset="0%" stopColor="#9f7aea" stopOpacity="0.07" />
-            <stop offset="60%" stopColor="#e9d5ff" stopOpacity="0.02" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </radialGradient>
+          {/* Solid-color blooms used instead of SVG gradients */}
 
           <filter id="gentleBlur" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="35" />
@@ -70,68 +36,68 @@ export default function Hero() {
           </filter>
         </defs>
 
-        {/* Base gradient */}
-        <rect width="100%" height="100%" fill="url(#purpleGradient)" />
+        {/* Base fill (solid) */}
+        <rect width="100%" height="100%" fill="#ffffff" />
 
         {/* Soft blooms */}
-        <ellipse cx="85%" cy="15%" rx="380" ry="280" fill="url(#softBloom1)" filter="url(#gentleBlur)" opacity="0.95" />
-        <ellipse cx="15%" cy="80%" rx="320" ry="220" fill="url(#softBloom2)" filter="url(#gentleBlur)" opacity="0.85" />
-        <circle cx="55%" cy="40%" r="260" fill="url(#softBloom3)" filter="url(#gentleBlur)" opacity="0.75" />
+        <ellipse cx="85%" cy="15%" rx="380" ry="280" fill="#3dc7f5" filter="url(#gentleBlur)" opacity="0.18" />
+        <ellipse cx="15%" cy="80%" rx="320" ry="220" fill="#3dc7f5" filter="url(#gentleBlur)" opacity="0.12" />
+        <circle cx="55%" cy="40%" r="260" fill="#cf87bf" filter="url(#gentleBlur)" opacity="0.12" />
         {/* Additional blooms for denser abstract clouds */}
-        <ellipse cx="75%" cy="60%" rx="300" ry="220" fill="url(#softBloom4)" filter="url(#gentleBlur)" opacity="0.6" />
-        <ellipse cx="40%" cy="25%" rx="220" ry="180" fill="url(#softBloom5)" filter="url(#gentleBlur)" opacity="0.55" />
-        <circle cx="920" cy="520" r="120" fill="url(#softBloom4)" filter="url(#lightBlur)" opacity="0.32" />
+        <ellipse cx="75%" cy="60%" rx="300" ry="220" fill="#3dc7f5" filter="url(#gentleBlur)" opacity="0.08" />
+        <ellipse cx="40%" cy="25%" rx="220" ry="180" fill="#cf87bf" filter="url(#gentleBlur)" opacity="0.06" />
+        <circle cx="920" cy="520" r="120" fill="#3dc7f5" filter="url(#lightBlur)" opacity="0.06" />
 
         {/* Geometric forms */}
-        <g opacity="0.08">
-          <polygon points="1250,120 1350,100 1380,200 1280,220" fill="#8b5cf6" filter="url(#lightBlur)" />
-          <polygon points="120,480 250,440 280,600 150,640" fill="#7c3aed" filter="url(#lightBlur)" />
-          <polygon points="450,80 550,60 580,160 480,180" fill="#a855f7" filter="url(#lightBlur)" />
+        <g opacity="0.06">
+          <polygon points="1250,120 1350,100 1380,200 1280,220" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <polygon points="120,480 250,440 280,600 150,640" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <polygon points="450,80 550,60 580,160 480,180" fill="#cf87bf" filter="url(#lightBlur)" />
         </g>
 
         {/* Floating elements */}
-        <g opacity="0.06">
-          <circle cx="250" cy="180" r="60" fill="#8b5cf6" filter="url(#lightBlur)" />
-          <circle cx="1200" cy="420" r="45" fill="#7c3aed" filter="url(#lightBlur)" />
-          <circle cx="850" cy="580" r="75" fill="#a855f7" filter="url(#lightBlur)" />
-          <circle cx="550" cy="320" r="55" fill="#8b5cf6" filter="url(#lightBlur)" />
-          <circle cx="980" cy="260" r="48" fill="#9f7aea" filter="url(#lightBlur)" />
-          <circle cx="700" cy="120" r="36" fill="#7c3aed" filter="url(#lightBlur)" />
-          <ellipse cx="300" cy="520" rx="44" ry="28" fill="#a855f7" filter="url(#lightBlur)" />
+        <g opacity="0.05">
+          <circle cx="250" cy="180" r="60" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <circle cx="1200" cy="420" r="45" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <circle cx="850" cy="580" r="75" fill="#cf87bf" filter="url(#lightBlur)" />
+          <circle cx="550" cy="320" r="55" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <circle cx="980" cy="260" r="48" fill="#cf87bf" filter="url(#lightBlur)" />
+          <circle cx="700" cy="120" r="36" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <ellipse cx="300" cy="520" rx="44" ry="28" fill="#cf87bf" filter="url(#lightBlur)" />
         </g>
 
         {/* Minimal shapes */}
-        <g opacity="0.05">
-          <rect x="1150" y="540" width="35" height="35" rx="7" fill="#a855f7" filter="url(#lightBlur)" />
-          <rect x="350" y="220" width="28" height="28" rx="6" fill="#8b5cf6" filter="url(#lightBlur)" />
-          <rect x="1280" y="320" width="22" height="22" rx="5" fill="#7c3aed" filter="url(#lightBlur)" />
+        <g opacity="0.04">
+          <rect x="1150" y="540" width="35" height="35" rx="7" fill="#cf87bf" filter="url(#lightBlur)" />
+          <rect x="350" y="220" width="28" height="28" rx="6" fill="#3dc7f5" filter="url(#lightBlur)" />
+          <rect x="1280" y="320" width="22" height="22" rx="5" fill="#3dc7f5" filter="url(#lightBlur)" />
         </g>
 
         {/* Subtle lines */}
-        <g opacity="0.04">
-          <path d="M0,0 L1440,800" stroke="#7c3aed" strokeWidth="25" />
-          <path d="M1440,0 L0,800" stroke="#8b5cf6" strokeWidth="20" />
+        <g opacity="0.03">
+          <path d="M0,0 L1440,800" stroke="#3dc7f5" strokeWidth="18" />
+          <path d="M1440,0 L0,800" stroke="#cf87bf" strokeWidth="14" />
         </g>
 
         {/* Dots pattern */}
-        <g opacity="0.03">
-          <circle cx="180" cy="300" r="4" fill="#7c3aed" />
-          <circle cx="1300" cy="150" r="3" fill="#8b5cf6" />
-          <circle cx="600" cy="550" r="5" fill="#a855f7" />
-          <circle cx="950" cy="250" r="3.5" fill="#7c3aed" />
-          <circle cx="300" cy="650" r="4" fill="#8b5cf6" />
-          <circle cx="1100" cy="400" r="3" fill="#a855f7" />
+        <g opacity="0.02">
+          <circle cx="180" cy="300" r="4" fill="#3dc7f5" />
+          <circle cx="1300" cy="150" r="3" fill="#3dc7f5" />
+          <circle cx="600" cy="550" r="5" fill="#cf87bf" />
+          <circle cx="950" cy="250" r="3.5" fill="#3dc7f5" />
+          <circle cx="300" cy="650" r="4" fill="#3dc7f5" />
+          <circle cx="1100" cy="400" r="3" fill="#cf87bf" />
         </g>
       </svg>
 
       {/* Subtle static elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-10 w-72 h-72 bg-purple-300/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/3 right-20 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl" />
-        <div className="absolute top-2/3 left-1/3 w-64 h-64 bg-fuchsia-300/8 rounded-full blur-2xl" />
-        <div className="absolute top-10 right-1/4 w-80 h-80 bg-violet-300/12 rounded-full blur-4xl" />
-        <div className="absolute left-20 top-1/3 w-44 h-44 bg-purple-400/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-8 left-1/2 w-60 h-60 bg-fuchsia-400/8 rounded-full blur-3xl" />
+        <div className="absolute top-1/4 left-10 w-72 h-72 bg-[#3dc7f5]/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-20 w-96 h-96 bg-[#cf87bf]/10 rounded-full blur-3xl" />
+        <div className="absolute top-2/3 left-1/3 w-64 h-64 bg-[#cf87bf]/8 rounded-full blur-2xl" />
+        <div className="absolute top-10 right-1/4 w-80 h-80 bg-[#3dc7f5]/12 rounded-full blur-4xl" />
+        <div className="absolute left-20 top-1/3 w-44 h-44 bg-[#3dc7f5]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-8 left-1/2 w-60 h-60 bg-[#cf87bf]/8 rounded-full blur-3xl" />
       </div>
 
       <div className="relative z-10 w-full mx-auto px-6 sm:px-8 lg:px-12">
@@ -140,9 +106,9 @@ export default function Hero() {
           <div className="w-full lg:w-1/2 order-1 lg:order-1 mt-8 lg:mt-0 lg:ml-20">
             <div className="mb-4 md:mb-6">
               <div className="inline-flex items-center gap-2 sm:gap-3 bg-white/80 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 text-xs sm:text-sm text-slate-700 border border-white/60 shadow-sm">
-                <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
+                <span className="bg-[#cf87bf] text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-semibold shadow-sm">Upcoming!</span>
                 <span className="text-xs sm:text-sm font-medium">Explore Wealth Management</span>
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 text-[#2e3b4b] ml-1 sm:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                 </svg>
               </div>
@@ -150,20 +116,20 @@ export default function Hero() {
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
               <span className="block">
-                <span className="bg-gradient-to-r from-purple-600 to-violet-600 bg-clip-text text-transparent">Crafting Wealth.</span>
+                <span className="text-[#3dc7f5]">Crafting Wealth.</span>
               </span>
 
               <span className="block mt-1 sm:mt-2 text-slate-800 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-semibold">Creating Confidence.</span>
             </h1>
 
-            <p className="mt-3 sm:mt-4 text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl">
+            <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl">
               At Growksh, we help you take charge of your money — through education, planning, and purposeful action.
             </p>
 
             <div className="mt-6 sm:mt-8 flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 to="/alphalabs"
-                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#3dc7f5] hover:bg-[#2fbff1] text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
                 aria-label="Explore Education"
               >
                 Explore Education
@@ -171,7 +137,7 @@ export default function Hero() {
 
               <Link
                 to="/wealthcraft"
-                className="inline-flex items-center px-4 sm:px-5 py-2.5 sm:py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-full font-semibold text-sm sm:text-base shadow-sm transition-all duration-150"
+                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-3.5 bg-[#2e3b4b] hover:bg-[#232c35] text-white rounded-full font-semibold text-base sm:text-lg shadow-sm transition-all duration-150"
                 aria-label="Explore Advisory"
               >
                 Explore Advisory
@@ -187,11 +153,7 @@ export default function Hero() {
                 {/* Outer circular path */}
                 <svg viewBox="0 0 400 400" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                   <defs>
-                    <linearGradient id="circularGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.8" />
-                      <stop offset="50%" stopColor="#a855f7" stopOpacity="0.6" />
-                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.4" />
-                    </linearGradient>
+                    {/* circularGradient removed; using solid stroke color instead */}
                     
                     {/* Glow effect for animated dots */}
                     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -204,7 +166,7 @@ export default function Hero() {
                   </defs>
                   
                   {/* Circular paths */}
-                  <g fill="none" stroke="url(#circularGradient)" strokeWidth="2" strokeLinecap="round">
+                  <g fill="none" stroke="#3dc7f5" strokeWidth="2" strokeLinecap="round">
                       {/* Main circular path */}
                       <path id="mainOrbit" d="M200,50 A150,150 0 1,1 200,350 A150,150 0 1,1 200,50" 
                         strokeOpacity="0.15" strokeDasharray="2,3" />
@@ -216,8 +178,8 @@ export default function Hero() {
                   
                   {/* Animated dots moving along paths */}
                   {/* Dot 1 - Alphalabs */}
-                  <g className="animate-[orbit_8s_linear_infinite]">
-                    <circle cx="350" cy="200" r="5" fill="#7c3aed" filter="url(#glow)" opacity="0.8">
+                    <g className="animate-[orbit_8s_linear_infinite]">
+                    <circle cx="350" cy="200" r="5" fill="#3dc7f5" filter="url(#glow)" opacity="0.9">
                       <animateMotion
                         path="M200,50 A150,150 0 1,1 200,350 A150,150 0 1,1 200,50"
                         dur="8s"
@@ -227,8 +189,8 @@ export default function Hero() {
                   </g>
                   
                   {/* Dot 2 - Wealthcraft */}
-                  <g className="animate-[orbit_8s_linear_infinite] origin-center" style={{animationDelay: '-2.7s'}}>
-                    <circle cx="200" cy="50" r="5" fill="#a855f7" filter="url(#glow)" opacity="0.8">
+                    <g className="animate-[orbit_8s_linear_infinite] origin-center" style={{animationDelay: '-2.7s'}}>
+                    <circle cx="200" cy="50" r="5" fill="#cf87bf" filter="url(#glow)" opacity="0.85">
                       <animateMotion
                         path="M200,50 A150,150 0 1,1 200,350 A150,150 0 1,1 200,50"
                         dur="8s"
@@ -238,8 +200,8 @@ export default function Hero() {
                   </g>
                   
                   {/* Dot 3 - Ventures */}
-                  <g className="animate-[orbit_8s_linear_infinite] origin-center" style={{animationDelay: '-5.3s'}}>
-                    <circle cx="50" cy="200" r="5" fill="#8b5cf6" filter="url(#glow)" opacity="0.8">
+                    <g className="animate-[orbit_8s_linear_infinite] origin-center" style={{animationDelay: '-5.3s'}}>
+                    <circle cx="50" cy="200" r="5" fill="#3dc7f5" filter="url(#glow)" opacity="0.8">
                       <animateMotion
                         path="M200,50 A150,150 0 1,1 200,350 A150,150 0 1,1 200,50"
                         dur="8s"
@@ -249,10 +211,10 @@ export default function Hero() {
                   </g>
                   
                   {/* Labels */}
-                  <g fontSize="12" fontWeight="500" textAnchor="middle" fill="#4c1d95">
+                  <g fontSize="12" fontWeight="500" textAnchor="middle" fill="#2e3b4b">
                     {/* Alphalabs label - moves along orbit */}
                     <text className="font-semibold">
-                      <tspan fill="#7c3aed">Alphalabs</tspan>
+                      <tspan fill="#3dc7f5">Alphalabs</tspan>
                       <animateMotion dur="8s" repeatCount="indefinite" begin="0s" rotate="0">
                         <mpath xlinkHref="#mainOrbit" />
                       </animateMotion>
@@ -260,7 +222,7 @@ export default function Hero() {
 
                     {/* Wealthcraft label - offset along orbit */}
                     <text className="font-semibold">
-                      <tspan fill="#a855f7">Wealthcraft</tspan>
+                      <tspan fill="#cf87bf">Wealthcraft</tspan>
                       <animateMotion dur="8s" repeatCount="indefinite" begin="2.666s" rotate="0">
                         <mpath xlinkHref="#mainOrbit" />
                       </animateMotion>
@@ -268,7 +230,7 @@ export default function Hero() {
 
                     {/* Ventures label - offset along orbit */}
                     <text className="font-semibold">
-                      <tspan fill="#8b5cf6">Ventures</tspan>
+                      <tspan fill="#2e3b4b">Ventures</tspan>
                       <animateMotion dur="8s" repeatCount="indefinite" begin="5.333s" rotate="0">
                         <mpath xlinkHref="#mainOrbit" />
                       </animateMotion>
@@ -284,21 +246,21 @@ export default function Hero() {
 
                   {/* Rotating center label along the inner orbit */}
                   <g>
-                    <text fontSize="10" fill="#5b21b6" fontWeight="600" textAnchor="middle">
+                    <text fontSize="10" fill="#2e3b4b" fontWeight="600" textAnchor="middle">
                       <tspan>Learn</tspan>
                       <animateMotion dur="6s" repeatCount="indefinite" begin="0s" rotate="0">
                         <mpath xlinkHref="#innerOrbit" />
                       </animateMotion>
                     </text>
 
-                    <text fontSize="10" fill="#5b21b6" fontWeight="600" textAnchor="middle">
+                    <text fontSize="10" fill="#2e3b4b" fontWeight="600" textAnchor="middle">
                       <tspan>Plan</tspan>
                       <animateMotion dur="6s" repeatCount="indefinite" begin="2s" rotate="0">
                         <mpath xlinkHref="#innerOrbit" />
                       </animateMotion>
                     </text>
 
-                    <text fontSize="10" fill="#5b21b6" fontWeight="600" textAnchor="middle">
+                    <text fontSize="10" fill="#2e3b4b" fontWeight="600" textAnchor="middle">
                       <tspan>Grow</tspan>
                       <animateMotion dur="6s" repeatCount="indefinite" begin="4s" rotate="0">
                         <mpath xlinkHref="#innerOrbit" />
@@ -311,10 +273,10 @@ export default function Hero() {
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="relative">
                     {/* Pulsing glow effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-full blur-xl animate-pulse"></div>
+                    <div className="absolute inset-0 bg-[#3dc7f5]/20 rounded-full blur-xl animate-pulse"></div>
                     
                     {/* Center circle with hero PNG */}
-                    <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 flex items-center justify-center shadow-2xl shadow-purple-100/50 relative z-10">
+                    <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 flex items-center justify-center shadow-2xl relative z-10">
                       <img
                         src={homeHeroImg}
                         alt="Growksh center"
@@ -325,8 +287,8 @@ export default function Hero() {
                 </div>
                 
                 {/* Background blur effects */}
-                <div className="absolute -right-6 sm:-right-8 md:-right-12 -bottom-4 sm:-bottom-6 md:-bottom-8 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-60 lg:h-60 rounded-full bg-gradient-to-br from-violet-400/10 to-purple-400/10 blur-3xl" />
-                <div className="absolute -left-6 sm:-left-8 md:-left-12 -top-4 sm:-top-6 md:-top-8 w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-full bg-gradient-to-tr from-purple-300/8 to-pink-300/8 blur-3xl" />
+                <div className="absolute -right-6 sm:-right-8 md:-right-12 -bottom-4 sm:-bottom-6 md:-bottom-8 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-60 lg:h-60 rounded-full bg-[#3dc7f5]/10 blur-3xl" />
+                <div className="absolute -left-6 sm:-left-8 md:-left-12 -top-4 sm:-top-6 md:-top-8 w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-full bg-[#cf87bf]/8 blur-3xl" />
               </div>
             </div>
           </div>

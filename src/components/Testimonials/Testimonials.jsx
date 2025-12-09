@@ -9,7 +9,7 @@ const testimonials = [
     name: 'Aastha Sharma', 
     location: '',
     role: '',
-    avatarColor: 'bg-purple-100',
+    avatarColor: 'bg-[#3dc7f5]',
     initials: 'AS',
     avatar: a1
   },
@@ -18,7 +18,7 @@ const testimonials = [
     name: 'Satyawan Aglawe', 
     location: '',
     role: '',
-    avatarColor: 'bg-purple-100',
+    avatarColor: 'bg-[#3dc7f5]',
     initials: 'SA',
     avatar: a2
   },
@@ -27,7 +27,7 @@ const testimonials = [
     name: 'Garima Bhandari', 
     location: '',
     role: '',
-    avatarColor: 'bg-purple-100',
+    avatarColor: 'bg-[#3dc7f5]',
     initials: 'GB',
     avatar: a3
   }
@@ -74,16 +74,16 @@ export default function Testimonials() {
   }
 
   return (
-    <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+    <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
           {/* Left Column - Header */}
           <div className="space-y-4">
-            <span className="text-sm font-medium text-purple-700">TRUST & IMPACT</span>
+            <span className="text-sm font-medium text-[#cf87bf]">TRUST & IMPACT</span>
             
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
-              Voices of <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-violet-600">Confidence</span>
+              Voices of <span className="text-[#cf87bf]">Confidence</span>
             </h2>
             
             <p className="text-lg text-slate-600 max-w-lg">
@@ -117,7 +117,7 @@ export default function Testimonials() {
               onBlur={() => setPaused(false)}
             >
               {/* Quote icon */}
-              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-violet-500 flex items-center justify-center shadow-lg">
+              <div className="absolute -top-4 -left-4 w-12 h-12 rounded-full bg-[#3dc7f5] flex items-center justify-center shadow-lg">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                 </svg>
@@ -148,7 +148,7 @@ export default function Testimonials() {
                           <div className="mt-2">
                             <button
                               onClick={() => toggleExpanded(idx)}
-                              className="text-sm text-purple-600 hover:underline"
+                              className="text-sm text-[#cf87bf] hover:underline"
                               aria-expanded={isExpanded}
                             >
                               {isExpanded ? 'Show less' : 'Read more'}
@@ -185,7 +185,7 @@ export default function Testimonials() {
                     onClick={() => goToSlide(index)}
                     className={`w-8 h-2 rounded-full transition-all duration-300 ${
                       index === currentIndex 
-                        ? 'bg-gradient-to-r from-purple-500 to-violet-500 w-12' 
+                        ? 'bg-[#3dc7f5] w-12' 
                         : 'bg-slate-200 hover:bg-slate-300'
                     }`}
                     aria-label={`View testimonial ${index + 1}`}
