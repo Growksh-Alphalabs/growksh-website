@@ -111,11 +111,17 @@ jobs:
       # ✅ AUTO CREATE CLOUDFRONT
       - name: Create CloudFront
         run: |
-          ORIGIN="$S3_BUCKET.s3.amazonaws.com"
+          # Determine correct S3 origin domain for the bucket's region
+          if [ "$AWS_REGION" = "us-east-1" ]; then
+            ORIGIN="$S3_BUCKET.s3.amazonaws.com"
+          else
+            ORIGIN="$S3_BUCKET.s3.$AWS_REGION.amazonaws.com"
+          fi
 
           cat <<EOF > dist.json
           {
             "CallerReference": "$(date +%s)",
+            "Comment": "Distribution for $ORIGIN created by CI",
             "Enabled": true,
             "Origins": {
               "Quantity": 1,
