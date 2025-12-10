@@ -1,5 +1,5 @@
 import React from 'react'
-import iconWealth from '../../assets/Website images/Wealthcraft logo.png'
+import iconWealth from '../../assets/Website images/Wealthcraft logo1.png'
 import iconVentures from '../../assets/Website images/Ventures Logo.png'
 import iconAlpha from '../../assets/Website images/Alphalabs logo.png'
 import img from '../../assets/Website images/Home - The Growksh Way.png'
