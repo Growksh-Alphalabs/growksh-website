@@ -67,6 +67,20 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
                 <img src={iconSrc} alt={`${title} visual`} className="w-full h-full opacity-90 object-cover" />
               </div>
             </div>
+
+            {/* Visible CTA on the front to indicate further content */}
+            <div className="absolute bottom-4 right-4">
+              <button
+                onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
+                className="inline-flex items-center gap-2 px-3 py-2 bg-[#3dc7f5] text-white rounded-md font-medium shadow hover:brightness-95 transition"
+                aria-label={`Read more about ${title}`}
+              >
+                <span>Read More</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

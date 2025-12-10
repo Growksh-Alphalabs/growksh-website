@@ -20,9 +20,9 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
           {/* Left Content */}
-          <div className="w-full lg:absolute lg:top-1/2 lg:left-8 lg:-translate-y-1/2 lg:max-w-2xl z-20">
+          <div className="w-full lg:absolute lg:top-1/2 lg:left-12 lg:-translate-y-1/2 lg:max-w-3xl z-20">
             {/* Blurred translucent panel behind text for legibility */}
-            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 sm:p-10 border border-white/10 max-w-2xl">
+            <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 sm:p-10 border border-white/10 max-w-3xl">
               <div className="inline-flex items-center px-5 py-3 rounded-full text-base font-medium text-black bg-yellow-400/95 ring-1 ring-yellow-400/50 mb-4">
                 <img src={wealthcraftLogo} alt="Wealthcraft" className="w-8 h-8 mr-3 object-contain" />
                 <span className="leading-none">Wealthcraft by Growksh</span>
