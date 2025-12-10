@@ -51,18 +51,47 @@ jobs:
       # ✅ AUTO CREATE BUCKET
       - name: Create S3 Bucket (Auto)
         run: |
+          # Generate bucket name
           BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}
-          echo "S3_BUCKET=$BUCKET_NAME" >> $GITHUB_ENV
 
-          if [ "$AWS_REGION" = "us-east-1" ]; then
-            aws s3api create-bucket --bucket "$BUCKET_NAME"
-          else
-            aws s3api create-bucket --bucket "$BUCKET_NAME" --create-bucket-configuration LocationConstraint=$AWS_REGION
+          # Sanitize: lowercase and remove disallowed characters (only allow a-z, 0-9, dot, hyphen)
+          SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
+
+          # Validate basic S3 naming rules
+          LEN=${#SANITIZED}
+          if [ "$LEN" -lt 3 ] || [ "$LEN" -gt 63 ]; then
+            echo "::error::Sanitized bucket name '$SANITIZED' must be between 3 and 63 characters (was $LEN)."
+            exit 1
+          fi
+          if echo "$SANITIZED" | grep -q '\.\.'; then
+            echo "::error::Bucket name '$SANITIZED' must not contain consecutive dots '..'"
+            exit 1
+          fi
+          if echo "$SANITIZED" | grep -qE '(^[.-]|[.-]$)'; then
+            echo "::error::Bucket name '$SANITIZED' must not start or end with a dot or hyphen"
+            exit 1
+          fi
+          if echo "$SANITIZED" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Bucket name '$SANITIZED' must not be formatted like an IP address"
+            exit 1
           fi
 
-          aws s3 website s3://$BUCKET_NAME --index-document index.html
+          if [ "$SANITIZED" != "$BUCKET_NAME" ]; then
+            echo "Note: bucket name sanitized from '$BUCKET_NAME' to '$SANITIZED'"
+          fi
 
-          aws s3api put-public-access-block --bucket "$BUCKET_NAME" \
+          echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+
+          # Create the bucket using sanitized name
+          if [ "$AWS_REGION" = "us-east-1" ]; then
+            aws s3api create-bucket --bucket "$SANITIZED"
+          else
+            aws s3api create-bucket --bucket "$SANITIZED" --create-bucket-configuration LocationConstraint=$AWS_REGION
+          fi
+
+          aws s3 website s3://$SANITIZED --index-document index.html
+
+          aws s3api put-public-access-block --bucket "$SANITIZED" \
             --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
 
           cat <<EOF > policy.json
@@ -72,12 +101,12 @@ jobs:
               "Effect":"Allow",
               "Principal":"*",
               "Action":["s3:GetObject"],
-              "Resource":["arn:aws:s3:::$BUCKET_NAME/*"]
+              "Resource":["arn:aws:s3:::$SANITIZED/*"]
             }]
           }
           EOF
 
-          aws s3api put-bucket-policy --bucket "$BUCKET_NAME" --policy file://policy.json
+          aws s3api put-bucket-policy --bucket "$SANITIZED" --policy file://policy.json
 
       # ✅ AUTO CREATE CLOUDFRONT
       - name: Create CloudFront
