@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Logo1 from '../../assets/Website images/Growksh Logo 1.png'
 import LogoWealth from '../../assets/Website images/Growksh Wealthcraft logo.png'
 import LogoAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
-import LogoVentures from '../../assets/Website images/Growksh Logo 2.png'
+import LogoVentures from '../../assets/Website images/Growksh Ventures Logo.png'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
@@ -61,21 +61,19 @@ export default function Navbar() {
   ]
 
   const alphalabsMenu = [
-    { to: '/alphalabs#what-we-do', label: 'What we do' },
-    { to: '/alphalabs#alpha-approach', label: 'Learning Model' },
-    { to: '/alphalabs#programs', label: 'Programs' },
-    { to: '/alphalabs#why-learn', label: 'Why learn' },
-    { to: '/alphalabs#community', label: 'Community' }
+    { to: '/alphalabs#alpha-approach', label: 'A.L.P.H.A. Learning Model' },
+    { to: '/alphalabs#programs', label: 'Explore Programs' },
+    { to: '/alphalabs#community', label: 'The Alpha Circle' }
   ]
 
   const wealthMenu = [
-    { to: '/wealthcraft#peace', label: 'P.E.A.C.E.' },
-    { to: '/wealthcraft#wealth-process', label: 'Wealth process' },
-    { to: '/wealthcraft#wealthcraft-pricing', label: 'Pricing' }
+    { to: '/wealthcraft#peace', label: 'Financial P.E.A.C.E. Philosophy' },
+    { to: '/wealthcraft#wealth-process', label: 'The W.E.A.L.T.H. Process' },
+    { to: '/wealthcraft#wealthcraft-pricing', label: 'Pricing & Service Models' }
   ]
 
   return (
-    <header className="bg-white/95 fixed w-full z-50 shadow">
+    <header className="bg-white fixed w-full z-50 shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 md:h-16 lg:h-20">
           <div className="flex items-center gap-6">
@@ -106,7 +104,7 @@ export default function Navbar() {
                   <img
                     src={logoSrc}
                     alt={`${logoAlt} logo`}
-                    className="w-20 h-full sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-md object-contain"
+                    className="w-full h-full p-2 sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-md object-contain"
                   />
                 </Link>
               )

@@ -83,7 +83,7 @@ export default function WhoWeServe() {
                     <div className="text-sm font-medium text-[#ffde21] mb-4 tracking-wider uppercase">
                         People Who Choose Wealthcraft
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">
+                    <h2 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4">
                         Who We Work With
                     </h2>
                    

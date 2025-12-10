@@ -86,7 +86,7 @@ export default function Peace() {
                     Our 6-Step Advisory Framework
                 </div>
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-white text-center px-2"> {/* Added px-2 for better mobile spacing */}
-                    The <span className="text-[#ffde21]">W.E.A.L.T.H. </span> PROCESS™
+                    The <span className="text-[#ffde21]">W.E.A.L.T.H. </span> PROCESS
                 </h2>
                 <p className="mt-2 mb-2 sm:mt-3 sm:mb-3 text-slate-300 max-w-xl mx-auto animate-fadeSlow text-center px-2 sm:px-0"> {/* Reduced margins, added px-2 for mobile */}
                     A structured, experience-driven process that turns financial confusion into clarity — and keeps you supported at every stage of your journey.
@@ -109,7 +109,7 @@ export default function Peace() {
                                     <div className="flex items-center gap-2 sm:gap-3"> {/* Reduced gap-3 to gap-2 sm:gap-3 */}
                                         <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#ffde21] text-black flex items-center justify-center font-bold text-xs sm:text-sm`}>{s.short}</div> {/* Reduced circle size on mobile */}
                                         <div>
-                                            <div className="font-semibold text-xs sm:text-sm text-white">{s.title}</div> {/* Reduced text size on mobile */}
+                                            <div className="font-semibold text-lg sm:text-xl text-white">{s.title}</div> {/* Reduced text size on mobile */}
                                         </div>
                                     </div>
                                     <div className={`transition-transform ${active === i ? 'rotate-180' : 'rotate-0'}`}>
@@ -146,7 +146,7 @@ export default function Peace() {
                     </div>
                 </div>
 
-                <p className="mt-2 mb-2 sm:mt-3 sm:mb-3 text-slate-300 max-w-xl mx-auto animate-fadeSlow text-center px-2 sm:px-0"> {/* Reduced margins */}
+                <p className="text-2xl mt-2 mb-2 sm:mt-3 sm:mb-3 text-slate-300 max-w-xl mx-auto animate-fadeSlow text-center px-2 sm:px-0"> {/* Reduced margins */}
                     Ready for a financial plan that evolves with your life?
                 </p>
                 <div className="mt-4 sm:mt-6 text-center rounded-2xl"> {/* Reduced mt-6 to mt-4 sm:mt-6 */}
