@@ -1,190 +1,84 @@
-name: React Auto Infra Deploy (S3 + CloudFront + Route53)
+name: Deploy React App
 
 on:
   push:
     branches: [ main ]
 
-  workflow_dispatch:
-    inputs:
-      domain_name:
-        description: "Your domain (example.com)"
-        required: false
-      hosted_zone_id:
-        description: "Route53 Hosted Zone ID"
-        required: false
-
-concurrency:
-  group: deploy-react
-  cancel-in-progress: true
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    env:
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      DOMAIN_NAME: ${{ github.event.inputs.domain_name }}
-      HOSTED_ZONE_ID: ${{ github.event.inputs.hosted_zone_id }}
-
+    environment: production
+    
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18
-          cache: 'npm'
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
 
-      - name: Install & Build
-        run: |
-          npm ci
-          npm run build
+    - name: Install dependencies
+      run: npm ci
 
-      - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+    - name: Build with environment variables
+      run: npm run build
+      env:
+        REACT_APP_API_URL: ${{ vars.REACT_APP_API_URL }}
+        REACT_APP_VERSION: ${{ github.sha }}
+        CI: false
 
-      # ✅ AUTO CREATE BUCKET
-      - name: Create S3 Bucket (Auto)
-        run: |
-          # Generate bucket name
-          BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-          # Sanitize: lowercase and remove disallowed characters (only allow a-z, 0-9, dot, hyphen)
-          SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
+    - name: Enable S3 static website hosting
+      run: |
+        aws s3 website s3://${{ secrets.S3_BUCKET }} \
+          --index-document index.html \
+          --error-document index.html
 
-          # Validate basic S3 naming rules
-          LEN=${#SANITIZED}
-          if [ "$LEN" -lt 3 ] || [ "$LEN" -gt 63 ]; then
-            echo "::error::Sanitized bucket name '$SANITIZED' must be between 3 and 63 characters (was $LEN)."
-            exit 1
-          fi
-          if echo "$SANITIZED" | grep -q '\.\.'; then
-            echo "::error::Bucket name '$SANITIZED' must not contain consecutive dots '..'"
-            exit 1
-          fi
-          if echo "$SANITIZED" | grep -qE '(^[.-]|[.-]$)'; then
-            echo "::error::Bucket name '$SANITIZED' must not start or end with a dot or hyphen"
-            exit 1
-          fi
-          if echo "$SANITIZED" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "::error::Bucket name '$SANITIZED' must not be formatted like an IP address"
-            exit 1
-          fi
+    - name: Deploy to S3
+      uses: jakejarvis/s3-sync-action@v0.5.1
+      with:
+        args: --delete --follow-symlinks
+      env:
+        AWS_S3_BUCKET: ${{ secrets.S3_BUCKET }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        SOURCE_DIR: 'build'
 
-          if [ "$SANITIZED" != "$BUCKET_NAME" ]; then
-            echo "Note: bucket name sanitized from '$BUCKET_NAME' to '$SANITIZED'"
-          fi
+    - name: Set public-read permissions
+      run: |
+        aws s3 sync build/ s3://${{ secrets.S3_BUCKET }} \
+          --acl public-read \
+          --cache-control "public, max-age=31536000, immutable"
+        
+        # Set no-cache for HTML files
+        aws s3 cp build/index.html s3://${{ secrets.S3_BUCKET }}/index.html \
+          --acl public-read \
+          --cache-control "no-cache, no-store, must-revalidate" \
+          --content-type "text/html"
 
-          echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+    - name: Get S3 Website URL
+      run: |
+        echo "S3 Website URL: http://${{ secrets.S3_BUCKET }}.s3-website-${{ secrets.AWS_REGION }}.amazonaws.com"
+        echo "S3 URL: https://${{ secrets.S3_BUCKET }}.s3.amazonaws.com/index.html"
 
-          # Create the bucket using sanitized name
-          if [ "$AWS_REGION" = "us-east-1" ]; then
-            aws s3api create-bucket --bucket "$SANITIZED"
-          else
-            aws s3api create-bucket --bucket "$SANITIZED" --create-bucket-configuration LocationConstraint=$AWS_REGION
-          fi
+    - name: Invalidate CloudFront
+      uses: chetan/invalidate-cloudfront-action@v2
+      env:
+        DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+        PATHS: '/*'
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-          aws s3 website s3://$SANITIZED --index-document index.html
-
-          aws s3api put-public-access-block --bucket "$SANITIZED" \
-            --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
-
-          cat <<EOF > policy.json
-          {
-            "Version":"2012-10-17",
-            "Statement":[{
-              "Effect":"Allow",
-              "Principal":"*",
-              "Action":["s3:GetObject"],
-              "Resource":["arn:aws:s3:::$SANITIZED/*"]
-            }]
-          }
-          EOF
-
-          aws s3api put-bucket-policy --bucket "$SANITIZED" --policy file://policy.json
-
-      # ✅ AUTO CREATE CLOUDFRONT
-      - name: Create CloudFront
-        run: |
-          # Determine correct S3 origin domain for the bucket's region
-          if [ "$AWS_REGION" = "us-east-1" ]; then
-            ORIGIN="$S3_BUCKET.s3.amazonaws.com"
-          else
-            ORIGIN="$S3_BUCKET.s3.$AWS_REGION.amazonaws.com"
-          fi
-
-          cat <<EOF > dist.json
-          {
-            "CallerReference": "$(date +%s)",
-            "Comment": "Distribution for $ORIGIN created by CI",
-            "Enabled": true,
-            "Origins": {
-              "Quantity": 1,
-              "Items": [{
-                "Id": "S3Origin",
-                "DomainName": "$ORIGIN",
-                "S3OriginConfig": { "OriginAccessIdentity": "" }
-              }]
-            },
-            "DefaultCacheBehavior": {
-              "TargetOriginId": "S3Origin",
-              "ViewerProtocolPolicy": "redirect-to-https",
-              "AllowedMethods": { "Quantity": 2, "Items": ["GET", "HEAD"] },
-              "ForwardedValues": {
-                "QueryString": false,
-                "Cookies": { "Forward": "none" }
-              },
-              "MinTTL": 0,
-              "DefaultTTL": 86400,
-              "MaxTTL": 31536000
-            }
-          }
-          EOF
-
-          DIST_ID=$(aws cloudfront create-distribution --distribution-config file://dist.json --query "Distribution.Id" --output text)
-          echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
-
-      # ✅ DEPLOY REACT
-      - name: Deploy Build to S3
-        run: |
-          aws s3 sync dist/ s3://$S3_BUCKET --delete
-          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
-
-      # ✅ ONE-TIME ROUTE53 + DOMAIN SETUP
-      - name: Attach Domain to CloudFront (Optional - One Time)
-        if: ${{ env.DOMAIN_NAME != '' && env.HOSTED_ZONE_ID != '' }}
-        run: |
-          CF_DOMAIN=$(aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --query "Distribution.DomainName" --output text)
-
-          cat <<EOF > dns.json
-          {
-            "Comment": "Auto attach domain",
-            "Changes": [{
-              "Action": "UPSERT",
-              "ResourceRecordSet": {
-                "Name": "$DOMAIN_NAME",
-                "Type": "A",
-                "AliasTarget": {
-                  "HostedZoneId": "Z2FDTNDATAQYW2",
-                  "DNSName": "$CF_DOMAIN",
-                  "EvaluateTargetHealth": false
-                }
-              }
-            }]
-          }
-          EOF
-
-          aws route53 change-resource-record-sets \
-            --hosted-zone-id $HOSTED_ZONE_ID \
-            --change-batch file://dns.json
-
-      - name: ✅ Final Output
-        run: |
-          echo "✅ S3: $S3_BUCKET"
-          echo "✅ CloudFront: $CLOUDFRONT_DISTRIBUTION_ID"
-          echo "✅ Domain Attached: $DOMAIN_NAME"
+    - name: Get CloudFront URL
+      run: |
+        echo "CloudFront URL: https://$(aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --query 'Distribution.DomainName' --output text)"
