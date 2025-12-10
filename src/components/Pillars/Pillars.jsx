@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import iconWealth from '../../assets/Website images/Growksh Wealthcraft logo.png'
-import iconVentures from '../../assets/Website images/Growksh Logo 2.png'
-import iconAlpha from '../../assets/Website images/Growksh AlphaLabs - Final Logo - V1.png'
+import iconWealth from '../../assets/Website images/Wealthcraft logo.png'
+import iconVentures from '../../assets/Website images/Growksh Ventures Logo.png'
+import iconAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
 import { Link } from 'react-router-dom'
 
 function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center' }) {
@@ -57,10 +57,10 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
 
           <div className="absolute top-0 left-0 right-0 h-2 bg-[#3dc7f5]"></div>
 
-          <div className="relative h-full p-8 flex flex-col items-center justify-center text-center">
+          <div className="relative h-full p-6 flex flex-col items-center justify-center text-center">
             <h3 className="text-2xl font-bold text-slate-900 mb-4">{title}</h3>
 
-            <p className="text-slate-600 font-medium mb-8 px-4 italic">{tagline}</p>
+            <p className="text-slate-600 font-medium mb-2 px-4 italic">{tagline}</p>
 
             <div className={`mt-4 ${imagePosition === 'center' ? 'mx-auto' : ''}`}>
               <div className="w-50 h-50  flex items-center justify-center shadow-inner" style={{ backgroundColor: 'rgba(61,199,245,0.06)' }}>
@@ -69,14 +69,15 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             </div>
 
             {/* Visible CTA on the front to indicate further content */}
-            <div className="absolute bottom-4 right-4">
+            <div className="absolute bottom-6 right-6 z-10">
               <button
                 onClick={(e) => { e.stopPropagation(); setIsFlipped(true); }}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-[#3dc7f5] text-white rounded-md font-medium shadow hover:brightness-95 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#3dc7f5] text-white rounded-full text-sm font-semibold shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3dc7f5] transition"
                 aria-label={`Read more about ${title}`}
+                title={`Read more about ${title}`}
               >
                 <span>Read More</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                 </svg>
               </button>

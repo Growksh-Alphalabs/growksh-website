@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Logo1 from '../../assets/Website images/Growksh Logo 1.png'
-import LogoWealth from '../../assets/Website images/Growksh Wealthcraft logo.png'
+import LogoWealth from '../../assets/Website images/Wealthcraft logo.png'
 import LogoAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
 import LogoVentures from '../../assets/Website images/Growksh Ventures Logo.png'
 
