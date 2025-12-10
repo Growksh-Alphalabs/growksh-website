@@ -39,6 +39,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Validate required environment variables
+        run: |
+          if [ -z "$S3_BUCKET" ]; then
+            echo "::error::S3_BUCKET is not set. Please add repository secret 'S3_BUCKET' with your bucket name."
+            exit 1
+          fi
+          if [ -z "$AWS_REGION" ]; then
+            echo "::error::AWS_REGION is not set. Please add repository secret 'AWS_REGION'."
+            exit 1
+          fi
+
       - name: Ensure S3 bucket exists (create if missing)
         run: |
           echo "Checking for S3 bucket: $S3_BUCKET"
