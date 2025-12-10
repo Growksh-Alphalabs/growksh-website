@@ -1,0 +1,92 @@
+name: Build and Deploy to S3
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: deploy-to-s3
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Ensure S3 bucket exists (create if missing)
+        run: |
+          echo "Checking for S3 bucket: $S3_BUCKET"
+          if aws s3api head-bucket --bucket "$S3_BUCKET" 2>/dev/null; then
+            echo "Bucket exists: $S3_BUCKET"
+          else
+            echo "Bucket not found. Creating: $S3_BUCKET"
+            if [ "$AWS_REGION" = "us-east-1" ]; then
+              aws s3api create-bucket --bucket "$S3_BUCKET"
+            else
+              aws s3api create-bucket --bucket "$S3_BUCKET" --create-bucket-configuration LocationConstraint=$AWS_REGION
+            fi
+            # Allow public read for objects by default (you may choose to make bucket private and use CloudFront OAC/OAI)
+            aws s3api put-public-access-block --bucket "$S3_BUCKET" --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+            printf '%s' "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"PublicReadGetObject\",\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::$S3_BUCKET/*\"]}]}" > /tmp/policy.json
+            aws s3api put-bucket-policy --bucket "$S3_BUCKET" --policy file:///tmp/policy.json || true
+            echo "Bucket created and policy applied."
+          fi
+
+      - name: Ensure CloudFront distribution exists (create if missing)
+        env:
+          S3_DOMAIN: "$S3_BUCKET.s3.amazonaws.com"
+        run: |
+          echo "Checking for CloudFront distribution for origin $S3_DOMAIN"
+          DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='$S3_DOMAIN'].Id | [0]" --output text)
+          if [ "$DIST_ID" != "None" ] && [ -n "$DIST_ID" ]; then
+            echo "Found existing distribution: $DIST_ID"
+            echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+          else
+            echo "No distribution found. Creating CloudFront distribution pointing to $S3_DOMAIN"
+            TIMESTAMP=$(date +%s)
+            printf '%s' "{\"CallerReference\":\"deploy-$TIMESTAMP\",\"Comment\":\"Distribution for $S3_DOMAIN created by CI\",\"Enabled\":true,\"Origins\":{\"Quantity\":1,\"Items\":[{\"Id\":\"S3-$S3_BUCKET\",\"DomainName\":\"$S3_DOMAIN\",\"S3OriginConfig\":{\"OriginAccessIdentity\":\"\"}}]},\"DefaultCacheBehavior\":{\"TargetOriginId\":\"S3-$S3_BUCKET\",\"ViewerProtocolPolicy\":\"redirect-to-https\",\"AllowedMethods\":{\"Quantity\":2,\"Items\":[\"GET\",\"HEAD\"]},\"ForwardedValues\":{\"QueryString\":false,\"Cookies\":{\"Forward\":\"none\"}},\"MinTTL\":0,\"DefaultTTL\":86400,\"MaxTTL\":31536000}}" > /tmp/dist-config.json
+            DIST_ID=$(aws cloudfront create-distribution --distribution-config file:///tmp/dist-config.json --query 'Distribution.Id' --output text)
+            echo "Created distribution: $DIST_ID"
+            echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+          fi
+
+      - name: Sync build to S3
+        run: |
+          # Use Vite default output folder `dist/` — change if your build outputs elsewhere
+          aws s3 sync dist/ s3://$S3_BUCKET --delete --acl public-read --cache-control 'public, max-age=31536000, immutable' --exclude 'index.html'
+          aws s3 cp dist/index.html s3://$S3_BUCKET/index.html --acl public-read --cache-control 'no-cache, no-store, must-revalidate'
+
+      - name: Create CloudFront invalidation
+        if: ${{ env.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          echo "Invalidating CloudFront distribution $CLOUDFRONT_DISTRIBUTION_ID"
+          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths '/*'
+
+      - name: Notify
+        run: echo "Deployment to S3 completed. CloudFront invalidation requested."
