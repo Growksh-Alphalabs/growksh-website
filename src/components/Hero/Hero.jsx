@@ -21,7 +21,7 @@ export default function Hero() {
   }, [words.length]);
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:py-20 bg-white text-slate-500 relative overflow-hidden">
+    <section className="py-8 sm:py-12 md:py-16 lg:pt-20 bg-white text-slate-500 relative overflow-hidden">
       {/* Modern abstract purple background */}
       <svg className="pointer-events-none absolute inset-0 w-full h-full -z-10" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <defs>
@@ -116,12 +116,12 @@ export default function Hero() {
             </div>
           </Link> */}
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight tracking-tight" style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif" }}>
               <span className="block">
-                <span className="text-[#3dc7f5]">Crafting Wealth.</span>
+                <span className="text-[#3dc7f5]">CRAFTING WEALTH.</span>
               </span>
 
-              <span className="block mt-1 sm:mt-1 text-slate-800 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold">Creating Confidence.</span>
+              <span className="block mt-1 sm:mt-1 text-slate-800 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold">CREATING CONFIDENCE.</span>
             </h1>
 
             <p className="mt-2 sm:mt-3 text-lg sm:text-xl md:text-2xl text-slate-600 max-w-3xl">

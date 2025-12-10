@@ -145,20 +145,20 @@ export default function Hero() {
 
             {/* Headline - Mobile responsive font sizes */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
-              Your{' '}
+              YOUR{' '}
               <span className="relative inline-block">
                 <span className="relative z-10 text-[#00674F]">
-                  financial
+                  FINANCIAL
                 </span>
                 <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
               </span> <br/>
                <span className="relative inline-block">
                  <span className="relative z-10 text-[#00674F]">
-                   learning{' '}
+                   LEARNING{' '}
                  </span>
                  <span className="absolute inset-0 bg-[#00674F]/10 blur-xl -z-10" />
               </span>
-             {' '} studio.
+             {' '} STUDIO.
             </h1>
 
             {/* Description */}

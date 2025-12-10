@@ -1,7 +1,7 @@
 import React from 'react'
 import { COLORS } from '../../constants/colors'
 import heroImg from '../../assets/Website images/Wealthcraft - hero section.png'
-import wealthcraftLogo from '../../assets/Website images/Wealthcraft logo.png'
+import wealthcraftLogo from '../../assets/Website images/Wealthcraft logo1.png'
 import { Link } from 'react-router-dom'
 
 export default function Hero() {
