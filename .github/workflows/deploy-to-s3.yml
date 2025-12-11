@@ -158,12 +158,21 @@ jobs:
 
       - name: ✅ Create or reuse CloudFront distribution
         run: |
+          echo "Creating or reusing CloudFront for S3 bucket: $S3_BUCKET"
+
           if [ -n "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-            echo "Using provided CloudFront distribution ID"
+            echo "Using provided CloudFront distribution ID from secrets"
             echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
           else
+            echo "No CLOUDFRONT_DISTRIBUTION_ID secret provided — searching for existing distribution"
             EXISTING_DIST=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com'].Id" --output text | head -1)
-            if [ -n "$EXISTING_DIST" ] && [ "$EXISTING_DIST" != "None" ]; then
+            
+            if [ -n "$EXISTING_DIST" ] && [ "$EXISTING_DIST" != "None" ] && [ -z "$(echo "$EXISTING_DIST" | grep -E '^[A-Z0-9]+$')" ]; then
+              echo "No valid existing distribution found"
+              EXISTING_DIST=""
+            fi
+
+            if [ -n "$EXISTING_DIST" ]; then
               echo "Found existing CloudFront distribution: $EXISTING_DIST"
               echo "CLOUDFRONT_DISTRIBUTION_ID=$EXISTING_DIST" >> $GITHUB_ENV
             else
@@ -172,15 +181,32 @@ jobs:
               CALLER_REF="react-deploy-$(date +%s)"
               DIST_CONFIG=$(printf '{"CallerReference":"%s","Comment":"CI Distribution","Enabled":true,"Origins":{"Quantity":1,"Items":[{"Id":"S3WebsiteOrigin","DomainName":"%s","CustomOriginConfig":{"HTTPPort":80,"HTTPSPort":443,"OriginProtocolPolicy":"http-only"}}]},"DefaultCacheBehavior":{"TargetOriginId":"S3WebsiteOrigin","ViewerProtocolPolicy":"redirect-to-https","AllowedMethods":{"Quantity":2,"Items":["GET","HEAD"]},"ForwardedValues":{"QueryString":false,"Cookies":{"Forward":"none"}},"MinTTL":0,"DefaultTTL":86400,"MaxTTL":31536000},"CustomErrorResponses":{"Quantity":1,"Items":[{"ErrorCode":404,"ResponsePagePath":"/index.html","ResponseCode":"200"}]}}' "$CALLER_REF" "$ORIGIN")
               DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
+              echo "Created CloudFront distribution: $DIST_ID"
               echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
             fi
           fi
 
+          echo "Final CLOUDFRONT_DISTRIBUTION_ID=$(cat $GITHUB_ENV | grep CLOUDFRONT_DISTRIBUTION_ID | cut -d= -f2)"
+
       # ✅ DEPLOY REACT BUILD
       - name: ✅ Deploy to S3 & Invalidate Cache
         run: |
+          echo "S3_BUCKET=$S3_BUCKET"
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID"
+
+          if [ -z "$S3_BUCKET" ]; then
+            echo "::error::S3_BUCKET is not set"
+            exit 1
+          fi
+
           aws s3 sync dist/ s3://$S3_BUCKET --delete
-          aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+          if [ -n "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
+            echo "Invalidating CloudFront distribution: $CLOUDFRONT_DISTRIBUTION_ID"
+            aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+          else
+            echo "::warning::CLOUDFRONT_DISTRIBUTION_ID not set — skipping cache invalidation"
+          fi
 
       # ✅ OPTIONAL DOMAIN + ROUTE53 ATTACH
       - name: ✅ Attach Domain (Optional)
