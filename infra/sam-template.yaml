@@ -44,10 +44,10 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
-      Cors:
-        AllowOrigins: "'*'"
-        AllowMethods: "'POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      # Use a simple permissive CORS setting (SAM accepts a string origin).
+      # If you need finer control, change this to the advanced object form
+      # supported by newer SAM versions or configure API Gateway manually.
+      Cors: "'*'"
 
 Outputs:
   ContactApiEndpoint:
