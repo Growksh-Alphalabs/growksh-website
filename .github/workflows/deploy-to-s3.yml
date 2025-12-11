@@ -48,7 +48,7 @@ jobs:
       # ✅ CREATE S3 BUCKET
       - name: ✅ Create S3 Bucket
         run: |
-          BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}
+          BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
           SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
 
           LEN=${#SANITIZED}
@@ -80,7 +80,14 @@ jobs:
       - name: ✅ Package & deploy infra (CloudFormation)
         run: |
           if [ -f infra/sam-template.yaml ]; then
-            echo "Infra template found — packaging and deploying"
+            echo "Infra template found — installing Lambda dependencies and packaging"
+
+            # Install Lambda dependencies
+            if [ -d "aws-lambda/contact" ]; then
+              cd aws-lambda/contact
+              npm install
+              cd ../../
+            fi
 
             # Ensure we have a bucket to upload packaged artifacts
             if [ -z "$S3_BUCKET" ]; then
@@ -126,52 +133,25 @@ jobs:
           fi
           npm run build
 
-      - name: ✅ Create CloudFront (Fixed S3 Website Origin)
+      - name: ✅ Create or reuse CloudFront distribution
         run: |
-          ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-
-          cat <<EOF > dist.json
-          {
-            "CallerReference": "$(date +%s)",
-            "Comment": "CI Distribution",
-            "Enabled": true,
-            "Origins": {
-              "Quantity": 1,
-              "Items": [{
-                "Id": "S3WebsiteOrigin",
-                "DomainName": "$ORIGIN",
-                "CustomOriginConfig": {
-                  "HTTPPort": 80,
-                  "HTTPSPort": 443,
-                  "OriginProtocolPolicy": "http-only"
-                }
-              }]
-            },
-            "DefaultCacheBehavior": {
-              "TargetOriginId": "S3WebsiteOrigin",
-              "ViewerProtocolPolicy": "redirect-to-https",
-              "AllowedMethods": { "Quantity": 2, "Items": ["GET", "HEAD"] },
-              "ForwardedValues": {
-                "QueryString": false,
-                "Cookies": { "Forward": "none" }
-                },
-                "MinTTL": 0,
-                "DefaultTTL": 86400,
-                "MaxTTL": 31536000
-            },
-            "CustomErrorResponses": {
-              "Quantity": 1,
-              "Items": [{
-                "ErrorCode": 404,
-                "ResponsePagePath": "/index.html",
-                "ResponseCode": "200"
-              }]
-            }
-          }
-          EOF
-
-          DIST_ID=$(aws cloudfront create-distribution --distribution-config file://dist.json --query "Distribution.Id" --output text)
-          echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+          if [ -n "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
+            echo "Using provided CloudFront distribution ID"
+            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
+          else
+            EXISTING_DIST=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com'].Id" --output text | head -1)
+            if [ -n "$EXISTING_DIST" ] && [ "$EXISTING_DIST" != "None" ]; then
+              echo "Found existing CloudFront distribution: $EXISTING_DIST"
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$EXISTING_DIST" >> $GITHUB_ENV
+            else
+              echo "Creating new CloudFront distribution"
+              ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+              CALLER_REF="react-deploy-$(date +%s)"
+              DIST_CONFIG=$(printf '{"CallerReference":"%s","Comment":"CI Distribution","Enabled":true,"Origins":{"Quantity":1,"Items":[{"Id":"S3WebsiteOrigin","DomainName":"%s","CustomOriginConfig":{"HTTPPort":80,"HTTPSPort":443,"OriginProtocolPolicy":"http-only"}}]},"DefaultCacheBehavior":{"TargetOriginId":"S3WebsiteOrigin","ViewerProtocolPolicy":"redirect-to-https","AllowedMethods":{"Quantity":2,"Items":["GET","HEAD"]},"ForwardedValues":{"QueryString":false,"Cookies":{"Forward":"none"}},"MinTTL":0,"DefaultTTL":86400,"MaxTTL":31536000},"CustomErrorResponses":{"Quantity":1,"Items":[{"ErrorCode":404,"ResponsePagePath":"/index.html","ResponseCode":"200"}]}}' "$CALLER_REF" "$ORIGIN")
+              DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+            fi
+          fi
 
       # ✅ DEPLOY REACT BUILD
       - name: ✅ Deploy to S3 & Invalidate Cache

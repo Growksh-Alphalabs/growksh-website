@@ -39,15 +39,17 @@ Resources:
             Path: /contact
             Method: post
             RestApiId: !Ref ContactApiGateway
+    Metadata:
+      BuildMethod: makefile
 
   ContactApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
       Cors:
-        AllowMethods: "'POST,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'*'"
+        AllowMethods: POST,OPTIONS
+        AllowHeaders: Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token
+        AllowOrigin: '*'
 
 Outputs:
   ContactApiEndpoint:
