@@ -62,6 +62,28 @@ jobs:
               echo "Provided S3_BUCKET '$S3_BUCKET' does not exist or is inaccessible";
               exit 1
             fi
+
+            # Smoke-test the provided bucket's website endpoint — try to detect 403 cases early
+            ENDPOINT="http://$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com/"
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ENDPOINT")
+            echo "Website endpoint returned HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" -ne 200 ]; then
+              echo "Attempting to make objects public and re-sync to S3 for provided bucket"
+              if [ -d "dist" ]; then
+                aws s3 sync dist/ s3://$S3_BUCKET --acl public-read --delete || true
+              elif [ -d "build" ]; then
+                aws s3 sync build/ s3://$S3_BUCKET --acl public-read --delete || true
+              fi
+              sleep 3
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ENDPOINT")
+              echo "After public-read sync, website endpoint returned HTTP $HTTP_CODE"
+              if [ "$HTTP_CODE" -ne 200 ]; then
+                echo "::warning::Provided bucket website endpoint still not reachable (HTTP $HTTP_CODE). Falling back to CloudFront OAC + private-bucket configuration."
+                echo "FALLBACK_OAC=true" >> $GITHUB_ENV
+                echo "FALLBACK_BUCKET=$S3_BUCKET" >> $GITHUB_ENV
+              fi
+            fi
+            fi
           else
             BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
             SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
@@ -87,6 +109,28 @@ jobs:
 
             POLICY_JSON=$(printf '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":"*","Action":["s3:GetObject"],"Resource":["arn:aws:s3:::%s/*"]}]}' "$SANITIZED")
             aws s3api put-bucket-policy --bucket "$SANITIZED" --policy "$POLICY_JSON"
+
+            # Quick smoke-test: ensure website endpoint is publicly reachable. If not, attempt to make objects public.
+            ENDPOINT="http://$SANITIZED.s3-website.$AWS_REGION.amazonaws.com/"
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ENDPOINT")
+            echo "Website endpoint returned HTTP $HTTP_CODE"
+            if [ "$HTTP_CODE" -ne 200 ]; then
+              echo "Attempting to make objects public and re-sync to S3"
+              # If build output exists, try syncing with public ACL so objects are readable (accounts with public access allowed)
+              if [ -d "dist" ]; then
+                aws s3 sync dist/ s3://$SANITIZED --acl public-read --delete || true
+              elif [ -d "build" ]; then
+                aws s3 sync build/ s3://$SANITIZED --acl public-read --delete || true
+              fi
+              sleep 3
+              HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$ENDPOINT")
+              echo "After public-read sync, website endpoint returned HTTP $HTTP_CODE"
+              if [ "$HTTP_CODE" -ne 200 ]; then
+                echo "::warning::Website endpoint still not reachable (HTTP $HTTP_CODE). Falling back to CloudFront OAC + private-bucket configuration."
+                echo "FALLBACK_OAC=true" >> $GITHUB_ENV
+                echo "FALLBACK_BUCKET=$SANITIZED" >> $GITHUB_ENV
+              fi
+            fi
           fi
 
       # ✅ CREATE OR USE CLOUDFRONT
@@ -103,15 +147,35 @@ jobs:
               ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
 
               DIST_CONFIG=$(printf "{\"CallerReference\":\"deploy-%s\",\"Comment\":\"CI Distribution\",\"Enabled\":true,\"Origins\":{\"Quantity\":1,\"Items\":[{\"Id\":\"S3WebsiteOrigin\",\"DomainName\":\"%s\",\"CustomOriginConfig\":{\"HTTPPort\":80,\"HTTPSPort\":443,\"OriginProtocolPolicy\":\"http-only\"}}]},\"DefaultCacheBehavior\":{\"TargetOriginId\":\"S3WebsiteOrigin\",\"ViewerProtocolPolicy\":\"redirect-to-https\",\"AllowedMethods\":{\"Quantity\":2,\"Items\":[\"GET\",\"HEAD\"]},\"ForwardedValues\":{\"QueryString\":false,\"Cookies\":{\"Forward\":\"none\"}},\"MinTTL\":0,\"DefaultTTL\":86400,\"MaxTTL\":31536000},\"CustomErrorResponses\":{\"Quantity\":1,\"Items\":[{\"ErrorCode\":404,\"ResponsePagePath\":\"/index.html\",\"ResponseCode\":\"200\"}]}}" "$(date +%s)" "$ORIGIN")
-              DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
-              echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+                DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
+                echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
             fi
           else
             ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+            # If earlier S3 website smoke-test flagged FALLBACK_OAC, create an OAC and a REST-origin distribution
+            if [ "${FALLBACK_OAC}" = "true" ]; then
+              echo "Creating CloudFront Origin Access Control (OAC) for secure S3 access"
+              OAC_ID=$(aws cloudfront create-origin-access-control --origin-access-control-config "{\"Name\":\"ci-oac-$(date +%s)\",\"SigningProtocol\":\"sigv4\",\"SigningBehavior\":\"always\",\"OriginAccessControlOriginType\":\"s3\"}" --query "OriginAccessControl.Id" --output text)
+              echo "Created OAC: $OAC_ID"
 
-            DIST_CONFIG=$(printf "{\"CallerReference\":\"deploy-%s\",\"Comment\":\"CI Distribution\",\"Enabled\":true,\"Origins\":{\"Quantity\":1,\"Items\":[{\"Id\":\"S3WebsiteOrigin\",\"DomainName\":\"%s\",\"CustomOriginConfig\":{\"HTTPPort\":80,\"HTTPSPort\":443,\"OriginProtocolPolicy\":\"http-only\"}}]},\"DefaultCacheBehavior\":{\"TargetOriginId\":\"S3WebsiteOrigin\",\"ViewerProtocolPolicy\":\"redirect-to-https\",\"AllowedMethods\":{\"Quantity\":2,\"Items\":[\"GET\",\"HEAD\"]},\"ForwardedValues\":{\"QueryString\":false,\"Cookies\":{\"Forward\":\"none\"}},\"MinTTL\":0,\"DefaultTTL\":86400,\"MaxTTL\":31536000},\"CustomErrorResponses\":{\"Quantity\":1,\"Items\":[{\"ErrorCode\":404,\"ResponsePagePath\":\"/index.html\",\"ResponseCode\":\"200\"}]}}" "$(date +%s)" "$ORIGIN")
-            DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
-            echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+              REST_ORIGIN="$FALLBACK_BUCKET.s3.$AWS_REGION.amazonaws.com"
+
+              DIST_CONFIG=$(printf "{\"CallerReference\":\"deploy-%s\",\"Comment\":\"CI Distribution (OAC)\",\"Enabled\":true,\"Origins\":{\"Quantity\":1,\"Items\":[{\"Id\":\"S3RestOrigin\",\"DomainName\":\"%s\",\"OriginAccessControlId\":\"%s\",\"S3OriginConfig\":{} }]},\"DefaultCacheBehavior\":{\"TargetOriginId\":\"S3RestOrigin\",\"ViewerProtocolPolicy\":\"redirect-to-https\",\"AllowedMethods\":{\"Quantity\":2,\"Items\":[\"GET\",\"HEAD\"]},\"ForwardedValues\":{\"QueryString\":false,\"Cookies\":{\"Forward\":\"none\"}},\"MinTTL\":0,\"DefaultTTL\":86400,\"MaxTTL\":31536000},\"CustomErrorResponses\":{\"Quantity\":1,\"Items\":[{\"ErrorCode\":404,\"ResponsePagePath\":\"/index.html\",\"ResponseCode\":\"200\"}]}}" "$(date +%s)" "$REST_ORIGIN" "$OAC_ID")
+
+              DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+
+              # Update bucket policy to allow CloudFront (OAC) access from this distribution
+              ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+              POLICY_JSON=$(printf "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"AllowCloudFrontService\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"cloudfront.amazonaws.com\"},\"Action\":\"s3:GetObject\",\"Resource\":[\"arn:aws:s3:::%s/*\"],\"Condition\":{\"StringEquals\":{\"AWS:SourceArn\":\"arn:aws:cloudfront::%s:distribution/%s\",\"AWS:SourceAccount\":\"%s\"}}}]}" "$FALLBACK_BUCKET" "$ACCOUNT_ID" "$DIST_ID" "$ACCOUNT_ID")
+              aws s3api put-bucket-policy --bucket "$FALLBACK_BUCKET" --policy "$POLICY_JSON"
+              echo "Updated bucket policy to allow CloudFront distribution $DIST_ID"
+            else
+              DIST_CONFIG=$(printf "{\"CallerReference\":\"deploy-%s\",\"Comment\":\"CI Distribution\",\"Enabled\":true,\"Origins\":{\"Quantity\":1,\"Items\":[{\"Id\":\"S3WebsiteOrigin\",\"DomainName\":\"%s\",\"CustomOriginConfig\":{\"HTTPPort\":80,\"HTTPSPort\":443,\"OriginProtocolPolicy\":\"http-only\"}}]},\"DefaultCacheBehavior\":{\"TargetOriginId\":\"S3WebsiteOrigin\",\"ViewerProtocolPolicy\":\"redirect-to-https\",\"AllowedMethods\":{\"Quantity\":2,\"Items\":[\"GET\",\"HEAD\"]},\"ForwardedValues\":{\"QueryString\":false,\"Cookies\":{\"Forward\":\"none\"}},\"MinTTL\":0,\"DefaultTTL\":86400,\"MaxTTL\":31536000},\"CustomErrorResponses\":{\"Quantity\":1,\"Items\":[{\"ErrorCode\":404,\"ResponsePagePath\":\"/index.html\",\"ResponseCode\":\"200\"}]}}" "$(date +%s)" "$ORIGIN")
+
+              DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+            fi
           fi
 
       # ✅ DEPLOY REACT BUILD
