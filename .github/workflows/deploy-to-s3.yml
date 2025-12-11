@@ -109,6 +109,16 @@ jobs:
 
             STACK_NAME="${{ github.repository_owner }}-${{ github.event.repository.name }}-contact"
 
+            # If stack is in ROLLBACK_COMPLETE, delete it first
+            STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "")
+            if [ "$STACK_STATUS" = "ROLLBACK_COMPLETE" ]; then
+              echo "Stack is in ROLLBACK_COMPLETE state — deleting it first"
+              aws cloudformation delete-stack --stack-name "$STACK_NAME"
+              echo "Waiting for stack deletion to complete..."
+              aws cloudformation wait stack-delete-complete --stack-name "$STACK_NAME" 2>/dev/null || true
+              sleep 5
+            fi
+
             # Deploy the packaged template (creates/updates stack)
             if ! aws cloudformation deploy \
               --template-file infra/packaged.yaml \
