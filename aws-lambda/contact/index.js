@@ -6,7 +6,7 @@ const TABLE = process.env.CONTACTS_TABLE
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS',
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
   'Content-Type': 'application/json'
 }
@@ -20,8 +20,17 @@ function response(statusCode, body) {
 }
 
 exports.handler = async (event) => {
+  console.log('Received event:', JSON.stringify(event, null, 2))
+
+  // Handle preflight OPTIONS request
   if (event.httpMethod === 'OPTIONS') {
-    return response(200, { ok: true })
+    console.log('Handling OPTIONS preflight request')
+    return response(200, { message: 'OK' })
+  }
+
+  // Handle POST request
+  if (event.httpMethod !== 'POST') {
+    return response(405, { error: 'Method not allowed' })
   }
 
   try {
@@ -49,6 +58,7 @@ exports.handler = async (event) => {
     }
 
     await dynamo.put({ TableName: TABLE, Item: item }).promise()
+    console.log('Successfully saved contact:', id)
 
     return response(200, { ok: true, id })
   } catch (err) {
