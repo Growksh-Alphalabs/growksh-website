@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template to deploy Contact API (Lambda) + DynamoDB
+
+Globals:
+  Function:
+    Timeout: 10
+
+Resources:
+  ContactsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-contacts"
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  ContactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-contact-handler"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/contact/
+      Environment:
+        Variables:
+          CONTACTS_TABLE: !Ref ContactsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ContactsTable
+      Events:
+        ContactApi:
+          Type: Api
+          Properties:
+            Path: /contact
+            Method: post
+
+Outputs:
+  ContactApiEndpoint:
+    Description: "Invoke URL for contact API"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/contact"
+  ContactsTableName:
+    Description: "DynamoDB table name for contacts"
+    Value: !Ref ContactsTable

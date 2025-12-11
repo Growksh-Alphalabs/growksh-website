@@ -36,10 +36,7 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - name: ✅ Install & Build
-        run: |
-          npm ci
-          npm run build
+      # frontend build will run after infra is deployed so VITE envs are available
 
       - name: ✅ Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
@@ -79,7 +76,56 @@ jobs:
 
           aws s3api put-bucket-policy --bucket "$SANITIZED" --policy file://policy.json
 
+      # ✅ PACKAGE & DEPLOY INFRA (Lambda + API Gateway + DynamoDB) if present
+      - name: ✅ Package & deploy infra (CloudFormation)
+        run: |
+          if [ -f infra/sam-template.yaml ]; then
+            echo "Infra template found — packaging and deploying"
+
+            # Ensure we have a bucket to upload packaged artifacts
+            if [ -z "$S3_BUCKET" ]; then
+              echo "S3_BUCKET not set — using $SANITIZED"
+              echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+            fi
+
+            # Package the SAM/CloudFormation template (uploads artifacts to S3)
+            aws cloudformation package \
+              --template-file infra/sam-template.yaml \
+              --s3-bucket "$S3_BUCKET" \
+              --output-template-file infra/packaged.yaml
+
+            STACK_NAME="${{ github.repository_owner }}-${{ github.event.repository.name }}-contact"
+
+            # Deploy the packaged template (creates/updates stack)
+            aws cloudformation deploy \
+              --template-file infra/packaged.yaml \
+              --stack-name "$STACK_NAME" \
+              --capabilities CAPABILITY_IAM
+
+            # Read outputs to wire into the frontend build
+            API_URL=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactApiEndpoint'].OutputValue" --output text)
+            TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactsTableName'].OutputValue" --output text)
+
+            if [ -n "$API_URL" ] && [ "$API_URL" != "None" ]; then
+              echo "VITE_CONTACT_API_URL=$API_URL" >> $GITHUB_ENV
+            fi
+            if [ -n "$TABLE_NAME" ] && [ "$TABLE_NAME" != "None" ]; then
+              echo "CONTACTS_TABLE=$TABLE_NAME" >> $GITHUB_ENV
+            fi
+          else
+            echo "No infra/sam-template.yaml — skipping infra deploy"
+          fi
+
       # ✅ CREATE CLOUDFRONT (FIXED)
+      - name: ✅ Build frontend
+        run: |
+          npm ci
+          # export Vite dev envs into .env for the build
+          if [ -n "$VITE_CONTACT_API_URL" ]; then
+            echo "VITE_CONTACT_API_URL=$VITE_CONTACT_API_URL" > .env
+          fi
+          npm run build
+
       - name: ✅ Create CloudFront (Fixed S3 Website Origin)
         run: |
           ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
