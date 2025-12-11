@@ -99,7 +99,12 @@ jobs:
               echo "Found distribution $CLOUDFRONT_DISTRIBUTION_ID"
               echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_DISTRIBUTION_ID" >> $GITHUB_ENV
             else
-              echo "Provided CLOUDFRONT_DISTRIBUTION_ID '$CLOUDFRONT_DISTRIBUTION_ID' not found"; exit 1
+              echo "::warning::Provided CLOUDFRONT_DISTRIBUTION_ID '$CLOUDFRONT_DISTRIBUTION_ID' not found — creating a new distribution."
+              ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+
+              DIST_CONFIG=$(printf "{\"CallerReference\":\"deploy-%s\",\"Comment\":\"CI Distribution\",\"Enabled\":true,\"Origins\":{\"Quantity\":1,\"Items\":[{\"Id\":\"S3WebsiteOrigin\",\"DomainName\":\"%s\",\"CustomOriginConfig\":{\"HTTPPort\":80,\"HTTPSPort\":443,\"OriginProtocolPolicy\":\"http-only\"}}]},\"DefaultCacheBehavior\":{\"TargetOriginId\":\"S3WebsiteOrigin\",\"ViewerProtocolPolicy\":\"redirect-to-https\",\"AllowedMethods\":{\"Quantity\":2,\"Items\":[\"GET\",\"HEAD\"]},\"ForwardedValues\":{\"QueryString\":false,\"Cookies\":{\"Forward\":\"none\"}},\"MinTTL\":0,\"DefaultTTL\":86400,\"MaxTTL\":31536000},\"CustomErrorResponses\":{\"Quantity\":1,\"Items\":[{\"ErrorCode\":404,\"ResponsePagePath\":\"/index.html\",\"ResponseCode\":\"200\"}]}}" "$(date +%s)" "$ORIGIN")
+              DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
             fi
           else
             ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
