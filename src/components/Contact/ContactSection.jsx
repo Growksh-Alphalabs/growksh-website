@@ -10,17 +10,40 @@ export default function ContactSection() {
     message: ''
   })
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   function handleChange(e) {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    // TODO: wire up to an API or email service. For now we simulate submission.
-    console.log('Contact form submitted', form)
-    setSubmitted(true)
+    setError(null)
+    setLoading(true)
+
+    const apiUrl = import.meta.env.VITE_CONTACT_API_URL || '/api/contact'
+
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form)
+      })
+
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}))
+        throw new Error(payload.error || `Server returned ${res.status}`)
+      }
+
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Contact submission failed', err)
+      setError(err.message || 'Submission failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -95,9 +118,14 @@ export default function ContactSection() {
                 </div>
 
                 <div className="pt-2">
-                  <button type="submit" className="inline-flex items-center gap-2 px-6 py-3 bg-[#3dc7f5] text-white rounded-full font-medium shadow hover:opacity-90 transition-colors">
-                    Schedule My Call
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`inline-flex items-center gap-2 px-6 py-3 bg-[#3dc7f5] text-white rounded-full font-medium shadow hover:opacity-90 transition-colors ${loading ? 'opacity-70 cursor-wait' : ''}`}
+                  >
+                    {loading ? 'Sending…' : 'Schedule My Call'}
                   </button>
+                  {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
                 </div>
               </div>
             )}
