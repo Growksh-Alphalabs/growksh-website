@@ -104,10 +104,17 @@ jobs:
             STACK_NAME="${{ github.repository_owner }}-${{ github.event.repository.name }}-contact"
 
             # Deploy the packaged template (creates/updates stack)
-            aws cloudformation deploy \
+            if ! aws cloudformation deploy \
               --template-file infra/packaged.yaml \
               --stack-name "$STACK_NAME" \
-              --capabilities CAPABILITY_IAM
+              --capabilities CAPABILITY_IAM; then
+              echo "::error::CloudFormation stack deployment failed. Fetching stack events..."
+              aws cloudformation describe-stack-events \
+                --stack-name "$STACK_NAME" \
+                --query "StackEvents[?ResourceStatus=='CREATE_FAILED' || ResourceStatus=='UPDATE_FAILED'].{Timestamp:Timestamp,LogicalId:LogicalResourceId,Reason:ResourceStatusReason}" \
+                --output table
+              exit 1
+            fi
 
             # Read outputs to wire into the frontend build
             API_URL=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactApiEndpoint'].OutputValue" --output text)
