@@ -56,10 +56,16 @@ jobs:
 
           echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
 
-          if [ "$AWS_REGION" = "us-east-1" ]; then
-            aws s3api create-bucket --bucket "$SANITIZED"
+          # Check if bucket already exists
+          if aws s3api head-bucket --bucket "$SANITIZED" 2>/dev/null; then
+            echo "Bucket already exists: $SANITIZED"
           else
-            aws s3api create-bucket --bucket "$SANITIZED" --create-bucket-configuration LocationConstraint=$AWS_REGION
+            echo "Creating bucket: $SANITIZED"
+            if [ "$AWS_REGION" = "us-east-1" ]; then
+              aws s3api create-bucket --bucket "$SANITIZED"
+            else
+              aws s3api create-bucket --bucket "$SANITIZED" --create-bucket-configuration LocationConstraint=$AWS_REGION
+            fi
           fi
 
           aws s3 website s3://$SANITIZED --index-document index.html --error-document index.html
