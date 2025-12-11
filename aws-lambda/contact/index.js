@@ -4,14 +4,17 @@ const crypto = require('crypto')
 const dynamo = new AWS.DynamoDB.DocumentClient()
 const TABLE = process.env.CONTACTS_TABLE
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+  'Content-Type': 'application/json'
+}
+
 function response(statusCode, body) {
   return {
     statusCode,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Methods': 'OPTIONS,POST'
-    },
+    headers: corsHeaders,
     body: JSON.stringify(body)
   }
 }
