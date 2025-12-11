@@ -46,10 +46,11 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Prod
+      # Use SAM shorthand Cors syntax — provide a simple origin string
       Cors:
-        AllowMethods: POST,OPTIONS
-        AllowHeaders: Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token
-        AllowOrigin: '*'
+        AllowMethods: "'POST,OPTIONS'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
 
 Outputs:
   ContactApiEndpoint:
