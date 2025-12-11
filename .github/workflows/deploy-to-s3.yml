@@ -68,19 +68,22 @@ jobs:
             fi
           fi
 
+          # Configure website hosting
           aws s3 website s3://$SANITIZED --index-document index.html --error-document index.html
 
+          # Allow public read access
           aws s3api put-public-access-block --bucket "$SANITIZED" \
             --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
 
-          cat <<EOF > policy.json
-          {
-            "Version":"2012-10-17",
-            "Statement":[{"Effect":"Allow","Principal":"*","Action":["s3:GetObject"],"Resource":["arn:aws:s3:::$SANITIZED/*"]}]
-          }
-          EOF
+          # Set bucket policy to allow public GetObject
+          POLICY=$(printf '{"Version":"2012-10-17","Statement":[{"Sid":"PublicReadGetObject","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::%s/*"}]}' "$SANITIZED")
+          aws s3api put-bucket-policy --bucket "$SANITIZED" --policy "$POLICY"
 
-          aws s3api put-bucket-policy --bucket "$SANITIZED" --policy file://policy.json
+          # Verify bucket is publicly accessible
+          echo "Verifying bucket is accessible..."
+          sleep 2
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$SANITIZED.s3-website.$AWS_REGION.amazonaws.com/")
+          echo "Bucket website endpoint HTTP status: $HTTP_CODE"
 
       # ✅ PACKAGE & DEPLOY INFRA (Lambda + API Gateway + DynamoDB) if present
       - name: ✅ Package & deploy infra (CloudFormation)
