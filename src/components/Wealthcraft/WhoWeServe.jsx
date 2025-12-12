@@ -93,7 +93,7 @@ export default function WhoWeServe() {
                     {cards.map((c) => (
                         <div
                             key={c.key}
-                            className={`flip-card h-80 md:h-96 perspective-1000 ${!touchMode ? 'cursor-pointer' : ''}`}
+                            className={`flip-card h-64 md:h-96 perspective-1000 ${!touchMode ? 'cursor-pointer' : ''}`}
                             onMouseEnter={() => handleMouseEnter(c.key)}
                             onMouseLeave={handleMouseLeave}
                             onClick={() => handleTouch(c.key)}
@@ -113,7 +113,7 @@ export default function WhoWeServe() {
                             >
                                 {/* Front side */}
                                 <div className="flip-card-front absolute inset-0 bg-white rounded-2xl overflow-hidden shadow-lg border border-[#ffde21]/20 backface-hidden flex flex-col group">
-                                    <div className="relative h-2/3 overflow-hidden">
+                                    <div className="relative h-40 sm:h-48 md:h-2/3 overflow-hidden">
                                         <img
                                             src={c.img}
                                             alt={c.title}
@@ -147,6 +147,15 @@ export default function WhoWeServe() {
                                             </div>
                                         </div>
                                     </div>
+
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleTouch(c.key); }}
+                                        className="absolute bottom-3 right-3 inline-flex items-center gap-1 px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-2 text-sm sm:text-base bg-[#ffde21] text-slate-900 rounded-full font-semibold shadow-md hover:brightness-95 focus:outline-none"
+                                        aria-label={`Read more about ${c.title}`}
+                                    >
+                                        <span className="hidden sm:inline">Read More</span>
+                                        <span className="inline font-light sm:hidden">Read More</span>
+                                    </button>
 
                                     {/* Hover text overlay */}
                                     <div className={`absolute inset-0 bg-[#ffde21]/90 flex items-center justify-center p-6 transition-all duration-500 rounded-2xl ${
@@ -293,7 +302,7 @@ export default function WhoWeServe() {
                 /* Mobile optimizations */
                 @media (max-width: 768px) {
                     .flip-card {
-                        height: 300px;
+                        height: 220px;
                         margin-bottom: 0.75rem;
                     }
                     

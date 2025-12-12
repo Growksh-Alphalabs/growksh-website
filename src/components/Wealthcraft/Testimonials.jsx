@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import a1 from '../../assets/Testimonial client Photos/Aastha Sharma.jpg'
 import a2 from '../../assets/Testimonial client Photos/Garima Bhandari.png'
 import a3 from '../../assets/Testimonial client Photos/Vikas Damare.jpg'
@@ -36,19 +36,136 @@ const sample = [
 ]
 
 export default function Testimonials() {
-  // State to track expanded quotes for each testimonial
   const [expandedQuotes, setExpandedQuotes] = useState({})
+  const [marqueePaused, setMarqueePaused] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const marqueeRef = useRef(null)
+  const containerRef = useRef(null)
+  const scrollIntervalRef = useRef(null)
+  const pauseTimeoutRef = useRef(null)
   
   // Create a duplicate of the testimonials for seamless looping
   const testimonials = [...sample, ...sample, ...sample]
 
+  // Track which testimonial is currently expanded
+  const [currentlyExpanded, setCurrentlyExpanded] = useState(null)
 
-  const toggleQuote = (index) => {
+  // Detect mobile view
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
+
+  // Auto-scroll functionality for mobile
+  useEffect(() => {
+    if (!isMobile || !marqueeRef.current) {
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current)
+        scrollIntervalRef.current = null
+      }
+      return
+    }
+
+    const startAutoScroll = () => {
+      const marqueeElement = marqueeRef.current
+      if (!marqueeElement) return
+
+      const scrollSpeed = 1 // pixels per interval
+      const scrollInterval = 30 // milliseconds
+
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current)
+      }
+
+      scrollIntervalRef.current = setInterval(() => {
+        if (marqueePaused) return
+        
+        marqueeElement.scrollLeft += scrollSpeed
+        
+        // Reset to start for infinite scroll effect
+        if (marqueeElement.scrollLeft >= marqueeElement.scrollWidth - marqueeElement.clientWidth) {
+          marqueeElement.scrollLeft = 0
+        }
+      }, scrollInterval)
+    }
+
+    // Only start scrolling if not paused
+    if (!marqueePaused) {
+      startAutoScroll()
+    } else {
+      // Clear interval if paused
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current)
+        scrollIntervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (scrollIntervalRef.current) {
+        clearInterval(scrollIntervalRef.current)
+        scrollIntervalRef.current = null
+      }
+    }
+  }, [isMobile, marqueePaused])
+
+  const toggleQuote = (id) => {
+    const willBeExpanded = !expandedQuotes[id]
+    
     setExpandedQuotes(prev => ({
       ...prev,
-      [index]: !prev[index]
+      [id]: willBeExpanded
     }))
+
+    // Update currently expanded testimonial
+    if (willBeExpanded) {
+      setCurrentlyExpanded(id)
+    } else {
+      setCurrentlyExpanded(null)
+    }
+
+    // FOR MOBILE VIEW: Always stop scrolling when Read More is clicked
+    if (willBeExpanded) {
+      // Immediately pause scrolling
+      setMarqueePaused(true)
+      
+      // Clear any existing timeouts
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current)
+        pauseTimeoutRef.current = null
+      }
+    } else {
+      // For Read Less: resume scrolling after a short delay
+      // But only if we're on mobile
+      if (isMobile) {
+        if (pauseTimeoutRef.current) {
+          clearTimeout(pauseTimeoutRef.current)
+        }
+        pauseTimeoutRef.current = setTimeout(() => {
+          setMarqueePaused(false)
+        }, 300)
+      } else {
+        // For desktop: resume on mouse leave
+        // The mouse leave handler will take care of it
+      }
+    }
   }
+
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Function to truncate text
   const truncateText = (text, length = 150) => {
@@ -56,9 +173,70 @@ export default function Testimonials() {
     return text.substring(0, length) + '...'
   }
 
+  // Handle touch events for mobile
+  const handleTouchStart = () => {
+    // On mobile touch, only pause if no testimonial is expanded
+    if (isMobile && !currentlyExpanded) {
+      setMarqueePaused(true)
+    }
+  }
+
+  const handleTouchEnd = () => {
+    // On mobile touch end, only resume if no testimonial is expanded
+    if (isMobile && !currentlyExpanded) {
+      if (pauseTimeoutRef.current) {
+        clearTimeout(pauseTimeoutRef.current)
+      }
+      pauseTimeoutRef.current = setTimeout(() => {
+        if (!currentlyExpanded) {
+          setMarqueePaused(false)
+        }
+      }, 2000)
+    }
+  }
+
+  // Handle click outside to resume scrolling
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      // If clicking outside of any testimonial and there's an expanded one, collapse it
+      if (currentlyExpanded && !e.target.closest('figure')) {
+        setExpandedQuotes(prev => ({
+          ...prev,
+          [currentlyExpanded]: false
+        }))
+        setCurrentlyExpanded(null)
+        
+        // Resume scrolling after delay
+        if (pauseTimeoutRef.current) {
+          clearTimeout(pauseTimeoutRef.current)
+        }
+        pauseTimeoutRef.current = setTimeout(() => {
+          setMarqueePaused(false)
+        }, 300)
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [currentlyExpanded, isMobile])
+
+  // Handle mouse enter/leave for desktop
+  const handleMouseEnter = () => {
+    if (!isMobile) {
+      setMarqueePaused(true)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    if (!isMobile && !currentlyExpanded) {
+      setMarqueePaused(false)
+    }
+  }
+
   return (
     <section id="testimonials" className="py-16 bg-black text-white relative overflow-hidden">
-   
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -72,25 +250,46 @@ export default function Testimonials() {
         </div>
 
         {/* Marquee Container */}
-        <div className="relative overflow-hidden py-2">
+        <div 
+          className="relative overflow-hidden py-2"
+          ref={containerRef}
+        >
           {/* Gradient Fade Effects on Sides */}
-          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
+          {!isMobile && (
+            <>
+              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-slate-900 to-transparent z-10 pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-slate-900 to-transparent z-10 pointer-events-none" />
+            </>
+          )}
           
           {/* Marquee Wrapper */}
-          <div className="flex animate-marquee gap-6">
+          <div
+            ref={marqueeRef}
+            className={`flex gap-6 ${!isMobile ? 'animate-marquee' : 'overflow-x-auto'}`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            style={{ 
+              animationPlayState: (!isMobile && marqueePaused) ? 'paused' : 'running',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
             {testimonials.map((s, i) => {
-              const isExpanded = expandedQuotes[i] || false
+              const instanceId = `t-${i}`
+              const isExpanded = expandedQuotes[instanceId] || false
               const displayText = isExpanded ? s.quote : truncateText(s.quote, 120)
               const shouldShowReadMore = s.quote.length > 120
               
               return (
                 <div 
                   key={i} 
-                  className="flex-shrink-0 w-[380px]"
+                  className="flex-shrink-0 w-[380px] md:w-[320px] sm:w-[280px]"
                 >
                   <figure 
-                    className="bg-slate-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-slate-700"
+                    className="bg-slate-800 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 h-full flex flex-col border border-slate-700 relative"
                   >
                     {/* Initial Circle */}
                     <div className="flex items-center gap-4 mb-4">
@@ -113,15 +312,17 @@ export default function Testimonials() {
                     {/* Read More/Less Button */}
                     {shouldShowReadMore && (
                       <button
-                        onClick={() => toggleQuote(i)}
-                        className="text-[#ffde21] text-sm font-medium hover:text-[#ffde21]/80 transition-colors mb-3 text-left self-start"
+                        onClick={() => toggleQuote(instanceId)}
+                        className="text-[#ffde21] text-sm font-medium hover:text-[#ffde21]/80 transition-colors mb-3 text-left self-start z-20 relative"
                       >
                         {isExpanded ? 'Read Less' : 'Read More'}
-                      
                       </button>
                     )}
 
-                  
+                    {/* Overlay to indicate paused state */}
+                    {isExpanded && (
+                      <div className="absolute inset-0 bg-black/20 rounded-2xl pointer-events-none" />
+                    )}
                   </figure>
                 </div>
               )
@@ -129,6 +330,7 @@ export default function Testimonials() {
           </div>
         </div>
 
+       
       </div>
 
       <style jsx>{`
@@ -146,10 +348,6 @@ export default function Testimonials() {
           display: flex;
         }
 
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-
         /* Reduced motion support */
         @media (prefers-reduced-motion: reduce) {
           .animate-marquee {
@@ -157,32 +355,10 @@ export default function Testimonials() {
             overflow-x: auto;
             padding-bottom: 8px;
           }
-          
-          .animate-marquee::-webkit-scrollbar {
-            height: 8px;
-          }
-          
-          .animate-marquee::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-          }
-          
-          .animate-marquee::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-          }
-          
-          .animate-marquee::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-          }
         }
 
         /* Responsive adjustments */
-        @media (max-width: 768px) {
-          .animate-marquee > div {
-            width: 320px;
-          }
-
+        @media (max-width: 1024px) {
           @keyframes marquee {
             0% {
               transform: translateX(0);
@@ -193,17 +369,28 @@ export default function Testimonials() {
           }
         }
 
-        @media (max-width: 640px) {
-          .animate-marquee > div {
-            width: 280px;
+        @media (max-width: 768px) {
+          .animate-marquee {
+            animation: none;
           }
-
+          
           @keyframes marquee {
             0% {
               transform: translateX(0);
             }
             100% {
               transform: translateX(calc(-280px * 3 - 72px));
+            }
+          }
+        }
+
+        @media (max-width: 640px) {
+          @keyframes marquee {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(calc(-250px * 3 - 72px));
             }
           }
         }
