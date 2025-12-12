@@ -104,8 +104,8 @@ export default function Navbar() {
                   {(() => {
                     const isDefaultLogo = logoSrc === Logo1
                     const logoClass = isDefaultLogo
-                      ? 'p-0 sm:w-24 sm:h-24 md:w-24 md:h-24 lg:w-24 lg:h-24 rounded-md object-contain'
-                      : 'p-2 sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-md object-contain'
+                      ? 'w-16 h-16 p-0 sm:w-24 sm:h-24 md:w-24 md:h-24 lg:w-24 lg:h-24 rounded-md object-contain'
+                      : 'w-14 h-14 p-2 sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-20 lg:h-20 rounded-md object-contain'
                     return (
                       <img
                         src={logoSrc}
