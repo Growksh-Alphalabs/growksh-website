@@ -316,14 +316,26 @@ export default function ServicesPricing() {
                 >
                   <div className="grid grid-cols-12 items-center w-full gap-4">
                     {/* Left: title */}
-                    <div className="col-span-12 md:col-span-6 flex items-center gap-3">
-                      <div>
-                        <h3 className="text-lg font-bold text-black">{category.category}</h3>
-                        {category.description && (
-                          <p className="text-sm text-slate-600 mt-1">{category.description}</p>
-                        )}
-                      </div>
-                    </div>
+                        <div className="col-span-12 md:col-span-6 flex items-center justify-between gap-3">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-black">{category.category}</h3>
+                            {category.description && (
+                              <p className="text-sm text-slate-600 mt-1">{category.description}</p>
+                            )}
+                          </div>
+
+                          <div className="ml-4 flex-shrink-0">
+                            <svg
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              className={`w-5 h-5 text-slate-600 transform transition-transform duration-200 ${expandedCategories[category.category] ? 'rotate-180' : 'rotate-0'}`}
+                              aria-hidden="true"
+                            >
+                              <path d="M6 8l4 4 4-4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </div>
+                        </div>
 
                     {/* Mobile: Price boxes */}
                     <div className="col-span-12 md:hidden mt-3">
