@@ -20,9 +20,7 @@ export default function Story() {
 
             <p className="mt-4 text-lg text-slate-600">We’ve helped hundreds of professionals, families, and NRIs gain clarity, control, and calmness with their finances — proving that financial wellness is truly life wellness.</p>
 
-            <div className="mt-6">
-              <Link to="/about" className="inline-flex items-center px-5 py-3 bg-[#3dc7f5] text-white rounded-full font-semibold shadow-sm hover:opacity-90 transition">Learn more about Krutika</Link>
-            </div>
+         
           </div>
 
           <div className="order-1 lg:order-2">

@@ -13,28 +13,43 @@ export default function Navbar() {
   const navigate = useNavigate()
 
   // Navigate to a path that may include a hash, then scroll to the anchor if present.
-  const handleAnchor = (to) => {
+  async function handleAnchor(to) {
     if (!to) return
     const [pathPart, hashPart] = to.split('#')
     const targetId = hashPart
 
-    // If we're already on the path, just scroll to the element.
+    const waitForElement = (id, timeout = 2000) => new Promise((resolve) => {
+      const start = Date.now()
+      const tick = () => {
+        const el = document.getElementById(id)
+        if (el) return resolve(el)
+        if (Date.now() - start > timeout) return resolve(null)
+        setTimeout(tick, 50)
+      }
+      tick()
+    })
+
+    const scrollToEl = (el) => {
+      const header = document.querySelector('header')
+      const headerHeight = header ? header.getBoundingClientRect().height : 80
+      const offset = 12
+      const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+      window.scrollTo({ top, behavior: 'smooth' })
+      try {
+        el.setAttribute('tabindex', '-1')
+        el.focus()
+      } catch (e) {}
+    }
+
+    // If already on the target path, wait briefly for element and scroll.
     if (location.pathname === (pathPart || '/')) {
       if (targetId) {
-        const el = document.getElementById(targetId)
+        const el = await waitForElement(targetId)
         if (el) {
-          const header = document.querySelector('header')
-          const headerHeight = header ? header.getBoundingClientRect().height : 80
-          const offset = 12 // extra breathing room
-          const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
-          window.scrollTo({ top, behavior: 'smooth' })
-          try {
-            el.setAttribute('tabindex', '-1')
-            el.focus()
-          } catch (e) {}
+          scrollToEl(el)
           return
         }
-        // fallback: set hash so browser can handle it on load
+        // fallback: set hash so browser can handle it
         window.location.hash = targetId
       } else {
         navigate(pathPart || '/')
@@ -42,26 +57,17 @@ export default function Navbar() {
       return
     }
 
-    // Navigate to the path first, then attempt to scroll after a short delay.
+    // Navigate to the path first, then wait for the element to exist and scroll to it.
     navigate(pathPart || '/')
     if (targetId) {
-      setTimeout(() => {
-        const el = document.getElementById(targetId)
-        if (el) {
-          const header = document.querySelector('header')
-          const headerHeight = header ? header.getBoundingClientRect().height : 80
-          const offset = 12
-          const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
-          window.scrollTo({ top, behavior: 'smooth' })
-          try {
-            el.setAttribute('tabindex', '-1')
-            el.focus()
-          } catch (e) {}
-        } else {
-          // set the hash so browser can handle it on load
-          window.location.hash = targetId
-        }
-      }, 120)
+      const el = await waitForElement(targetId)
+      if (el) {
+        // small delay to ensure layout settled
+        setTimeout(() => scrollToEl(el), 40)
+      } else {
+        // fallback: set hash so browser can handle it on load
+        window.location.hash = targetId
+      }
     }
   }
 
