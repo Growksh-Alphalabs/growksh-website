@@ -124,7 +124,7 @@ export default function Testimonials() {
               </div>
 
               {/* Testimonial content slider */}
-              <div ref={wrapperRef} className="relative overflow-hidden h-[280px]">
+              <div ref={wrapperRef} className="relative overflow-hidden h-[220px] sm:h-[280px]">
                 <div
                   ref={containerRef}
                   className="transition-transform duration-700 ease-in-out"
@@ -137,7 +137,7 @@ export default function Testimonials() {
                     const truncated = isLong ? full.slice(0, 220).trimEnd() + '…' : full
 
                     return (
-                      <div key={idx} className="h-[280px] flex flex-col justify-center">
+                      <div key={idx} className="h-[220px] sm:h-[280px] flex flex-col justify-center">
                         <blockquote
                           className={`${isLong ? 'text-base' : 'text-xl lg:text-xl'} font-medium text-slate-800 leading-relaxed whitespace-pre-wrap break-words ${isExpanded ? 'max-h-[160px] overflow-auto' : 'max-h-[140px] overflow-hidden'}`}
                         >
