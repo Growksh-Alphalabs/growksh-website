@@ -144,8 +144,7 @@ export default function Hero() {
             </div>
 
             {/* Headline - Mobile responsive font sizes */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">
-              YOUR{' '}
+<h1 className="text-4xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold text-slate-900 mb-4 md:mb-6 leading-tight">              YOUR{' '}
               <span className="relative inline-block">
                 <span className="relative z-10 text-[#00674F]">
                   FINANCIAL
