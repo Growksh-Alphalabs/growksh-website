@@ -23,11 +23,18 @@ export default function Navbar() {
       if (targetId) {
         const el = document.getElementById(targetId)
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          el.focus && el.focus()
+          const header = document.querySelector('header')
+          const headerHeight = header ? header.getBoundingClientRect().height : 80
+          const offset = 12 // extra breathing room
+          const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+          window.scrollTo({ top, behavior: 'smooth' })
+          try {
+            el.setAttribute('tabindex', '-1')
+            el.focus()
+          } catch (e) {}
           return
         }
-        // fallback set hash
+        // fallback: set hash so browser can handle it on load
         window.location.hash = targetId
       } else {
         navigate(pathPart || '/')
@@ -41,8 +48,15 @@ export default function Navbar() {
       setTimeout(() => {
         const el = document.getElementById(targetId)
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-          el.focus && el.focus()
+          const header = document.querySelector('header')
+          const headerHeight = header ? header.getBoundingClientRect().height : 80
+          const offset = 12
+          const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+          window.scrollTo({ top, behavior: 'smooth' })
+          try {
+            el.setAttribute('tabindex', '-1')
+            el.focus()
+          } catch (e) {}
         } else {
           // set the hash so browser can handle it on load
           window.location.hash = targetId
