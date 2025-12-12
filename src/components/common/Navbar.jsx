@@ -232,17 +232,21 @@ export default function Navbar() {
               if (link.to === '/alphalabs') {
                 return (
                   <div key={link.to}>
-                    <button onClick={() => setMobileAlphaOpen(v => !v)} className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between">
-                      <span>{link.label}</span>
-                      <span className={`transform transition-transform ${mobileAlphaOpen ? 'rotate-180' : 'rotate-0'}`} aria-hidden>▾</span>
-                    </button>
+                    <div className="flex items-center justify-between">
+                      <Link to="/alphalabs" onClick={() => { setOpen(false); setMobileAlphaOpen(false) }} className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">
+                        {link.label}
+                      </Link>
+                      <button onClick={() => setMobileAlphaOpen(v => !v)} aria-expanded={mobileAlphaOpen} className="inline-flex items-center justify-center p-2 rounded-md text-slate-700 hover:bg-slate-50">
+                        <span className={`transform transition-transform ${mobileAlphaOpen ? 'rotate-180' : 'rotate-0'}`} aria-hidden>▾</span>
+                      </button>
+                    </div>
 
-                    <div className={`${mobileAlphaOpen ? 'block' : 'hidden'} mt-1 space-y-1`}> 
+                    <div id="submenu-alphalabs" className={`${mobileAlphaOpen ? 'block' : 'hidden'} mt-1 space-y-1`} role="region" aria-label="Alphalabs submenu"> 
                       {alphalabsMenu.map(item => (
                         <button
                           key={item.to}
                           onClick={() => { handleAnchor(item.to); setOpen(false); setMobileAlphaOpen(false) }}
-                          className="w-full text-left px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                          className="w-full text-left pl-6 pr-3 py-2 rounded-md text-sm text-slate-700 bg-white border-l-4 border-transparent hover:bg-slate-50 hover:border-slate-200 transition"
                         >
                           {item.label}
                         </button>
@@ -255,17 +259,21 @@ export default function Navbar() {
               if (link.to === '/wealthcraft') {
                 return (
                   <div key={link.to}>
-                    <button onClick={() => setMobileWealthOpen(v => !v)} className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between">
-                      <span>{link.label}</span>
-                      <span className={`transform transition-transform ${mobileWealthOpen ? 'rotate-180' : 'rotate-0'}`} aria-hidden>▾</span>
-                    </button>
+                    <div className="flex items-center justify-between">
+                      <Link to="/wealthcraft" onClick={() => { setOpen(false); setMobileWealthOpen(false) }} className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">
+                        {link.label}
+                      </Link>
+                      <button onClick={() => setMobileWealthOpen(v => !v)} aria-expanded={mobileWealthOpen} className="inline-flex items-center justify-center p-2 rounded-md text-slate-700 hover:bg-slate-50">
+                        <span className={`transform transition-transform ${mobileWealthOpen ? 'rotate-180' : 'rotate-0'}`} aria-hidden>▾</span>
+                      </button>
+                    </div>
 
-                    <div className={`${mobileWealthOpen ? 'block' : 'hidden'} mt-1 space-y-1`}> 
+                    <div id="submenu-wealth" className={`${mobileWealthOpen ? 'block' : 'hidden'} mt-1 space-y-1`} role="region" aria-label="Wealthcraft submenu"> 
                       {wealthMenu.map(item => (
                         <button
                           key={item.to}
                           onClick={() => { handleAnchor(item.to); setOpen(false); setMobileWealthOpen(false) }}
-                          className="w-full text-left px-3 py-2 rounded-md text-sm text-slate-700 hover:bg-slate-50"
+                          className="w-full text-left pl-6 pr-3 py-2 rounded-md text-sm text-slate-700 bg-white border-l-4 border-transparent hover:bg-slate-50 hover:border-slate-200 transition"
                         >
                           {item.label}
                         </button>
