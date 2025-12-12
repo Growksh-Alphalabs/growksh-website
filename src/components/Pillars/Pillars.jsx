@@ -37,7 +37,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
 
   return (
     <div
-      className="relative min-h-[28rem] cursor-pointer"
+      className="relative min-h-[20rem] md:min-h-[28rem] cursor-pointer"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => {
         setIsFlipped(false)
@@ -63,7 +63,7 @@ function Card({ iconSrc, title, tagline, children, href, imagePosition = 'center
             <p className="text-slate-600 font-medium mb-2 px-4 italic">{tagline}</p>
 
             <div className={`mt-4 ${imagePosition === 'center' ? 'mx-auto' : ''}`}>
-              <div className="w-50 h-50  flex items-center justify-center shadow-inner" style={{ backgroundColor: 'rgba(61,199,245,0.06)' }}>
+              <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 flex items-center justify-center shadow-inner" style={{ backgroundColor: 'rgba(61,199,245,0.06)' }}>
                 <img src={iconSrc} alt={`${title} visual`} className="w-full h-full opacity-90 object-cover" />
               </div>
             </div>

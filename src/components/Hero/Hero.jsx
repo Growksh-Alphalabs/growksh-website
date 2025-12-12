@@ -21,9 +21,9 @@ export default function Hero() {
   }, [words.length]);
 
   return (
-    <section className="py-8 sm:py-12 md:py-16 lg:pt-20 bg-white text-slate-500 relative overflow-hidden">
+    <section className="min-h-screen md:min-h-0 py-8 sm:py-12 md:py-16 lg:pt-20 bg-white text-slate-500 relative overflow-visible md:overflow-hidden">
       {/* Modern abstract purple background */}
-      <svg className="pointer-events-none absolute inset-0 w-full h-full -z-10" viewBox="0 0 1440 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <svg className="pointer-events-none absolute inset-0 w-full h-full -z-10" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <defs>
           {/* Solid-color blooms used instead of SVG gradients */}
 

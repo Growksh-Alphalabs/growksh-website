@@ -52,7 +52,7 @@ export default function Philosophy() {
 
           {/* Right: Ecosystem graphic (three overlapping circles) */}
           <div className="flex justify-center lg:justify-end">
-            <div className="relative w-[26rem] h-[26rem] sm:w-[30rem] sm:h-[30rem] md:w-[36rem] md:h-[36rem] lg:w-[44rem] lg:h-[44rem]">
+            <div className="relative w-full max-w-[26rem] sm:max-w-[30rem] md:max-w-[36rem] lg:max-w-[44rem] aspect-square">
               <svg viewBox="0 0 360 360" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="philosophy-ecosystem-title" preserveAspectRatio="xMidYMid meet">
                 <title id="philosophy-ecosystem-title">Growksh ecosystem — Learn, Plan, Grow</title>
                 {/* defs removed — using solid fills for circles (no gradients) */}
