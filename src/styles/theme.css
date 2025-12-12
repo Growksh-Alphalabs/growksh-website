@@ -42,3 +42,14 @@ body{ font-family: Poppins, Lato, system-ui, sans-serif; margin:0 }
 .animate-gk-blob { animation: gk-blob 6s ease-in-out infinite; }
 
 .bg-abstract-light { background: radial-gradient(circle at 10% 10%, rgba(61,199,245,0.08), transparent 8%), radial-gradient(circle at 90% 30%, rgba(207,135,191,0.06), transparent 12%), radial-gradient(circle at 50% 90%, rgba(0,103,79,0.04), transparent 16%); }
+
+/* Ensure anchored sections are offset below the fixed header */
+section {
+  scroll-margin-top: 5rem; /* ~80px to clear header + small gap */
+}
+
+@media (min-width: 768px) {
+  section {
+    scroll-margin-top: 6rem; /* slightly larger offset on wider screens */
+  }
+}
