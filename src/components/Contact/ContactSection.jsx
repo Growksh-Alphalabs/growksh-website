@@ -38,6 +38,35 @@ export default function ContactSection() {
       }
 
       setSubmitted(true)
+      // Open Calendly popup (try react-calendly dynamically, then fallbacks)
+      try {
+        const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
+        const prefill = {}
+        if (form.name) prefill.name = form.name
+        if (form.email) prefill.email = form.email
+
+        const calendlyModule = await import('react-calendly').catch(() => null)
+        if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
+          calendlyModule.openPopupWidget({ url: base, prefill })
+          return
+        }
+
+        // If react-calendly not available, try global Calendly widget if present
+        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+          const params = new URLSearchParams()
+          if (prefill.name) params.set('name', prefill.name)
+          if (prefill.email) params.set('email', prefill.email)
+          const calendlyUrl = params.toString() ? `${base}?${params.toString()}` : base
+          window.Calendly.initPopupWidget({ url: calendlyUrl })
+          return
+        }
+
+        // Final fallback: open Calendly in a new tab with prefill query if possible
+        const finalUrl = Object.keys(prefill).length ? `${base}?${new URLSearchParams(prefill).toString()}` : base
+        window.open(finalUrl, '_blank')
+      } catch (e) {
+        console.warn('Calendly popup failed to open', e)
+      }
     } catch (err) {
       console.error('Contact submission failed', err)
       setError(err.message || 'Submission failed')
@@ -136,7 +165,7 @@ export default function ContactSection() {
               <div className="w-full h-80 md:h-80 bg-slate-200">
                 <iframe
                   title="Growksh location"
-                  src="https://www.google.com/maps?q=Baner%2C+Pune%2C+Maharashtra&output=embed"
+                  src="https://www.google.com/maps?q=kothrud%2C+Pune%2C+Maharashtra&output=embed"
                   className="w-full h-full border-0"
                   loading="lazy"
                 />
@@ -162,7 +191,7 @@ export default function ContactSection() {
                   </svg>
                   <div>
                     <div className="text-xs text-white/90">Office</div>
-                    <div>Baner, Pune, Maharashtra</div>
+                    <div>Kothrud, Pune, Maharashtra</div>
                   </div>
                 </li>
               </ul>

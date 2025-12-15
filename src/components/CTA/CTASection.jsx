@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 export default function CTASection() {
   return (
@@ -37,8 +37,64 @@ export default function CTASection() {
             </div>
 
             <div className="mt-6 flex items-end justify-between">
-              <Link
-                to="/alphalabs"
+              <a
+                href="/alphalabs#programs"
+                onClick={async (e) => {
+                  e.preventDefault()
+                  const to = '/alphalabs#programs'
+                  const [pathPart, hashPart] = to.split('#')
+                  const targetId = hashPart
+                  const startPath = pathPart || '/'
+                  const waitForElement = (id, timeout = 2500) => new Promise((resolve) => {
+                    const start = Date.now()
+                    const tick = () => {
+                      const el = document.getElementById(id)
+                      if (el) return resolve(el)
+                      if (Date.now() - start > timeout) return resolve(null)
+                      setTimeout(tick, 50)
+                    }
+                    tick()
+                  })
+
+                  const scrollToEl = (el) => {
+                    const header = document.querySelector('header')
+                    const headerHeight = header ? header.getBoundingClientRect().height : 80
+                    const offset = 12
+                    try { el.style.scrollMarginTop = `${headerHeight + offset}px` } catch (e) {}
+                    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {
+                      const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top, behavior: 'smooth' })
+                    }
+                    try { el.setAttribute('tabindex', '-1'); el.focus() } catch (e) {}
+
+                    // final snap after layout settles
+                    setTimeout(() => {
+                      const top2 = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top: top2, behavior: 'auto' })
+                    }, 150)
+                  }
+
+                  const navigate = useNavigate ? undefined : undefined
+                  // perform navigation then scroll
+                  try {
+                    // use the router navigate by creating an anchor-like navigation
+                    const nav = (await import('react-router-dom')).useNavigate()
+                    nav(startPath)
+                  } catch (e) {
+                    // fallback to location assign
+                    window.history.pushState({}, '', startPath)
+                    window.dispatchEvent(new PopStateEvent('popstate'))
+                  }
+
+                  if (targetId) {
+                    const el = await waitForElement(targetId)
+                    if (el) {
+                      setTimeout(() => requestAnimationFrame(() => scrollToEl(el)), 80)
+                    } else {
+                      window.location.hash = targetId
+                    }
+                  }
+                }}
                 className="inline-flex items-center gap-3 px-4 py-2 bg-[#3dc7f5] text-white rounded-lg font-medium shadow hover:opacity-90 transition-transform duration-200"
                 aria-label="Join a Course"
               >
@@ -46,7 +102,7 @@ export default function CTASection() {
                 <svg className="w-4 h-4 transform transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </Link>
+              </a>
             </div>
           </div>
 
