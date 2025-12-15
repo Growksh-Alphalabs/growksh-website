@@ -1,8 +1,10 @@
 import React from 'react'
-import img1 from '../../assets/krutika.jpg'
-import img2 from '../../assets/i1.png'
-import img3 from '../../assets/i2.png'
 import { Link } from 'react-router-dom'
+
+// Using curated Unsplash images for the preview cards.
+const img1 = 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=80'
+const img2 = 'https://images.unsplash.com/photo-1554224154-22dec7ec8818?auto=format&fit=crop&w=1200&q=80'
+const img3 = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBWMumDfeuDl0jyFEmRitQvDLBBrhPexQopQ&s'
 
 const posts = [
   {
