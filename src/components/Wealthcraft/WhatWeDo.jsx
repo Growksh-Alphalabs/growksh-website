@@ -39,14 +39,53 @@ export default function WhatWeDo() {
                             className="mt-10 animate-fadeUp"
                             style={{ animationDelay: '380ms' }}
                         >
-                            <Link
-                                to="#consult"
+                            <a
+                                href="https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion"
+                                onClick={async (e) => {
+                                    e && e.preventDefault && e.preventDefault()
+                                    const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
+
+                                    const loadCalendlyScript = () => new Promise((resolve, reject) => {
+                                        if (window.Calendly) return resolve()
+                                        const s = document.createElement('script')
+                                        s.src = 'https://assets.calendly.com/assets/external/widget.js'
+                                        s.async = true
+                                        s.onload = () => resolve()
+                                        s.onerror = () => reject(new Error('Calendly script failed to load'))
+                                        document.body.appendChild(s)
+                                    })
+
+                                    try {
+                                        const calendlyModule = await import('react-calendly').catch(() => null)
+                                        if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
+                                            calendlyModule.openPopupWidget({ url: base })
+                                            return
+                                        }
+
+                                        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                                            window.Calendly.initPopupWidget({ url: base })
+                                            return
+                                        }
+
+                                        // load widget script then open inline popup
+                                        await loadCalendlyScript()
+                                        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                                            window.Calendly.initPopupWidget({ url: base })
+                                            return
+                                        }
+
+                                        window.open(base, '_blank', 'noopener,noreferrer')
+                                    } catch (err) {
+                                        console.warn('Calendly open failed', err)
+                                        window.open(base, '_blank', 'noopener,noreferrer')
+                                    }
+                                }}
                                 className="inline-flex items-center px-8 py-4 rounded-full font-semibold text-black shadow-md focus:outline-none focus:ring-2 focus:ring-yellow-300 hover:shadow-lg transition-shadow duration-300"
                                 style={{ backgroundColor: COLORS.YELLOW }}
                                 aria-label="Get started with a free consultation"
                             >
                                 Get Started — Free Consultation
-                            </Link>
+                            </a>
                         </div>
                     </div>
 

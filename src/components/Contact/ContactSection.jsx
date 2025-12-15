@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { FaEnvelope, FaMapMarkerAlt } from 'react-icons/fa'
 
 export default function ContactSection() {
   const [form, setForm] = useState({
@@ -38,12 +39,22 @@ export default function ContactSection() {
       }
 
       setSubmitted(true)
-      // Open Calendly popup (try react-calendly dynamically, then fallbacks)
+      // Open Calendly popup (try react-calendly dynamically, then load widget and fallback)
       try {
         const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
         const prefill = {}
         if (form.name) prefill.name = form.name
         if (form.email) prefill.email = form.email
+
+        const loadCalendlyScript = () => new Promise((resolve, reject) => {
+          if (window.Calendly) return resolve()
+          const s = document.createElement('script')
+          s.src = 'https://assets.calendly.com/assets/external/widget.js'
+          s.async = true
+          s.onload = () => resolve()
+          s.onerror = () => reject(new Error('Calendly script failed to load'))
+          document.body.appendChild(s)
+        })
 
         const calendlyModule = await import('react-calendly').catch(() => null)
         if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
@@ -51,7 +62,6 @@ export default function ContactSection() {
           return
         }
 
-        // If react-calendly not available, try global Calendly widget if present
         if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
           const params = new URLSearchParams()
           if (prefill.name) params.set('name', prefill.name)
@@ -61,7 +71,18 @@ export default function ContactSection() {
           return
         }
 
-        // Final fallback: open Calendly in a new tab with prefill query if possible
+        // Load the Calendly widget script then call initPopupWidget to show inline popup
+        await loadCalendlyScript()
+        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+          const params = new URLSearchParams()
+          if (prefill.name) params.set('name', prefill.name)
+          if (prefill.email) params.set('email', prefill.email)
+          const calendlyUrl = params.toString() ? `${base}?${params.toString()}` : base
+          window.Calendly.initPopupWidget({ url: calendlyUrl })
+          return
+        }
+
+        // Final fallback: open in new tab
         const finalUrl = Object.keys(prefill).length ? `${base}?${new URLSearchParams(prefill).toString()}` : base
         window.open(finalUrl, '_blank')
       } catch (e) {
@@ -133,8 +154,8 @@ export default function ContactSection() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 7h18M3 12h18M3 17h18" />
                       </svg>
                       <select name="interest" value={form.interest} onChange={handleChange} className="mt-0 block w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#3dc7f5]">
-                        <option>Wealthcraft</option>
-                        <option>Alphalabs</option>
+                        <option>Advisory</option>
+                        <option>Education</option>
                         <option>Other</option>
                       </select>
                     </div>
@@ -175,9 +196,7 @@ export default function ContactSection() {
             <aside className="p-6 rounded-2xl bg-[#2e3b4b] text-white shadow-lg">
               <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-white mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 8l8.5 6L20 8M21 8v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8" />
-                  </svg>
+                  <FaEnvelope className="w-5 h-5 text-white mt-1" aria-hidden="true" />
                   <div>
                     <div className="text-xs text-white/90">Email</div>
                     <Link to="mailto:connect@growksh.com" className="underline">connect@growksh.com</Link>
@@ -186,9 +205,7 @@ export default function ContactSection() {
 
             
                 <li className="flex items-start gap-3">
-                  <svg className="w-5 h-5 text-white mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 21s8-4.5 8-10a8 8 0 10-16 0c0 5.5 8 10 8 10z" />
-                  </svg>
+                  <FaMapMarkerAlt className="w-5 h-5 text-white mt-1" aria-hidden="true" />
                   <div>
                     <div className="text-xs text-white/90">Office</div>
                     <div>Kothrud, Pune, Maharashtra</div>

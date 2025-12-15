@@ -190,6 +190,47 @@ export default function ServicesPricing() {
   const [expandedCategories, setExpandedCategories] = useState({})
   const [expandedServices, setExpandedServices] = useState({})
 
+  const openCalendly = async (e) => {
+    e && e.preventDefault && e.preventDefault()
+    const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
+
+    const loadCalendlyScript = () => new Promise((resolve, reject) => {
+      if (window.Calendly) return resolve()
+      const s = document.createElement('script')
+      s.src = 'https://assets.calendly.com/assets/external/widget.js'
+      s.async = true
+      s.onload = () => resolve()
+      s.onerror = () => reject(new Error('Calendly script failed to load'))
+      document.body.appendChild(s)
+    })
+
+    try {
+      const calendlyModule = await import('react-calendly').catch(() => null)
+      if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
+        calendlyModule.openPopupWidget({ url: base })
+        return
+      }
+
+      if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+        window.Calendly.initPopupWidget({ url: base })
+        return
+      }
+
+      // Load Calendly script and then open inline popup
+      await loadCalendlyScript()
+      if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+        window.Calendly.initPopupWidget({ url: base })
+        return
+      }
+
+      // Fallback: open in a new tab if popup cannot be created
+      window.open(base, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      console.warn('Calendly open failed', err)
+      window.open(base, '_blank', 'noopener,noreferrer')
+    }
+  }
+
   // Helper to parse currency like '₹ 14,999' and return formatted full and half prices
   const formatPrices = (priceStr) => {
     if (!priceStr) return { full: '', half: '' }
@@ -675,16 +716,17 @@ export default function ServicesPricing() {
             <p className="text-lg text-slate-600 mb-6">
               Book a free 15-minute discovery call and we'll help you decide which approach works best for your needs.
             </p>
-            <div className="space-y-4">
-              <Link
-                to="#schedule"
+              <div className="space-y-4">
+              <a
+                href="https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion"
+                onClick={openCalendly}
                 className="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-[#ffde21]/20 text-[#000] rounded-full font-bold text-lg hover:bg-purple-50 transition-colors shadow-md"
               >
                 <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 Schedule a Call
-              </Link>
+              </a>
             </div>
           </div>
         </div>
