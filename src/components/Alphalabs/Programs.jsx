@@ -285,7 +285,7 @@ export default function Programs() {
                   aria-label="Join The Awareness Bootcamp Today"
                   className="group inline-flex items-center justify-center gap-3 relative bg-[#ffde21] backdrop-blur-sm p-6 rounded-2xl border border-[#ffde21]/10 hover:border-[#ffde21]/30 transition-all duration-300 hover:-translate-y-1 shadow-lg"
                 >
-                  <span>Join The Awareness Bootcamp Today</span>
+                  <span>Join F³ (Financial Fitness for Females)</span>
                   <svg
                     className="w-5 h-5 transition-transform transform group-hover:translate-x-1"
                     fill="none"

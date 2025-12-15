@@ -169,8 +169,60 @@ export default function Hero() {
 
             {/* CTA Buttons - Stack on mobile */}
             <div className="mt-6 md:mt-8 lg:mt-10 flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4">
-              <Link 
-                to="#programs" 
+              <a
+                href="/alphalabs#programs"
+                onClick={async (e) => {
+                  e && e.preventDefault && e.preventDefault()
+                  const to = '/alphalabs#programs'
+                  const [pathPart, hashPart] = to.split('#')
+                  const targetId = hashPart
+                  const startPath = pathPart || '/'
+
+                  const waitForElement = (id, timeout = 3000) => new Promise((resolve) => {
+                    const start = Date.now()
+                    const tick = () => {
+                      const el = document.getElementById(id)
+                      if (el) return resolve(el)
+                      if (Date.now() - start > timeout) return resolve(null)
+                      setTimeout(tick, 50)
+                    }
+                    tick()
+                  })
+
+                  const scrollToEl = (el) => {
+                    const header = document.querySelector('header')
+                    const headerHeight = header ? header.getBoundingClientRect().height : 80
+                    const offset = 12
+                    try { el.style.scrollMarginTop = `${headerHeight + offset}px` } catch (e) {}
+                    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {
+                      const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top, behavior: 'smooth' })
+                    }
+                    try { el.setAttribute('tabindex', '-1'); el.focus() } catch (e) {}
+                    setTimeout(() => {
+                      const top2 = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top: top2, behavior: 'auto' })
+                    }, 150)
+                  }
+
+                  // navigate then scroll
+                  try {
+                    window.history.pushState({}, '', startPath)
+                    window.dispatchEvent(new PopStateEvent('popstate'))
+                  } catch (err) {
+                    window.location.href = startPath
+                    return
+                  }
+
+                  if (targetId) {
+                    const el = await waitForElement(targetId)
+                    if (el) {
+                      setTimeout(() => requestAnimationFrame(() => scrollToEl(el)), 80)
+                    } else {
+                      window.location.hash = targetId
+                    }
+                  }
+                }}
                 className="group inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
               >
                 Explore Programs
@@ -182,13 +234,47 @@ export default function Hero() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
-              </Link>
-              <Link 
-                to="#community" 
+              </a>
+              <a
+                href="#community"
+                onClick={async (e) => {
+                  e && e.preventDefault && e.preventDefault()
+                  const targetId = 'community'
+                  const waitForElement = (id, timeout = 2500) => new Promise((resolve) => {
+                    const start = Date.now()
+                    const tick = () => {
+                      const el = document.getElementById(id)
+                      if (el) return resolve(el)
+                      if (Date.now() - start > timeout) return resolve(null)
+                      setTimeout(tick, 50)
+                    }
+                    tick()
+                  })
+
+                  const scrollToEl = (el) => {
+                    const header = document.querySelector('header')
+                    const headerHeight = header ? header.getBoundingClientRect().height : 80
+                    const offset = 12
+                    try { el.style.scrollMarginTop = `${headerHeight + offset}px` } catch (e) {}
+                    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {
+                      const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top, behavior: 'smooth' })
+                    }
+                    try { el.setAttribute('tabindex', '-1'); el.focus() } catch (e) {}
+                    setTimeout(() => {
+                      const top2 = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top: top2, behavior: 'auto' })
+                    }, 150)
+                  }
+
+                  const el = await waitForElement(targetId)
+                  if (el) requestAnimationFrame(() => scrollToEl(el))
+                  else window.location.hash = targetId
+                }}
                 className="inline-flex items-center justify-center px-5 py-3 md:px-6 md:py-4 border-2 border-[#ffde21] text-[#000] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-white/50 transition-all duration-300 text-sm md:text-base"
               >
                 Join the Learning Circle
-              </Link>
+              </a>
             </div>
 
           </div>

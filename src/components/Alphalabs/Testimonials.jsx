@@ -172,14 +172,14 @@ export default function Testimonials(){
         </div>
 
         {/* View More CTA */}
-        <div className="text-center mt-12">
+        {/* <div className="text-center mt-12">
           <button className="inline-flex items-center gap-2 px-6 py-3 border-2 border-[#ffde21]/30 text-[#00674F] font-medium rounded-full hover:border-[#ffde21]/50 hover:bg-[#00674F]/5 transition-all duration-300">
             <span>View More Testimonials</span>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-        </div>
+        </div> */}
       </div>
 
       <style jsx>{`

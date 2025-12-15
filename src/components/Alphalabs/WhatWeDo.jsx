@@ -132,8 +132,59 @@ export default function WhatWeDo() {
 
             {/* CTA */}
             <div className="flex flex-wrap gap-4">
-              <Link 
-                to="#programs" 
+              <a
+                href="/alphalabs#programs"
+                onClick={async (e) => {
+                  e && e.preventDefault && e.preventDefault()
+                  const to = '/alphalabs#programs'
+                  const [pathPart, hashPart] = to.split('#')
+                  const targetId = hashPart
+                  const startPath = pathPart || '/'
+
+                  const waitForElement = (id, timeout = 3000) => new Promise((resolve) => {
+                    const start = Date.now()
+                    const tick = () => {
+                      const el = document.getElementById(id)
+                      if (el) return resolve(el)
+                      if (Date.now() - start > timeout) return resolve(null)
+                      setTimeout(tick, 50)
+                    }
+                    tick()
+                  })
+
+                  const scrollToEl = (el) => {
+                    const header = document.querySelector('header')
+                    const headerHeight = header ? header.getBoundingClientRect().height : 80
+                    const offset = 12
+                    try { el.style.scrollMarginTop = `${headerHeight + offset}px` } catch (e) {}
+                    try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }) } catch (e) {
+                      const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top, behavior: 'smooth' })
+                    }
+                    try { el.setAttribute('tabindex', '-1'); el.focus() } catch (e) {}
+                    setTimeout(() => {
+                      const top2 = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+                      window.scrollTo({ top: top2, behavior: 'auto' })
+                    }, 150)
+                  }
+
+                  try {
+                    window.history.pushState({}, '', startPath)
+                    window.dispatchEvent(new PopStateEvent('popstate'))
+                  } catch (err) {
+                    window.location.href = startPath
+                    return
+                  }
+
+                  if (targetId) {
+                    const el = await waitForElement(targetId)
+                    if (el) {
+                      setTimeout(() => requestAnimationFrame(() => scrollToEl(el)), 80)
+                    } else {
+                      window.location.hash = targetId
+                    }
+                  }
+                }}
                 className="group inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 See Our Courses
@@ -145,13 +196,13 @@ export default function WhatWeDo() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
-              </Link>
-              <Link 
+              </a>
+              {/* <Link 
                 to="#about" 
                 className="inline-flex items-center px-6 py-3 border-2 border-[#ffde21] text-[#000] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300"
               >
                 Learn Our Approach
-              </Link>
+              </Link> */}
             </div>
           </div>
 
