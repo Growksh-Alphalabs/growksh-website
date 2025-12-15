@@ -7,7 +7,7 @@ import imgA from '../../assets/Website images/Wealthcraft - Wealth process - A.p
 import imgL from '../../assets/Website images/Wealthcraft - Wealth process - L.png'
 import imgT from '../../assets/Website images/Wealthcraft - Wealth process - T.png'
 import imgH from '../../assets/Website images/Wealthcraft - Wealth process - H.png'
-import { Link } from 'react-router-dom'
+// removed unused `Link` import; Calendly popup is handled inline below
 
 const steps = [
     {
@@ -78,6 +78,45 @@ export default function Peace() {
     }, [])
 
     // No JS-driven height syncing — visual sizing handled via CSS (50vh)
+
+    const openCalendly = async (e) => {
+        e && e.preventDefault && e.preventDefault()
+        const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
+
+        const loadCalendlyScript = () => new Promise((resolve, reject) => {
+            if (window.Calendly) return resolve()
+            const s = document.createElement('script')
+            s.src = 'https://assets.calendly.com/assets/external/widget.js'
+            s.async = true
+            s.onload = () => resolve()
+            s.onerror = () => reject(new Error('Calendly script failed to load'))
+            document.body.appendChild(s)
+        })
+
+        try {
+            const calendlyModule = await import('react-calendly').catch(() => null)
+            if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
+                calendlyModule.openPopupWidget({ url: base })
+                return
+            }
+
+            if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                window.Calendly.initPopupWidget({ url: base })
+                return
+            }
+
+            await loadCalendlyScript()
+            if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                window.Calendly.initPopupWidget({ url: base })
+                return
+            }
+
+            window.open(base, '_blank', 'noopener,noreferrer')
+        } catch (err) {
+            console.warn('Calendly open failed', err)
+            window.open(base, '_blank', 'noopener,noreferrer')
+        }
+    }
 
     return (
         <section id="wealth-process" className="py-6 sm:py-8 bg-black text-white"> {/* Reduced py-12 to py-6 sm:py-8 */}
@@ -150,14 +189,15 @@ export default function Peace() {
                     Ready for a financial plan that evolves with your life?
                 </p>
                 <div className="mt-4 sm:mt-6 text-center rounded-2xl"> {/* Reduced mt-6 to mt-4 sm:mt-6 */}
-                    <Link
-                        to="#book"
-                        className="inline-flex items-center justify-center w-full sm:w-auto px-6 py-3 sm:px-10 sm:py-4 rounded-full"
+                    <a
+                        href="https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion"
+                        onClick={openCalendly}
+                        className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-4 rounded-full shadow-lg"
                         style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
-                        aria-label="Book Your Discovery Call"
+                        aria-label="Book a consultation to craft your financial peace"
                     >
-                        <span className="font-semibold text-sm sm:text-lg">Book Your Discovery Call</span> {/* Reduced text size on mobile */}
-                    </Link>
+                        <span className="font-semibold text-sm sm:text-lg">Book Your Discovery Call</span>
+                    </a>
                 </div>
             </div>
         </section>

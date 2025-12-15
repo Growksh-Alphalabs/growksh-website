@@ -127,14 +127,53 @@ export default function Peace() {
                 </div>
 
                 <div className="mt-8 sm:mt-8 text-center"> {/* Slightly larger margin for breathing room */}
-                    <Link
-                        to="#book"
-                        className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-4 rounded-full shadow-lg" 
+                    <a
+                        href="https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion"
+                        onClick={async (e) => {
+                                e && e.preventDefault && e.preventDefault()
+                                const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
+
+                                const loadCalendlyScript = () => new Promise((resolve, reject) => {
+                                    if (window.Calendly) return resolve()
+                                    const s = document.createElement('script')
+                                    s.src = 'https://assets.calendly.com/assets/external/widget.js'
+                                    s.async = true
+                                    s.onload = () => resolve()
+                                    s.onerror = () => reject(new Error('Calendly script failed to load'))
+                                    document.body.appendChild(s)
+                                })
+
+                                try {
+                                    const calendlyModule = await import('react-calendly').catch(() => null)
+                                    if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
+                                        calendlyModule.openPopupWidget({ url: base })
+                                        return
+                                    }
+
+                                    if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                                        window.Calendly.initPopupWidget({ url: base })
+                                        return
+                                    }
+
+                                    // load widget script then open inline popup
+                                    await loadCalendlyScript()
+                                    if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                                        window.Calendly.initPopupWidget({ url: base })
+                                        return
+                                    }
+
+                                    window.open(base, '_blank', 'noopener,noreferrer')
+                                } catch (err) {
+                                    console.warn('Calendly open failed', err)
+                                    window.open(base, '_blank', 'noopener,noreferrer')
+                                }
+                            }}
+                        className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 sm:px-10 sm:py-4 rounded-full shadow-lg"
                         style={{ backgroundColor: COLORS.YELLOW, color: '#000' }}
                         aria-label="Book a consultation to craft your financial peace"
                     >
                         <span className="font-semibold text-base sm:text-lg">Let's Craft Your Financial P.E.A.C.E.</span>
-                    </Link>
+                    </a>
                 </div>
             </div>
         </section>

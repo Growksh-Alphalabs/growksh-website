@@ -124,7 +124,46 @@ export default function CTASection() {
 
                         {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-                            <Link to="#programs"
+                            <a
+                                href="https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion"
+                                onClick={async (e) => {
+                                    e && e.preventDefault && e.preventDefault()
+                                    const base = 'https://calendly.com/financialfitnessbygrowksh/financial-fitness-discussion'
+
+                                    const loadCalendlyScript = () => new Promise((resolve, reject) => {
+                                        if (window.Calendly) return resolve()
+                                        const s = document.createElement('script')
+                                        s.src = 'https://assets.calendly.com/assets/external/widget.js'
+                                        s.async = true
+                                        s.onload = () => resolve()
+                                        s.onerror = () => reject(new Error('Calendly script failed to load'))
+                                        document.body.appendChild(s)
+                                    })
+
+                                    try {
+                                        const calendlyModule = await import('react-calendly').catch(() => null)
+                                        if (calendlyModule && typeof calendlyModule.openPopupWidget === 'function') {
+                                            calendlyModule.openPopupWidget({ url: base })
+                                            return
+                                        }
+
+                                        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                                            window.Calendly.initPopupWidget({ url: base })
+                                            return
+                                        }
+
+                                        await loadCalendlyScript()
+                                        if (window.Calendly && typeof window.Calendly.initPopupWidget === 'function') {
+                                            window.Calendly.initPopupWidget({ url: base })
+                                            return
+                                        }
+
+                                        window.open(base, '_blank', 'noopener,noreferrer')
+                                    } catch (err) {
+                                        console.warn('Calendly open failed', err)
+                                        window.open(base, '_blank', 'noopener,noreferrer')
+                                    }
+                                }}
                                 className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#ffde21] to-[#ffde21] text-black font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 w-full sm:w-auto"
                             >
                                 <span className="text-sm md:text-base">Schedule a Discovery Call</span>
@@ -136,7 +175,7 @@ export default function CTASection() {
                                 >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                 </svg>
-                            </Link>
+                            </a>
 
                             <Link to="#community"
                                 className="group inline-flex items-center justify-center px-6 md:px-8 py-3 md:py-4 border-2 border-[#ffde21]/30 text-[#ffde21] font-bold rounded-full hover:border-[#ffde21]/50 hover:bg-[#ffde21]/5 transition-all duration-300 w-full sm:w-auto"

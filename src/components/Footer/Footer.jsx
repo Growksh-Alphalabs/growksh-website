@@ -32,6 +32,11 @@ export default function Footer() {
 
           <div className="flex justify-start md:justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <nav aria-label="About and contact" className="flex flex-col space-y-2">
+                <Link to="/" className="text-sm text-slate-300 hover:text-white transition">Home</Link>
+                <Link to="/about" className="text-sm text-slate-300 hover:text-white transition">About</Link>
+                <Link to="/contact" className="text-sm text-slate-300 hover:text-white transition">Contact</Link>
+              </nav>
               <nav aria-label="Primary links" className="flex flex-col space-y-2">
                 <Link to="/wealthcraft" className="text-sm text-slate-300 hover:text-white transition">Advisory</Link>
                 <Link to="/alphalabs" className="text-sm text-slate-300 hover:text-white transition">Education</Link>
@@ -39,11 +44,7 @@ export default function Footer() {
                 <Link to="/insights" className="text-sm text-slate-300 hover:text-white transition">Resources</Link>
               </nav>
 
-              <nav aria-label="About and contact" className="flex flex-col space-y-2">
-                <Link to="/" className="text-sm text-slate-300 hover:text-white transition">Home</Link>
-                <Link to="/about" className="text-sm text-slate-300 hover:text-white transition">About</Link>
-                <Link to="/contact" className="text-sm text-slate-300 hover:text-white transition">Contact</Link>
-              </nav>
+             
             </div>
           </div>
 
