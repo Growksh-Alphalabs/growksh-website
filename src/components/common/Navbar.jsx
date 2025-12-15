@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import Logo1 from '../../assets/Website images/Growksh Logo 1.png'
 import LogoWealth from '../../assets/Website images/Wealthcraft logo.png'
@@ -11,6 +11,34 @@ export default function Navbar() {
   const [mobileWealthOpen, setMobileWealthOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+
+  // Keep a CSS variable updated with the header height + offset so
+  // native scrolling (and `scroll-margin-top`) positions anchors correctly.
+  useEffect(() => {
+    const offset = 12
+    const header = () => document.querySelector('header')
+
+    const setVar = () => {
+      const h = header() ? header().getBoundingClientRect().height : 80
+      document.documentElement.style.setProperty('--scroll-anchor-offset', `${h + offset}px`)
+    }
+
+    setVar()
+
+    let ro
+    try {
+      ro = new ResizeObserver(setVar)
+      if (header()) ro.observe(header())
+    } catch (e) {}
+
+    window.addEventListener('resize', setVar)
+    window.addEventListener('load', setVar)
+    return () => {
+      try { ro && ro.disconnect() } catch (e) {}
+      window.removeEventListener('resize', setVar)
+      window.removeEventListener('load', setVar)
+    }
+  }, [])
 
   // Navigate to a path that may include a hash, then scroll to the anchor if present.
   async function handleAnchor(to) {
@@ -33,8 +61,31 @@ export default function Navbar() {
       const header = document.querySelector('header')
       const headerHeight = header ? header.getBoundingClientRect().height : 80
       const offset = 12
-      const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
-      window.scrollTo({ top, behavior: 'smooth' })
+
+      // Apply a scroll-margin so native scrolling and scrollIntoView
+      // will position the element below the fixed header.
+      try {
+        el.style.scrollMarginTop = `${headerHeight + offset}px`
+      } catch (e) {}
+
+      // Prefer native scrollIntoView (respects scroll-margin-top).
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      } catch (e) {
+        // Fallback to manual scroll calculation.
+        const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+        window.scrollTo({ top, behavior: 'smooth' })
+      }
+
+      // Secondary correction: some layouts (sticky children, fonts/images)
+      // can shift after the initial scroll. Recompute and snap after a short delay.
+      try {
+        setTimeout(() => {
+          const top2 = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerHeight - offset)
+          window.scrollTo({ top: top2, behavior: 'auto' })
+        }, 150)
+      } catch (e) {}
+
       try {
         el.setAttribute('tabindex', '-1')
         el.focus()
@@ -46,7 +97,14 @@ export default function Navbar() {
       if (targetId) {
         const el = await waitForElement(targetId)
         if (el) {
-          scrollToEl(el)
+          // Delay slightly to ensure layout (images/fonts) settles before scrolling.
+          setTimeout(() => {
+            try {
+              requestAnimationFrame(() => scrollToEl(el))
+            } catch (e) {
+              scrollToEl(el)
+            }
+          }, 80)
           return
         }
         // fallback: set hash so browser can handle it
@@ -62,8 +120,14 @@ export default function Navbar() {
     if (targetId) {
       const el = await waitForElement(targetId)
       if (el) {
-        // small delay to ensure layout settled
-        setTimeout(() => scrollToEl(el), 40)
+        // small delay to ensure layout settled before scrolling
+        setTimeout(() => {
+          try {
+            requestAnimationFrame(() => scrollToEl(el))
+          } catch (e) {
+            scrollToEl(el)
+          }
+        }, 80)
       } else {
         // fallback: set hash so browser can handle it on load
         window.location.hash = targetId
