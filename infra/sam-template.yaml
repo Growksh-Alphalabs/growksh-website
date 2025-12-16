@@ -226,3 +226,9 @@ Outputs:
   ContactsTableName:
     Description: "DynamoDB table name for contacts"
     Value: !Ref ContactsTable
+  CognitoUserPoolId:
+    Description: "Cognito User Pool ID"
+    Value: !Ref CognitoUserPool
+  CognitoUserPoolClientId:
+    Description: "Cognito User Pool Client ID"
+    Value: !Ref CognitoUserPoolClient
