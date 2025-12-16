@@ -54,6 +54,162 @@ Resources:
       StageName: Prod
       TracingEnabled: true
 
+  # Cognito User Pool for passwordless (email OTP) custom auth
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub "${AWS::StackName}-userpool"
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      Schema:
+        - Name: name
+          Required: false
+          Mutable: true
+        - Name: phone_number
+          Required: false
+          Mutable: true
+      LambdaConfig:
+        CreateAuthChallenge: !GetAtt CreateAuthChallengeFunction.Arn
+        DefineAuthChallenge: !GetAtt DefineAuthChallengeFunction.Arn
+        VerifyAuthChallengeResponse: !GetAtt VerifyAuthChallengeFunction.Arn
+        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub "${AWS::StackName}-client"
+      UserPoolId: !Ref CognitoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+
+  # DynamoDB table for storing user profiles
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-users"
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  ########################################
+  # Cognito trigger Lambdas
+  ########################################
+  CreateAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-cognito-create-auth-challenge"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-create-auth-challenge/
+      Environment:
+        Variables:
+          SES_SOURCE_EMAIL: noreply@example.com
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: '*'
+
+  DefineAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-cognito-define-auth-challenge"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-define-auth-challenge/
+
+  VerifyAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-cognito-verify-auth-challenge"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-verify-auth-challenge/
+
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-cognito-post-confirmation"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-post-confirmation/
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+
+  # Permissions so Cognito can invoke the Lambdas
+  CreateAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateAuthChallengeFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
+
+  DefineAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DefineAuthChallengeFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
+
+  VerifyAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref VerifyAuthChallengeFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
+
+  PostConfirmationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostConfirmationFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
+
+  # User registration API (calls AdminCreateUser)
+  UserRegisterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-user-register"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/user-register/
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminCreateUser
+              Resource: '*'
+      Events:
+        RegisterApi:
+          Type: Api
+          Properties:
+            Path: /auth/register
+            Method: post
+            RestApiId: !Ref ContactApiGateway
+
   # Grant API Gateway permission to invoke the Lambda
   ContactFunctionApiPermission:
     Type: AWS::Lambda::Permission

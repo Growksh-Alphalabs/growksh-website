@@ -9,6 +9,8 @@ import Alphalabs from './pages/Alphalabs/Alphalabs'
 import Ventures from './pages/Ventures/Ventures'
 import Insights from './pages/Insights/Insights'
 import Contact from './pages/Contact'
+import Signup from './components/Auth/Signup'
+import Login from './components/Auth/Login'
 
 export default function App() {
   return (
@@ -23,6 +25,8 @@ export default function App() {
             <Route path="/ventures" element={<Ventures />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/auth/signup" element={<Signup />} />
+            <Route path="/auth/login" element={<Login />} />
           </Routes>
         </Layout>
       </ScrollToTop>
