@@ -91,12 +91,13 @@ jobs:
           if [ -f infra/sam-template.yaml ]; then
             echo "Infra template found — installing Lambda dependencies and packaging"
 
-            # Install Lambda dependencies
-            if [ -d "aws-lambda/contact" ]; then
-              cd aws-lambda/contact
-              npm install
-              cd ../../
-            fi
+            # Install Lambda dependencies for all functions that declare package.json
+            for d in aws-lambda/*; do
+              if [ -f "$d/package.json" ]; then
+                echo "Installing dependencies in $d"
+                (cd "$d" && npm ci)
+              fi
+            done
 
             # Ensure we have a bucket to upload packaged artifacts
             if [ -z "$S3_BUCKET" ]; then
