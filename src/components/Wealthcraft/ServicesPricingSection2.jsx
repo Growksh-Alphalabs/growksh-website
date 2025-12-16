@@ -44,7 +44,6 @@ export default function ServicesPricingSection2() {
     return (
         <>
             {/* Section 2: Get More for Less - Bundles */}
-            {/* Section 2: Get More for Less - Bundles */}
             <div className="mb-16">
                 <div className="text-center mb-10">
                     <h3 className="text-3xl font-bold text-slate-900 mb-4">For Clients Who Want Ongoing Partnership & Long-Term Clarity</h3>

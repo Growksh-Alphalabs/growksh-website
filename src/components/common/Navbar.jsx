@@ -287,6 +287,22 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3">
             <Link to="/contact" className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full text-base md:text-lg shadow hover:opacity-95 transition">Contact</Link>
+            {(() => {
+              const useOidc = !!import.meta.env.VITE_COGNITO_AUTHORITY
+              const onAuthClick = (e) => {
+                if (useOidc) {
+                  // still dispatch oidc-signin, but allow the Link navigation to occur
+                  window.dispatchEvent(new CustomEvent('oidc-signin'))
+                }
+              }
+
+              return (
+                <>
+                  <Link to="/auth/login" onClick={onAuthClick} className="hidden md:inline-flex items-center px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50">Login</Link>
+                  <Link to="/auth/signup" onClick={onAuthClick} className="hidden md:inline-flex items-center px-4 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:opacity-95">Sign up</Link>
+                </>
+              )
+            })()}
 
             <button
               onClick={() => setOpen(o => !o)}
@@ -382,6 +398,24 @@ export default function Navbar() {
 
             <div className="mt-2">
               <Link to="/contact" onClick={() => setOpen(false)} className="block text-center px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full">Schedule a Call</Link>
+            </div>
+            <div className="mt-3 space-y-2">
+              {(() => {
+                const useOidc = !!import.meta.env.VITE_COGNITO_AUTHORITY
+                const onAuthClick = (e) => {
+                  if (useOidc) {
+                    window.dispatchEvent(new CustomEvent('oidc-signin'))
+                  }
+                  setOpen(false)
+                }
+
+                return (
+                  <>
+                    <Link to="/auth/login" onClick={onAuthClick} className="block text-center w-full px-4 py-2 border rounded-md text-slate-700">Login</Link>
+                    <Link to="/auth/signup" onClick={onAuthClick} className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-md font-semibold">Sign up</Link>
+                  </>
+                )
+              })()}
             </div>
           </div>
         </div>
