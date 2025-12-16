@@ -1,12 +1,32 @@
 const AWS = require('aws-sdk')
 const cognito = new AWS.CognitoIdentityServiceProvider()
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+  'Content-Type': 'application/json'
+}
+
+function response(statusCode, body) {
+  return {
+    statusCode,
+    headers: corsHeaders,
+    body: JSON.stringify(body)
+  }
+}
+
 exports.handler = async (event) => {
   try {
+    // Handle preflight OPTIONS request
+    if (event.httpMethod === 'OPTIONS') {
+      return response(204, { message: 'OK' })
+    }
+
     const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body
     const { email, name, phone } = body || {}
     const userPoolId = process.env.USER_POOL_ID
-    if (!email || !userPoolId) return { statusCode: 400, body: JSON.stringify({ message: 'Missing email or userPoolId' }) }
+    if (!email || !userPoolId) return response(400, { message: 'Missing email or userPoolId' })
 
     // Create the user with a random temp password, suppress messaging (we'll send OTP via custom auth)
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'
@@ -24,9 +44,9 @@ exports.handler = async (event) => {
       MessageAction: 'SUPPRESS'
     }).promise()
 
-    return { statusCode: 201, body: JSON.stringify({ message: 'User created' }) }
+    return response(201, { message: 'User created' })
   } catch (err) {
     console.warn('user-register error', err)
-    return { statusCode: 500, body: JSON.stringify({ message: err.message || 'error' }) }
+    return response(500, { message: err.message || 'error' })
   }
 }
