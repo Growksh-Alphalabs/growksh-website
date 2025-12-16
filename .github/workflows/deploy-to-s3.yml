@@ -153,9 +153,9 @@ jobs:
       - name: ✅ Build frontend
         run: |
           npm ci
-          # export Vite dev envs into .env for the build
+          # export Vite env used by the frontend: VITE_API_URL is read by the code
           if [ -n "$VITE_CONTACT_API_URL" ]; then
-            echo "VITE_CONTACT_API_URL=$VITE_CONTACT_API_URL" > .env
+            echo "VITE_API_URL=$VITE_CONTACT_API_URL" > .env
           fi
           npm run build
 
