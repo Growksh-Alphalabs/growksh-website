@@ -12,7 +12,10 @@ export default function Signup() {
     setLoading(true)
     setMessage('')
     try {
-      const apiBase = import.meta.env.VITE_API_URL || ''
+      let apiBase = import.meta.env.VITE_API_URL || ''
+      // If CI injected the Contact API endpoint (which may include a trailing /contact),
+      // normalize to the API root so we can call /auth/register correctly.
+      if (apiBase.endsWith('/contact')) apiBase = apiBase.replace(/\/contact$/, '')
       const payload = { email, name, phone }
       console.log('Signup: sending request', { url: `${apiBase}/auth/register`, payload })
       const res = await fetch(`${apiBase}/auth/register`, {
