@@ -18,10 +18,25 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, phone })
       })
-      const data = await res.json()
-      if (res.ok) setMessage('User created. Now sign in to receive OTP.')
-      else setMessage(data.message || 'Failed')
+      const contentType = res.headers.get('content-type') || ''
+      let data = null
+      if (contentType.includes('application/json')) {
+        data = await res.json()
+      } else {
+        // Non-JSON response (likely HTML error page or plain text)
+        const text = await res.text()
+        data = { __rawText: text }
+      }
+
+      if (res.ok) {
+        setMessage('User created. Now sign in to receive OTP.')
+      } else {
+        // Prefer message from JSON, otherwise show a short snippet of raw text
+        const errMsg = (data && data.message) || (data && data.__rawText && data.__rawText.slice(0, 300)) || 'Failed'
+        setMessage(`Error ${res.status}: ${errMsg}`)
+      }
     } catch (err) {
+      // Handle JSON parse failures and other network errors
       setMessage(err.message || 'Error')
     } finally { setLoading(false) }
   }
