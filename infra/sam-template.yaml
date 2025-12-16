@@ -52,6 +52,10 @@ Resources:
     Properties:
       StageName: Prod
       TracingEnabled: true
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS,PUT,DELETE'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
 
   # Cognito User Pool for passwordless (email OTP) custom auth
   CognitoUserPool:
@@ -202,6 +206,12 @@ Resources:
           Properties:
             Path: /auth/register
             Method: post
+            RestApiId: !Ref ContactApiGateway
+        RegisterOptions:
+          Type: Api
+          Properties:
+            Path: /auth/register
+            Method: options
             RestApiId: !Ref ContactApiGateway
 
   # Grant API Gateway permission to invoke the Lambda
