@@ -95,7 +95,12 @@ jobs:
             for d in aws-lambda/*; do
               if [ -f "$d/package.json" ]; then
                 echo "Installing dependencies in $d"
-                (cd "$d" && npm ci)
+                (cd "$d" && \
+                  if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then \
+                    npm ci; \
+                  else \
+                    npm install; \
+                  fi)
               fi
             done
 
