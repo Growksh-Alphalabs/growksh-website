@@ -13,12 +13,15 @@ export default function Signup() {
     setMessage('')
     try {
       const apiBase = import.meta.env.VITE_API_URL || ''
+      const payload = { email, name, phone }
+      console.log('Signup: sending request', { url: `${apiBase}/auth/register`, payload })
       const res = await fetch(`${apiBase}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name, phone })
+        body: JSON.stringify(payload)
       })
-      console.log({res});
+      console.log('Signup: response status', res.status, 'ok?', res.ok)
+      try { console.log('Signup: response headers', Object.fromEntries(res.headers.entries())) } catch (e) {}
       
       const contentType = res.headers.get('content-type') || ''
       let data = null
@@ -31,14 +34,17 @@ export default function Signup() {
       }
 
       if (res.ok) {
+        console.log('Signup succeeded', { data })
         setMessage('User created. Now sign in to receive OTP.')
       } else {
+        console.warn('Signup failed', { status: res.status, data })
         // Prefer message from JSON, otherwise show a short snippet of raw text
         const errMsg = (data && data.message) || (data && data.__rawText && data.__rawText.slice(0, 300)) || 'Failed'
         setMessage(`Error ${res.status}: ${errMsg}`)
       }
     } catch (err) {
       // Handle JSON parse failures and other network errors
+      console.error('Signup exception', err)
       setMessage(err.message || 'Error')
     } finally { setLoading(false) }
   }

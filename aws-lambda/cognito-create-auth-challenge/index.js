@@ -9,6 +9,12 @@ function generateOTP(length = 6) {
 
 exports.handler = async (event) => {
   // Called when Cognito needs to create/send a challenge (OTP)
+  console.log('CreateAuthChallenge invoked', { triggerSource: event.triggerSource, userName: event.userName })
+  console.log('Event.request summary:', {
+    userAttributes: event.request && event.request.userAttributes ? { email: event.request.userAttributes.email } : {},
+    sessionLength: event.request && event.request.session ? event.request.session.length : 0
+  })
+
   const email = (event.request.userAttributes && event.request.userAttributes.email) || event.request.username
 
   const otp = generateOTP(6)
@@ -24,6 +30,7 @@ exports.handler = async (event) => {
   const body = `Your Growksh verification code is: ${otp}. It expires in 10 minutes.`
 
   try {
+    console.log('Sending OTP to', email)
     await ses.sendEmail({
       Source: source,
       Destination: { ToAddresses: [email] },
@@ -34,7 +41,7 @@ exports.handler = async (event) => {
     }).promise()
     console.log('OTP sent to', email)
   } catch (err) {
-    console.warn('Failed to send OTP via SES', err)
+    console.warn('Failed to send OTP via SES', err && err.stack ? err.stack : err)
   }
 
   return event
