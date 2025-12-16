@@ -18,6 +18,8 @@ export default function Signup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, name, phone })
       })
+      console.log({res});
+      
       const contentType = res.headers.get('content-type') || ''
       let data = null
       if (contentType.includes('application/json')) {
