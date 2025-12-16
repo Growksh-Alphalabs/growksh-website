@@ -22,7 +22,6 @@ Resources:
   ContactFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-contact-handler"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/contact/
@@ -105,7 +104,6 @@ Resources:
   CreateAuthChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-cognito-create-auth-challenge"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/cognito-create-auth-challenge/
@@ -124,7 +122,6 @@ Resources:
   DefineAuthChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-cognito-define-auth-challenge"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/cognito-define-auth-challenge/
@@ -132,7 +129,6 @@ Resources:
   VerifyAuthChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-cognito-verify-auth-challenge"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/cognito-verify-auth-challenge/
@@ -140,7 +136,6 @@ Resources:
   PostConfirmationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-cognito-post-confirmation"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/cognito-post-confirmation/
@@ -188,7 +183,6 @@ Resources:
   UserRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-user-register"
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/user-register/
