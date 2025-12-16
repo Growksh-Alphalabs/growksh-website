@@ -41,21 +41,23 @@ exports.handler = async (event) => {
       return response(400, { message: 'Missing email or userPoolId' })
     }
 
-    // Create the user with a random temp password, suppress messaging (we'll send OTP via custom auth)
+    // Create the user with a random temp password. Do NOT mark email as verified
+    // and allow Cognito to send the verification/invite email to the user.
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'
 
     console.log('Calling AdminCreateUser for', email, 'in pool', userPoolId)
+    // Note: remove MessageAction:'SUPPRESS' and do not set email_verified so
+    // Cognito will send its verification/invite email to the user.
     await cognito.adminCreateUser({
       UserPoolId: userPoolId,
       Username: email,
       UserAttributes: [
         { Name: 'email', Value: email },
-        { Name: 'email_verified', Value: 'true' },
         ...(name ? [{ Name: 'name', Value: name }] : []),
         ...(phone ? [{ Name: 'phone_number', Value: phone }] : [])
       ],
       TemporaryPassword: tempPassword,
-      MessageAction: 'SUPPRESS'
+      DesiredDeliveryMediums: ['EMAIL']
     }).promise()
 
     console.log('AdminCreateUser succeeded for', email)
