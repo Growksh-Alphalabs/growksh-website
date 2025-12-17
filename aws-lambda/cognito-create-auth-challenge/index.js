@@ -42,6 +42,17 @@ exports.handler = async (event) => {
     console.log('OTP sent to', email)
   } catch (err) {
     console.warn('Failed to send OTP via SES', err && err.stack ? err.stack : err)
+    // For debugging: log the OTP in CloudWatch when SES fails so you can complete test flows.
+    // WARNING: Logging OTPs is insecure for production; this helps diagnose delivery issues only.
+    try {
+      if (process.env.DEBUG_LOG_OTP === '1') {
+        console.log(`DEBUG_LOG_OTP enabled — OTP for ${email}: ${otp}`)
+      } else {
+        console.log('SES send failed; OTP hidden. Set DEBUG_LOG_OTP=1 in env to reveal OTP in logs for testing.')
+      }
+    } catch (logErr) {
+      console.warn('Failed writing debug OTP log', logErr)
+    }
   }
 
   return event

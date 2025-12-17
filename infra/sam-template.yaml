@@ -2,6 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: SAM template to deploy Contact API (Lambda) + DynamoDB
 
+Parameters:
+  SESSourceEmail:
+    Type: String
+    Description: "Verified SES source email address for sending OTPs (e.g. verified@yourdomain.com)"
+    Default: ""
+
 Globals:
   Function:
     Timeout: 10
@@ -113,7 +119,8 @@ Resources:
       CodeUri: ../aws-lambda/cognito-create-auth-challenge/
       Environment:
         Variables:
-          SES_SOURCE_EMAIL: noreply@example.com
+          SES_SOURCE_EMAIL: !If ["", !Ref SESSourceEmail, !Ref SESSourceEmail]
+          DEBUG_LOG_OTP: '0'
       Policies:
         - Version: '2012-10-17'
           Statement:
