@@ -48,6 +48,9 @@ exports.handler = async (event) => {
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'
 
     console.log('Calling AdminCreateUser for', email, 'in pool', userPoolId)
+    // Let Cognito send the built-in invite/verification email by not
+    // suppressing messages here. Cognito will send an email with a
+    // temporary password / verification flow to the user.
     await cognito.adminCreateUser({
       UserPoolId: userPoolId,
       Username: email,
@@ -56,8 +59,7 @@ exports.handler = async (event) => {
         ...(name ? [{ Name: 'name', Value: name }] : []),
         ...(phone ? [{ Name: 'phone_number', Value: phone }] : [])
       ],
-      TemporaryPassword: tempPassword,
-      MessageAction: 'SUPPRESS'
+      TemporaryPassword: tempPassword
     }).promise()
     // Compose and send verification link via SES. The frontend verification
     // endpoint will confirm the user in Cognito then redirect to the login page.
