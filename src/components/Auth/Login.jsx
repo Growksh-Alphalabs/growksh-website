@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { startAuth, respondToChallenge } from '../../lib/cognito'
+import { startAuth, respondToChallenge, enableFakeAuth } from '../../lib/cognito'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -18,7 +18,11 @@ export default function Login() {
       if (res.challenge) setStage('challenge')
       else if (res.success) setStage('success')
     } catch (err) {
-      setMessage(err.message || 'Failed to start auth')
+      // Show helpful guidance if envs are missing
+      const msg = err && err.message ? err.message : 'Failed to start auth'
+      setMessage(msg)
+      // If the error is missing-config, offer a fast local fallback button
+      console.warn('startAuth error', err)
     } finally { setLoading(false) }
   }
 
@@ -50,6 +54,12 @@ export default function Login() {
     } finally { setLoading(false) }
   }
 
+  const enableFakeAndRetry = async () => {
+    enableFakeAuth()
+    setMessage('Enabled fake auth for testing — sending code...')
+    await begin()
+  }
+
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg">
       <h3 className="text-xl font-bold mb-4">Sign in (Email OTP)</h3>
@@ -59,6 +69,13 @@ export default function Login() {
           <input required value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" type="email" className="w-full p-3 border rounded" />
           <button disabled={loading} className="w-full py-3 bg-[#00674F] text-white rounded-md font-bold">{loading ? 'Sending code...' : 'Send code'}</button>
         </form>
+      )}
+      {/* Helpful fallback when Cognito envs are not configured at build time */}
+      {message && message.includes('Cognito UserPoolId') && (
+        <div className="mt-3">
+          <div className="text-sm text-yellow-700">Cognito envs missing in frontend build.</div>
+          <button onClick={enableFakeAndRetry} className="mt-2 py-2 px-3 bg-gray-800 text-white rounded">Use fake auth (testing)</button>
+        </div>
       )}
 
       {stage === 'challenge' && (

@@ -151,6 +151,16 @@ jobs:
             if [ -n "$TABLE_NAME" ] && [ "$TABLE_NAME" != "None" ]; then
               echo "CONTACTS_TABLE=$TABLE_NAME" >> $GITHUB_ENV
             fi
+            # Read Cognito outputs (if present) and export for frontend build
+            USERPOOL_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolId'].OutputValue" --output text)
+            CLIENT_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolClientId'].OutputValue" --output text)
+
+            if [ -n "$USERPOOL_ID" ] && [ "$USERPOOL_ID" != "None" ]; then
+              echo "VITE_COGNITO_USER_POOL_ID=$USERPOOL_ID" >> $GITHUB_ENV
+            fi
+            if [ -n "$CLIENT_ID" ] && [ "$CLIENT_ID" != "None" ]; then
+              echo "VITE_COGNITO_CLIENT_ID=$CLIENT_ID" >> $GITHUB_ENV
+            fi
           else
             echo "No infra/sam-template.yaml — skipping infra deploy"
           fi
@@ -160,8 +170,17 @@ jobs:
         run: |
           npm ci
           # export Vite env used by the frontend: VITE_API_URL is read by the code
+          # Write Vite env file consumed by the frontend build
           if [ -n "$VITE_CONTACT_API_URL" ]; then
             echo "VITE_API_URL=$VITE_CONTACT_API_URL" > .env
+          else
+            echo "VITE_API_URL=" > .env
+          fi
+          if [ -n "$VITE_COGNITO_USER_POOL_ID" ]; then
+            echo "VITE_COGNITO_USER_POOL_ID=$VITE_COGNITO_USER_POOL_ID" >> .env
+          fi
+          if [ -n "$VITE_COGNITO_CLIENT_ID" ]; then
+            echo "VITE_COGNITO_CLIENT_ID=$VITE_COGNITO_CLIENT_ID" >> .env
           fi
           npm run build
 
