@@ -246,12 +246,6 @@ Resources:
               Path: /auth/start
               Method: post
               RestApiId: !Ref ContactApiGateway
-          AuthStartOptions:
-            Type: Api
-            Properties:
-              Path: /auth/start
-              Method: options
-              RestApiId: !Ref ContactApiGateway
 
     AuthRespondFunction:
       Type: AWS::Serverless::Function
@@ -276,12 +270,6 @@ Resources:
             Properties:
               Path: /auth/respond
               Method: post
-              RestApiId: !Ref ContactApiGateway
-          AuthRespondOptions:
-            Type: Api
-            Properties:
-              Path: /auth/respond
-              Method: options
               RestApiId: !Ref ContactApiGateway
 
   # Grant API Gateway permission to invoke the Lambda
