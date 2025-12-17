@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { startAuth } from '../../lib/cognito'
 
 export default function Signup() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -62,7 +63,6 @@ export default function Signup() {
     } finally { setLoading(false) }
   }
 
-  const navigate = useNavigate()
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg">

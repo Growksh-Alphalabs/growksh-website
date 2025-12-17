@@ -1,6 +1,7 @@
 const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID;
 const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID;
 const USE_FAKE = import.meta.env.VITE_USE_FAKE_AUTH === '1' || import.meta.env.VITE_USE_FAKE_AUTH === 'true';
+let runtimeFakeOverride = false
 
 // Provide a helpful error when env vars are missing
 const missingMsg = 'Cognito UserPoolId and ClientId are not configured. Set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID in .env.local or enable VITE_USE_FAKE_AUTH=1 for local testing.';
@@ -36,7 +37,7 @@ async function getUserPool() {
 }
 
 async function startAuth(email) {
-  if (USE_FAKE) {
+  if (USE_FAKE || runtimeFakeOverride) {
     return new Promise((resolve) => {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       pending.set(email, code);
@@ -63,7 +64,7 @@ async function startAuth(email) {
 }
 
 async function respondToChallenge(email, answer) {
-  if (USE_FAKE) {
+  if (USE_FAKE || runtimeFakeOverride) {
     return new Promise((resolve, reject) => {
       const expected = pending.get(email);
       if (expected && String(answer).trim() === String(expected).trim()) {
@@ -107,3 +108,7 @@ async function signOutLocal() {
 
 export { startAuth, respondToChallenge, signOutLocal };
 export default null;
+
+// Allow tests or live debugging to enable fake auth at runtime
+export function enableFakeAuth() { runtimeFakeOverride = true }
+export function disableFakeAuth() { runtimeFakeOverride = false }
