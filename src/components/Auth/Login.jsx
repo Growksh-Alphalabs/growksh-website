@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { startAuth, respondToChallenge } from '../../lib/cognito'
 
 export default function Login() {
@@ -9,7 +10,7 @@ export default function Login() {
   const [message, setMessage] = useState('')
 
   const begin = async (e) => {
-    e.preventDefault()
+    if (e && e.preventDefault) e.preventDefault()
     setLoading(true)
     setMessage('')
     try {
@@ -20,6 +21,18 @@ export default function Login() {
       setMessage(err.message || 'Failed to start auth')
     } finally { setLoading(false) }
   }
+
+  // Auto-start when ?email=...&autostart=1 is present
+  const [searchParams] = useSearchParams()
+  useEffect(() => {
+    const qEmail = searchParams.get('email')
+    const auto = searchParams.get('autostart')
+    if (qEmail) setEmail(qEmail)
+    if (qEmail && auto === '1') {
+      begin()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const submitOtp = async (e) => {
     e.preventDefault()
