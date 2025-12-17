@@ -119,7 +119,7 @@ Resources:
       CodeUri: ../aws-lambda/cognito-create-auth-challenge/
       Environment:
         Variables:
-          SES_SOURCE_EMAIL: !If ["", !Ref SESSourceEmail, !Ref SESSourceEmail]
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
           DEBUG_LOG_OTP: '0'
       Policies:
         - Version: '2012-10-17'
