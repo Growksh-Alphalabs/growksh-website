@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { startAuth } from '../../lib/cognito'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -40,9 +41,15 @@ export default function Signup() {
 
       if (res.ok) {
         console.log('Signup succeeded', { data })
-        setMessage('User created. Check your email and verify your address before signing in.')
-        // Redirect to login (without auto-start); user should verify email first
-        navigate('/auth/login')
+        setMessage('User created. Redirecting to verify...')
+        try {
+          // Try to kick off the custom auth flow so the OTP is sent immediately.
+          await startAuth(email)
+        } catch (err) {
+          console.warn('startAuth (post-register) failed', err)
+        }
+        // Redirect to login page and prefill email + autostart flag
+        navigate(`/auth/login?email=${encodeURIComponent(email)}&autostart=1`)
       } else {
         console.warn('Signup failed', { status: res.status, data })
         // Prefer message from JSON, otherwise show a short snippet of raw text
