@@ -7,10 +7,10 @@ Parameters:
     Type: String
     Description: "Verified SES source email address for sending OTPs (e.g. verified@yourdomain.com)"
     Default: ""
-  FrontendUrl:
-    Type: String
-    Description: "Public frontend URL (e.g. https://example.com) used for verification links"
-    Default: ""
+    FrontendUrl:
+      Type: String
+      Description: "Public frontend URL (e.g. https://example.com) used for verification links"
+      Default: ""
 
 Globals:
   Function:
@@ -108,14 +108,6 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${AWS::StackName}-users"
-      AttributeDefinitions:
-        - AttributeName: userId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: userId
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-
   VerificationTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -125,6 +117,13 @@ Resources:
           AttributeType: S
       KeySchema:
         - AttributeName: token
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
 
@@ -222,26 +221,6 @@ Resources:
           USER_POOL_ID: !Ref CognitoUserPool
           COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
           FRONTEND_URL: !Ref FrontendUrl
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:AdminCreateUser
-              Resource: '*'
-      Events:
-        RegisterApi:
-          Type: Api
-          Properties:
-            Path: /auth/register
-            Method: post
-            RestApiId: !Ref ContactApiGateway
-        RegisterOptions:
-          Type: Api
-          Properties:
-            Path: /auth/register
-            Method: options
-            RestApiId: !Ref ContactApiGateway
   AuthVerifyFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -274,7 +253,26 @@ Resources:
             Path: /auth/verify
             Method: options
             RestApiId: !Ref ContactApiGateway
-      
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminCreateUser
+              Resource: '*'
+      Events:
+        RegisterApi:
+          Type: Api
+          Properties:
+            Path: /auth/register
+            Method: post
+            RestApiId: !Ref ContactApiGateway
+        RegisterOptions:
+          Type: Api
+          Properties:
+            Path: /auth/register
+            Method: options
+            RestApiId: !Ref ContactApiGateway
 
   # Grant API Gateway permission to invoke the Lambda
   ContactFunctionApiPermission:
