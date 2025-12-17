@@ -7,6 +7,18 @@ Parameters:
     Type: String
     Description: "Verified SES source email address for sending OTPs (e.g. verified@yourdomain.com)"
     Default: ""
+  VerifyBaseUrl:
+    Type: String
+    Description: "Base URL users will open to verify their email (e.g. https://app.example.com/auth/verify)"
+    Default: ""
+  LoginRedirectUrl:
+    Type: String
+    Description: "Frontend login page URL to redirect to after verification (e.g. https://app.example.com/auth/login)"
+    Default: ""
+  VerifySecret:
+    Type: String
+    Description: "HMAC secret used to sign verification tokens"
+    Default: ""
 
 Globals:
   Function:
@@ -201,12 +213,20 @@ Resources:
         Variables:
           USER_POOL_ID: !Ref CognitoUserPool
           COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          VERIFY_BASE_URL: !Ref VerifyBaseUrl
+          VERIFY_SECRET: !Ref VerifySecret
       Policies:
         - Version: '2012-10-17'
           Statement:
             - Effect: Allow
               Action:
                 - cognito-idp:AdminCreateUser
+              Resource: '*'
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
               Resource: '*'
       Events:
         RegisterApi:
@@ -221,6 +241,40 @@ Resources:
             Path: /auth/register
             Method: options
             RestApiId: !Ref ContactApiGateway
+
+    # Email verification endpoint invoked when user clicks verification link
+    VerifyEmailFunction:
+      Type: AWS::Serverless::Function
+      Properties:
+        Handler: index.handler
+        Runtime: nodejs18.x
+        CodeUri: ../aws-lambda/verify-email/
+        Environment:
+          Variables:
+            USER_POOL_ID: !Ref CognitoUserPool
+            LOGIN_REDIRECT_URL: !Ref LoginRedirectUrl
+            VERIFY_SECRET: !Ref VerifySecret
+        Policies:
+          - Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminConfirmSignUp
+                  - cognito-idp:AdminUpdateUserAttributes
+                Resource: '*'
+        Events:
+          VerifyEmailApi:
+            Type: Api
+            Properties:
+              Path: /auth/verify-email
+              Method: get
+              RestApiId: !Ref ContactApiGateway
+          VerifyEmailOptions:
+            Type: Api
+            Properties:
+              Path: /auth/verify-email
+              Method: options
+              RestApiId: !Ref ContactApiGateway
 
   # Grant API Gateway permission to invoke the Lambda
   ContactFunctionApiPermission:
