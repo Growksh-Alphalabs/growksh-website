@@ -51,13 +51,16 @@ exports.handler = async (event) => {
     // Let Cognito send the built-in invite/verification email by not
     // suppressing messages here. Cognito will send an email with a
     // temporary password / verification flow to the user.
+    // Do NOT include `phone_number` attribute here to avoid triggering
+    // Cognito SMS delivery (which requires SMS configuration). We still
+    // capture phone on the frontend if you want to store it elsewhere,
+    // but omitting it prevents SMS verification attempts.
     await cognito.adminCreateUser({
       UserPoolId: userPoolId,
       Username: email,
       UserAttributes: [
         { Name: 'email', Value: email },
-        ...(name ? [{ Name: 'name', Value: name }] : []),
-        ...(phone ? [{ Name: 'phone_number', Value: phone }] : [])
+        ...(name ? [{ Name: 'name', Value: name }] : [])
       ],
       TemporaryPassword: tempPassword
     }).promise()
