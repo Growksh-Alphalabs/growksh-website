@@ -222,56 +222,6 @@ Resources:
             Method: options
             RestApiId: !Ref ContactApiGateway
 
-    AuthStartFunction:
-      Type: AWS::Serverless::Function
-      Properties:
-        Handler: index.handler
-        Runtime: nodejs18.x
-        CodeUri: ../aws-lambda/auth-start/
-        Environment:
-          Variables:
-            USER_POOL_ID: !Ref CognitoUserPool
-            COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
-        Policies:
-          - Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cognito-idp:AdminInitiateAuth
-                Resource: '*'
-        Events:
-          AuthStartApi:
-            Type: Api
-            Properties:
-              Path: /auth/start
-              Method: post
-              RestApiId: !Ref ContactApiGateway
-
-    AuthRespondFunction:
-      Type: AWS::Serverless::Function
-      Properties:
-        Handler: index.handler
-        Runtime: nodejs18.x
-        CodeUri: ../aws-lambda/auth-respond/
-        Environment:
-          Variables:
-            USER_POOL_ID: !Ref CognitoUserPool
-            COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
-        Policies:
-          - Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cognito-idp:AdminRespondToAuthChallenge
-                Resource: '*'
-        Events:
-          AuthRespondApi:
-            Type: Api
-            Properties:
-              Path: /auth/respond
-              Method: post
-              RestApiId: !Ref ContactApiGateway
-
   # Grant API Gateway permission to invoke the Lambda
   ContactFunctionApiPermission:
     Type: AWS::Lambda::Permission
