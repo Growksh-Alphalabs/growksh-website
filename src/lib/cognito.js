@@ -48,19 +48,19 @@ async function startAuth(email) {
   if (!USER_POOL_ID || !CLIENT_ID) {
     return Promise.reject(new Error(missingMsg));
   }
-  
-  const { CognitoUser, AuthenticationDetails } = await getCognitoSDK();
-  const userPool = await getUserPool();
-  
-  return new Promise((resolve, reject) => {
-    const user = new CognitoUser({ Username: email, Pool: userPool });
-    const authDetails = new AuthenticationDetails({ Username: email, Password: '' });
-    user.initiateAuth(authDetails, {
-      onSuccess: (result) => resolve({ success: true, result }),
-      onFailure: (err) => reject(err),
-      customChallenge: (challengeParameters) => resolve({ challenge: true, challengeParameters })
-    });
-  });
+  // Use backend endpoints to handle ADMIN flows so the frontend doesn't need
+  // to manage Cognito sessions directly.
+  const apiBase = import.meta.env.VITE_API_URL || ''
+  const res = await fetch(`${apiBase}/auth/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  })
+  if (!res.ok) throw new Error('Failed to start auth')
+  const data = await res.json()
+  // store session globally for respondToChallenge to use
+  try { globalThis.__cognito_last_session = data.session } catch (e) {}
+  return { challenge: !!data.challengeName, session: data.session, challengeParameters: data.challengeParameters }
 }
 
 async function respondToChallenge(email, answer) {
@@ -79,17 +79,23 @@ async function respondToChallenge(email, answer) {
   if (!USER_POOL_ID || !CLIENT_ID) {
     return Promise.reject(new Error(missingMsg));
   }
-  
-  const { CognitoUser } = await getCognitoSDK();
-  const userPool = await getUserPool();
-  
-  return new Promise((resolve, reject) => {
-    const user = new CognitoUser({ Username: email, Pool: userPool });
-    user.sendCustomChallengeAnswer(answer, {
-      onSuccess: (session) => resolve({ success: true, session }),
-      onFailure: (err) => reject(err)
-    });
-  });
+  // Call backend to respond to the challenge using AdminRespondToAuthChallenge
+  const apiBase = import.meta.env.VITE_API_URL || ''
+  // Expect caller to pass session; for our flow we store it in-memory via startAuth return
+  // For simplicity, require caller to provide 'answer' and 'session' embedded in email param? 
+  // We'll expect the caller to have saved the session on the client.
+  if (!globalThis.__cognito_last_session) return Promise.reject(new Error('Missing Session'))
+  const res = await fetch(`${apiBase}/auth/respond`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, session: globalThis.__cognito_last_session, answer })
+  })
+  if (!res.ok) {
+    const txt = await res.text()
+    throw new Error(txt || 'Failed to respond to challenge')
+  }
+  const data = await res.json()
+  return { success: true, result: data }
 }
 
 async function signOutLocal() {
