@@ -7,6 +7,10 @@ Parameters:
     Type: String
     Description: "Verified SES source email address for sending OTPs (e.g. verified@yourdomain.com)"
     Default: ""
+    FrontendUrl:
+      Type: String
+      Description: "Public frontend URL (e.g. https://example.com) used for verification links"
+      Default: ""
 
 Globals:
   Function:
@@ -72,6 +76,10 @@ Resources:
         - email
       UsernameAttributes:
         - email
+      EmailConfiguration:
+        EmailSendingAccount: DEVELOPER
+        ReplyToEmailAddress: !Ref SESSourceEmail
+        SourceArn: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESSourceEmail}"
       Schema:
         - Name: name
           Required: false
@@ -100,6 +108,17 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${AWS::StackName}-users"
+  VerificationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-verifications"
+      AttributeDefinitions:
+        - AttributeName: token
+          AttributeType: S
+      KeySchema:
+        - AttributeName: token
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: userId
           AttributeType: S
@@ -201,6 +220,39 @@ Resources:
         Variables:
           USER_POOL_ID: !Ref CognitoUserPool
           COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+          FRONTEND_URL: !Ref FrontendUrl
+  AuthVerifyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth-verify/
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+          VERIFICATIONS_TABLE: !Ref VerificationTable
+          FRONTEND_URL: !Ref FrontendUrl
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminConfirmSignUp
+                - cognito-idp:AdminUpdateUserAttributes
+              Resource: '*'
+      Events:
+        AuthVerifyApi:
+          Type: Api
+          Properties:
+            Path: /auth/verify
+            Method: get
+            RestApiId: !Ref ContactApiGateway
+        AuthVerifyOptions:
+          Type: Api
+          Properties:
+            Path: /auth/verify
+            Method: options
+            RestApiId: !Ref ContactApiGateway
       Policies:
         - Version: '2012-10-17'
           Statement:
