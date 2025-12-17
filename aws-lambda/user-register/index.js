@@ -47,8 +47,6 @@ exports.handler = async (event) => {
     const tempPassword = Math.random().toString(36).slice(-8) + 'A1!'
 
     console.log('Calling AdminCreateUser for', email, 'in pool', userPoolId)
-    // Suppress Cognito's default email invite so we can send a custom
-    // verification link instead.
     await cognito.adminCreateUser({
       UserPoolId: userPoolId,
       Username: email,
@@ -58,37 +56,8 @@ exports.handler = async (event) => {
         ...(phone ? [{ Name: 'phone_number', Value: phone }] : [])
       ],
       TemporaryPassword: tempPassword,
-      MessageAction: 'SUPPRESS'
+      DesiredDeliveryMediums: ['EMAIL']
     }).promise()
-
-    // Create a verification token and store it in DynamoDB
-    const token = Math.random().toString(36).slice(2) + Date.now().toString(36)
-    const vTable = process.env.VERIFICATIONS_TABLE
-    if (vTable) {
-      const doc = new AWS.DynamoDB.DocumentClient()
-      await doc.put({ TableName: vTable, Item: { token, email, createdAt: Date.now() } }).promise()
-
-      // Send a verification link via SES
-      const ses = new AWS.SES({ region: process.env.AWS_REGION || 'us-east-1' })
-      const source = process.env.SES_SOURCE_EMAIL || ''
-      const frontend = process.env.FRONTEND_URL || ''
-      const verifyUrl = `${frontend.replace(/\/$/, '')}/auth/verify?token=${encodeURIComponent(token)}`
-      const subject = 'Verify your email address'
-      const body = `Hi ${name || ''},\n\nPlease verify your email by clicking this link:\n${verifyUrl}\n\nIf you didn't request this, ignore this email.`
-      try {
-        console.log('Sending verification link to', email, 'via SES from', source)
-        await ses.sendEmail({
-          Source: source,
-          Destination: { ToAddresses: [email] },
-          Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } }
-        }).promise()
-        console.log('Verification email sent to', email)
-      } catch (err) {
-        console.warn('Failed to send verification email via SES', err && err.stack ? err.stack : err)
-      }
-    } else {
-      console.warn('VERIFICATIONS_TABLE not set; cannot issue verification token')
-    }
 
     console.log('AdminCreateUser succeeded for', email)
     return response(201, { message: 'User created' })
