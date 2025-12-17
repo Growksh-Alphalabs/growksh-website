@@ -16,6 +16,9 @@ Globals:
   Function:
     Timeout: 10
 
+Conditions:
+  UseSES: !Not [ !Equals [ !Ref SESSourceEmail, "" ] ]
+
 Resources:
   ContactsTable:
     Type: AWS::DynamoDB::Table
@@ -76,10 +79,12 @@ Resources:
         - email
       UsernameAttributes:
         - email
-      EmailConfiguration:
-        EmailSendingAccount: DEVELOPER
-        ReplyToEmailAddress: !Ref SESSourceEmail
-        SourceArn: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESSourceEmail}"
+      EmailConfiguration: !If
+        - UseSES
+        - EmailSendingAccount: DEVELOPER
+          ReplyToEmailAddress: !Ref SESSourceEmail
+          SourceArn: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/${SESSourceEmail}"
+        - !Ref AWS::NoValue
       Schema:
         - Name: name
           Required: false
