@@ -296,12 +296,12 @@ export default function Navbar() {
                 }
               }
 
-              return (
-                <>
-                  <Link to="/auth/login" onClick={onAuthClick} className="hidden md:inline-flex items-center px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50">Login</Link>
-                  <Link to="/auth/signup" onClick={onAuthClick} className="hidden md:inline-flex items-center px-4 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:opacity-95">Sign up</Link>
-                </>
-              )
+              // return (
+              //   <>
+              //     <Link to="/auth/login" onClick={onAuthClick} className="hidden md:inline-flex items-center px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50">Login</Link>
+              //     <Link to="/auth/signup" onClick={onAuthClick} className="hidden md:inline-flex items-center px-4 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:opacity-95">Sign up</Link>
+              //   </>
+              // )
             })()}
 
             <button
@@ -409,12 +409,12 @@ export default function Navbar() {
                   setOpen(false)
                 }
 
-                return (
-                  <>
-                    <Link to="/auth/login" onClick={onAuthClick} className="block text-center w-full px-4 py-2 border rounded-md text-slate-700">Login</Link>
-                    <Link to="/auth/signup" onClick={onAuthClick} className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-md font-semibold">Sign up</Link>
-                  </>
-                )
+                // return (
+                //   <>
+                //     <Link to="/auth/login" onClick={onAuthClick} className="block text-center w-full px-4 py-2 border rounded-md text-slate-700">Login</Link>
+                //     <Link to="/auth/signup" onClick={onAuthClick} className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-md font-semibold">Sign up</Link>
+                //   </>
+                // )
               })()}
             </div>
           </div>
