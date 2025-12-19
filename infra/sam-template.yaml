@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for Contact API with Email Verification
+Description: SAM template for Passwordless Email OTP Authentication
 
 Parameters:
   SESSourceEmail:
     Type: String
-    Description: "Verified SES source email address for sending verification emails"
+    Description: "Verified SES source email address for sending OTPs"
     Default: "noreply@growksh.com"
   VerifyBaseUrl:
     Type: String
@@ -69,7 +69,7 @@ Resources:
         AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'*'"
 
-  # Cognito User Pool with email verification
+  # Cognito User Pool for passwordless OTP authentication
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -85,16 +85,14 @@ Resources:
         - Name: phone_number
           Required: false
           Mutable: true
-      # Using the default Cognito verification messages. Custom verification
-      # is handled by the `UserRegisterFunction` which sends a signed link via SES.
-      Policies:
-        PasswordPolicy:
-          MinimumLength: 8
-          RequireLowercase: true
-          RequireUppercase: true
-          RequireNumbers: true
-          RequireSymbols: false
-          TemporaryPasswordValidityDays: 7
+      LambdaConfig:
+        CreateAuthChallenge: !GetAtt CreateAuthChallengeFunction.Arn
+        DefineAuthChallenge: !GetAtt DefineAuthChallengeFunction.Arn
+        VerifyAuthChallengeResponse: !GetAtt VerifyAuthChallengeFunction.Arn
+        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
+      # Remove password policy for passwordless auth
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
 
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -103,11 +101,11 @@ Resources:
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       ExplicitAuthFlows:
-        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
       PreventUserExistenceErrors: ENABLED
 
-  # User registration API with email verification
+  # User registration API - creates user and sends verification email
   UserRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -181,16 +179,108 @@ Resources:
             Method: options
             RestApiId: !Ref ContactApiGateway
 
-  # Login API (after email verification)
-  UserLoginFunction:
+  # Cognito trigger Lambdas for OTP authentication
+  CreateAuthChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
       Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/user-login/
+      CodeUri: ../aws-lambda/cognito-create-auth-challenge/
       Environment:
         Variables:
-          USER_POOL_ID: !Ref CognitoUserPool
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          DEBUG_LOG_OTP: '0'
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: '*'
+
+  DefineAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-define-auth-challenge/
+
+  VerifyAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-verify-auth-challenge/
+
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/cognito-post-confirmation/
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+
+  # DynamoDB table for storing user profiles
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-users"
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # Permissions for Cognito to invoke trigger Lambdas
+  CreateAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateAuthChallengeFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  DefineAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DefineAuthChallengeFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  VerifyAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref VerifyAuthChallengeFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  PostConfirmationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostConfirmationFunction
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  # Login initiation API
+  AuthInitiateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth-initiate/
+      Environment:
+        Variables:
           COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
       Policies:
         - Version: '2012-10-17'
@@ -200,16 +290,47 @@ Resources:
                 - cognito-idp:InitiateAuth
               Resource: '*'
       Events:
-        LoginApi:
+        AuthInitiateApi:
           Type: Api
           Properties:
-            Path: /auth/login
+            Path: /auth/initiate
             Method: post
             RestApiId: !Ref ContactApiGateway
-        LoginOptions:
+        AuthInitiateOptions:
           Type: Api
           Properties:
-            Path: /auth/login
+            Path: /auth/initiate
+            Method: options
+            RestApiId: !Ref ContactApiGateway
+
+  # OTP verification API
+  AuthVerifyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth-verify/
+      Environment:
+        Variables:
+          COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:RespondToAuthChallenge
+              Resource: '*'
+      Events:
+        AuthVerifyApi:
+          Type: Api
+          Properties:
+            Path: /auth/verify
+            Method: post
+            RestApiId: !Ref ContactApiGateway
+        AuthVerifyOptions:
+          Type: Api
+          Properties:
+            Path: /auth/verify
             Method: options
             RestApiId: !Ref ContactApiGateway
 
@@ -232,6 +353,9 @@ Outputs:
   VerifyEmailEndpoint:
     Description: "Email verification endpoint"
     Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
-  UserLoginEndpoint:
-    Description: "Login endpoint"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/login"
+  AuthInitiateEndpoint:
+    Description: "Login initiation endpoint"
+    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/initiate"
+  AuthVerifyEndpoint:
+    Description: "OTP verification endpoint"
+    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify"
