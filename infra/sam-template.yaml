@@ -1,26 +1,20 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template to deploy Contact API (Lambda) + DynamoDB
+Description: SAM template for Contact API with Email Verification
 
 Parameters:
   SESSourceEmail:
     Type: String
-    Description: "Verified SES source email address for sending OTPs (e.g. verified@yourdomain.com)"
+    Description: "Verified SES source email address for sending verification emails"
     Default: "noreply@growksh.com"
   VerifyBaseUrl:
     Type: String
-    Description: "Base URL users will open to verify their email (e.g. https://app.example.com/auth/verify)"
-    Default: "https://growksh.com/auth/verify"
-  LoginRedirectUrl:
-    Type: String
-    Description: "Frontend login page URL to redirect to after verification (e.g. https://app.example.com/auth/login)"
-    Default: "https://growksh.com/auth/login"
+    Description: "Frontend URL where users will verify their email"
+    Default: "https://growksh.com/auth/verify-email"
   VerifySecret:
     Type: String
-    Description: "HMAC secret used to sign verification tokens"
+    Description: "HMAC secret for signing verification tokens"
     Default: "change-me-replace-with-a-long-secret"
-  # VerifyBaseUrl, VerifySecret and LoginRedirectUrl removed — using
-  # Cognito's built-in email delivery instead of a custom verify flow.
 
 Globals:
   Function:
@@ -64,8 +58,6 @@ Resources:
             Path: /contact
             Method: options
             RestApiId: !Ref ContactApiGateway
-    Metadata:
-      BuildMethod: makefile
 
   ContactApiGateway:
     Type: AWS::Serverless::Api
@@ -77,14 +69,14 @@ Resources:
         AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'*'"
 
-  # Cognito User Pool for passwordless (email OTP) custom auth
+  # Cognito User Pool with email verification
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
       UserPoolName: !Sub "${AWS::StackName}-userpool"
-      AutoVerifiedAttributes:
-        - email
       UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
         - email
       Schema:
         - Name: name
@@ -93,11 +85,18 @@ Resources:
         - Name: phone_number
           Required: false
           Mutable: true
-      LambdaConfig:
-        CreateAuthChallenge: !GetAtt CreateAuthChallengeFunction.Arn
-        DefineAuthChallenge: !GetAtt DefineAuthChallengeFunction.Arn
-        VerifyAuthChallengeResponse: !GetAtt VerifyAuthChallengeFunction.Arn
-        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_LINK
+        EmailMessage: "Please verify your email by clicking this link: {##Verify Email##}"
+        EmailSubject: "Verify your email"
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          TemporaryPasswordValidityDays: 7
 
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -106,105 +105,11 @@ Resources:
       UserPoolId: !Ref CognitoUserPool
       GenerateSecret: false
       ExplicitAuthFlows:
-        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
 
-  # DynamoDB table for storing user profiles
-  UsersTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${AWS::StackName}-users"
-      AttributeDefinitions:
-        - AttributeName: userId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: userId
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-
-  ########################################
-  # Cognito trigger Lambdas
-  ########################################
-  CreateAuthChallengeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-create-auth-challenge/
-      Environment:
-        Variables:
-          SES_SOURCE_EMAIL: !Ref SESSourceEmail
-          DEBUG_LOG_OTP: '0'
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - ses:SendEmail
-                - ses:SendRawEmail
-              Resource: '*'
-
-  DefineAuthChallengeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-define-auth-challenge/
-
-  VerifyAuthChallengeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-verify-auth-challenge/
-
-  PostConfirmationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-post-confirmation/
-      Environment:
-        Variables:
-          USERS_TABLE: !Ref UsersTable
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-
-  # Permissions so Cognito can invoke the Lambdas
-  CreateAuthChallengePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref CreateAuthChallengeFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
-
-  DefineAuthChallengePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref DefineAuthChallengeFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
-
-  VerifyAuthChallengePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref VerifyAuthChallengeFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
-
-  PostConfirmationPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PostConfirmationFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !Sub "arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${CognitoUserPool}"
-
-  # User registration API (calls AdminCreateUser)
+  # User registration API with email verification
   UserRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -214,7 +119,6 @@ Resources:
       Environment:
         Variables:
           USER_POOL_ID: !Ref CognitoUserPool
-          COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
           VERIFY_SECRET: !Ref VerifySecret
@@ -225,7 +129,8 @@ Resources:
             - Effect: Allow
               Action:
                 - cognito-idp:AdminCreateUser
-              Resource: '*'
+                - cognito-idp:AdminUpdateUserAttributes
+              Resource: !GetAtt CognitoUserPool.Arn
             - Effect: Allow
               Action:
                 - ses:SendEmail
@@ -244,54 +149,75 @@ Resources:
             Path: /auth/register
             Method: options
             RestApiId: !Ref ContactApiGateway
-    
-    # Email verification endpoint invoked when user clicks verification link
-    VerifyEmailFunction:
-      Type: AWS::Serverless::Function
-      Properties:
-        Handler: index.handler
-        Runtime: nodejs18.x
-        CodeUri: ../aws-lambda/verify-email/
-        Environment:
-          Variables:
-            USER_POOL_ID: !Ref CognitoUserPool
-            LOGIN_REDIRECT_URL: !Ref LoginRedirectUrl
-            VERIFY_SECRET: !Ref VerifySecret
-        Policies:
-          - Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - cognito-idp:AdminConfirmSignUp
-                  - cognito-idp:AdminUpdateUserAttributes
-                Resource: '*'
-        Events:
-          VerifyEmailApi:
-            Type: Api
-            Properties:
-              Path: /auth/verify-email
-              Method: get
-              RestApiId: !Ref ContactApiGateway
-          VerifyEmailOptions:
-            Type: Api
-            Properties:
-              Path: /auth/verify-email
-              Method: options
-              RestApiId: !Ref ContactApiGateway
 
-  # Grant API Gateway permission to invoke the Lambda
-  ContactFunctionApiPermission:
-    Type: AWS::Lambda::Permission
+  # Email verification endpoint
+  VerifyEmailFunction:
+    Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Ref ContactFunction
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ContactApiGateway}/*/*"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/verify-email/
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminConfirmSignUp
+                - cognito-idp:AdminGetUser
+                - cognito-idp:AdminUpdateUserAttributes
+              Resource: !GetAtt CognitoUserPool.Arn
+      Events:
+        VerifyEmailApi:
+          Type: Api
+          Properties:
+            Path: /auth/verify-email
+            Method: get
+            RestApiId: !Ref ContactApiGateway
+        VerifyEmailOptions:
+          Type: Api
+          Properties:
+            Path: /auth/verify-email
+            Method: options
+            RestApiId: !Ref ContactApiGateway
+
+  # Login API (after email verification)
+  UserLoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/user-login/
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref CognitoUserPool
+          COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:InitiateAuth
+              Resource: '*'
+      Events:
+        LoginApi:
+          Type: Api
+          Properties:
+            Path: /auth/login
+            Method: post
+            RestApiId: !Ref ContactApiGateway
+        LoginOptions:
+          Type: Api
+            Path: /auth/login
+            Method: options
+            RestApiId: !Ref ContactApiGateway
 
 Outputs:
   ContactApiEndpoint:
-    Description: "Invoke URL for contact API"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/contact"
+    Description: "API Gateway endpoint"
+    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   ContactsTableName:
     Description: "DynamoDB table name for contacts"
     Value: !Ref ContactsTable
@@ -301,3 +227,12 @@ Outputs:
   CognitoUserPoolClientId:
     Description: "Cognito User Pool Client ID"
     Value: !Ref CognitoUserPoolClient
+  UserRegisterEndpoint:
+    Description: "Registration endpoint"
+    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/register"
+  VerifyEmailEndpoint:
+    Description: "Email verification endpoint"
+    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
+  UserLoginEndpoint:
+    Description: "Login endpoint"
+    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/login"
