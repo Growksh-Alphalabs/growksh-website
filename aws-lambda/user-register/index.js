@@ -62,7 +62,8 @@ exports.handler = async (event) => {
         { Name: 'email', Value: email },
         ...(name ? [{ Name: 'name', Value: name }] : [])
       ],
-      TemporaryPassword: tempPassword
+      TemporaryPassword: tempPassword,
+      MessageAction: 'SUPPRESS'
     }).promise()
     // Compose and send verification link via SES. The frontend verification
     // endpoint will confirm the user in Cognito then redirect to the login page.
