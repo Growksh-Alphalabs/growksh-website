@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import { CognitoIdentityProviderClient, AdminCreateUserCommand } from '@aws-sdk/client-cognito-identity-provider'
+import axios from 'axios'
 
 dotenv.config({ path: '.env.local' })
 
@@ -67,6 +68,45 @@ app.post('/auth/login', (req, res) => {
   if (!email) return res.status(400).json({ message: 'email required' })
   // Simulate sending OTP
   res.status(200).json({ challenge: true, _dev_code: '123456' })
+})
+
+// Simple LinkedIn articles proxy for local development.
+// Example: GET /linkedin/articles?url=<encoded-url>
+app.get('/linkedin/articles', async (req, res) => {
+  const urlsParam = req.query.url
+  const urls = urlsParam ? (Array.isArray(urlsParam) ? urlsParam : [urlsParam]) : []
+  if (urls.length === 0) {
+    // default article to demonstrate embed
+    urls.push('https://www.linkedin.com/pulse/6-essential-rules-follow-perfect-investment-risk-krutika-kathal-cfp--xzryf/')
+  }
+
+  try {
+    const results = []
+    for (const u of urls) {
+      try {
+        console.log('[mock-auth] fetching linkedin', u)
+        const resp = await axios.get(u, { responseType: 'text' })
+        const html = resp.data || ''
+        // Extract common meta tags (og:title, og:description, og:image)
+        const meta = (name) => {
+          const re = new RegExp(`<meta[^>]+property=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i')
+          const m = html.match(re)
+          return m ? m[1] : null
+        }
+        const title = meta('og:title') || meta('twitter:title') || ''
+        const description = meta('og:description') || meta('twitter:description') || ''
+        const image = meta('og:image') || meta('twitter:image') || ''
+        results.push({ id: u, title, excerpt: description, url: u, image })
+      } catch (err) {
+        console.warn('[mock-auth] failed fetching linkedin', u, err && err.message)
+        results.push({ id: u, title: '', excerpt: '', url: u, image: '' })
+      }
+    }
+    res.json(results)
+  } catch (err) {
+    console.error('[mock-auth] linkedin proxy error', err)
+    res.status(500).json({ message: 'Failed to fetch LinkedIn articles', error: err.message })
+  }
 })
 
 app.listen(3000, () => console.log('mock-auth running on http://localhost:3000'))
