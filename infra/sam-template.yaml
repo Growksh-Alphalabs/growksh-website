@@ -85,10 +85,8 @@ Resources:
         - Name: phone_number
           Required: false
           Mutable: true
-      VerificationMessageTemplate:
-        DefaultEmailOption: CONFIRM_WITH_LINK
-        EmailMessage: "Please verify your email by clicking this link: {##Verify Email##}"
-        EmailSubject: "Verify your email"
+      # Using the default Cognito verification messages. Custom verification
+      # is handled by the `UserRegisterFunction` which sends a signed link via SES.
       Policies:
         PasswordPolicy:
           MinimumLength: 8
