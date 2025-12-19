@@ -6,7 +6,7 @@ Parameters:
   SESSourceEmail:
     Type: String
     Description: "Verified SES source email address for sending OTPs (e.g. verified@yourdomain.com)"
-    Default: "verified@yourdomain.com"
+    Default: "noreply@growksh.com"
   VerifyBaseUrl:
     Type: String
     Description: "Base URL users will open to verify their email (e.g. https://app.example.com/auth/verify)"

@@ -67,19 +67,28 @@ exports.handler = async (event) => {
     }).promise()
     // Compose and send verification link via SES. The frontend verification
     // endpoint will confirm the user in Cognito then redirect to the login page.
-    const verifyBase = process.env.VERIFY_BASE_URL || ''
+    const verifyBaseEnv = process.env.VERIFY_BASE_URL || ''
     const source = process.env.SES_SOURCE_EMAIL || ''
     const secret = process.env.VERIFY_SECRET || process.env.VERIFY_SECRET_KEY || ''
-    if (!verifyBase || !source || !secret) {
-      console.warn('VERIFY_BASE_URL, SES_SOURCE_EMAIL, or VERIFY_SECRET not set; skipping verification email send')
+
+    // Build a sensible fallback verify base using the incoming request Host and stage
+    const host = (event.headers && (event.headers.Host || event.headers.host)) || ''
+    const stage = (event.requestContext && event.requestContext.stage) || ''
+    const fallbackBase = host ? `https://${host}${stage ? '/' + stage : ''}/auth/verify-email` : ''
+    const verifyBase = verifyBaseEnv || fallbackBase
+
+    if (!secret) {
+      console.warn('VERIFY_SECRET not set; cannot generate signed verification token. Set VERIFY_SECRET to enable verification links.')
     } else {
       // Token: base64url(payload).base64url(hmac(payload))
       const payload = { email, exp: Date.now() + 24 * 60 * 60 * 1000 }
       const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
       const sig = crypto.createHmac('sha256', secret).update(payloadB64).digest('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
       const token = `${payloadB64}.${sig}`
-      const verifyUrl = `${verifyBase}${verifyBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
-      // Optionally log the verification URL for debugging when enabled.
+      const verifyUrl = verifyBase ? `${verifyBase}${verifyBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}` : `token=${encodeURIComponent(token)}`
+
+      // Log the verification URL for debugging when enabled. This allows testing
+      // the verify flow even if SES or VERIFY_BASE_URL are not configured.
       try {
         if (process.env.DEBUG_LOG_VERIFY === '1') {
           console.log(`DEBUG_VERIFY_URL for ${email}: ${verifyUrl}`)
@@ -87,18 +96,24 @@ exports.handler = async (event) => {
       } catch (e) {
         console.warn('Failed to write debug verify log', e && e.message)
       }
-      const subject = 'Verify your email'
-      const body = `Hi ${name || ''},\n\nPlease verify your email by clicking this link:\n\n${verifyUrl}\n\nIf you did not sign up, you can ignore this message.`
-      try {
-        console.log('Sending verification email to', email)
-        await ses.sendEmail({
-          Source: source,
-          Destination: { ToAddresses: [email] },
-          Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } }
-        }).promise()
-        console.log('Verification email sent to', email)
-      } catch (err) {
-        console.warn('Failed to send verification email via SES', err && err.stack ? err.stack : err)
+
+      // Only attempt SES send if we have both a source address and a verify base
+      if (!verifyBaseEnv || !source) {
+        console.warn('VERIFY_BASE_URL or SES_SOURCE_EMAIL not set; skipping SES send. Verification URL logged if DEBUG_LOG_VERIFY=1')
+      } else {
+        const subject = 'Verify your email'
+        const body = `Hi ${name || ''},\n\nPlease verify your email by clicking this link:\n\n${verifyUrl}\n\nIf you did not sign up, you can ignore this message.`
+        try {
+          console.log('Sending verification email to', email)
+          await ses.sendEmail({
+            Source: source,
+            Destination: { ToAddresses: [email] },
+            Message: { Subject: { Data: subject }, Body: { Text: { Data: body } } }
+          }).promise()
+          console.log('Verification email sent to', email)
+        } catch (err) {
+          console.warn('Failed to send verification email via SES', err && err.stack ? err.stack : err)
+        }
       }
     }
 
