@@ -64,21 +64,39 @@ export default function ServicesPricingSection1() {
                 </div>
               </div>
 
-              <div className="md:w-3/5 flex items-center justify-center md:justify-end px-0 py-2">
-                <div className="hidden md:flex items-center gap-24 w-full md:w-auto mr-12">
-                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-xl w-48">
-                    <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white bg-black mb-2 text-center">AD HOC</div>
-                    <div className="text-sm font-semibold text-slate-900">Pay As You Go</div>
-                    <div className="text-xs text-slate-500">For those with one time support</div>
+               <div className="md:w-3/5 flex items-center justify-center md:justify-end px-0 py-2">
+                  {/* Mobile layout - stacked cards */}
+                  <div className="flex flex-col md:hidden w-full gap-4">
+                    <div className="flex gap-4 w-full">
+                      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-xl w-1/2">
+                        <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white bg-black mb-2 text-center">AD HOC</div>
+                        <div className="text-sm font-semibold text-slate-900">Pay As You Go</div>
+                        <div className="text-xs text-slate-500 mt-1">For those with one time support</div>
+                      </div>
+
+                      <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-xl w-1/2">
+                        <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-black bg-[#ffde21] mb-2 text-center">PRO</div>
+                        <div className="text-sm font-semibold text-slate-900">₹999 <span className="text-xs text-slate-500">/Year</span></div>
+                        <div className="text-xs text-slate-500 mt-1">For those with ongoing support</div>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-xl w-48">
-                    <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-black bg-[#ffde21] mb-2 text-center">PRO</div>
-                    <div className="text-sm font-semibold text-slate-900">₹999 <span className="text-xs text-slate-500">/Year</span></div>
-                    <div className="text-xs text-slate-500">For those with ongoing support</div>
+                  {/* Desktop layout - side by side */}
+                  <div className="hidden md:flex items-center gap-24 w-full md:w-auto mr-12">
+                    <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-xl w-48">
+                      <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-white bg-black mb-2 text-center">AD HOC</div>
+                      <div className="text-sm font-semibold text-slate-900">Pay As You Go</div>
+                      <div className="text-xs text-slate-500">For those with one time support</div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-xl w-48">
+                      <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold text-black bg-[#ffde21] mb-2 text-center">PRO</div>
+                      <div className="text-sm font-semibold text-slate-900">₹999 <span className="text-xs text-slate-500">/Year</span></div>
+                      <div className="text-xs text-slate-500">For those with ongoing support</div>
+                    </div>
                   </div>
                 </div>
-              </div>
             </div>
           </div>
         </div>
