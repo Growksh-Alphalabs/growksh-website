@@ -55,12 +55,19 @@ jobs:
 
       # frontend build will run after infra is deployed so VITE envs are available
 
+      - name: Validate AWS secrets are present
+        run: |
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then echo "::error::Missing secret AWS_ACCESS_KEY_ID" && exit 1; fi
+          if [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then echo "::error::Missing secret AWS_SECRET_ACCESS_KEY" && exit 1; fi
+          if [ -z "${{ secrets.AWS_REGION }}" ]; then echo "::error::Missing secret AWS_REGION" && exit 1; fi
+        shell: bash
+
       - name: ✅ Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Determine deploy targets and environment
         id: resolve
