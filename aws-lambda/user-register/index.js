@@ -64,21 +64,6 @@ async function sendVerificationEmail(email, name, token) {
   const verifyUrl = `${verifyBaseUrl}?token=${encodeURIComponent(token)}`;
   
   const emailSubject = 'Verify Your Email Address';
-  const emailBody = `
-Hi ${name || 'there'},
-
-Thank you for registering! Please verify your email address by clicking the link below:
-
-${verifyUrl}
-
-This link will expire in 24 hours.
-
-If you did not create an account, please ignore this email.
-
-Best regards,
-The Team
-`;
-
   const htmlEmailBody = `
 <!DOCTYPE html>
 <html>
@@ -89,7 +74,7 @@ The Team
         .button { 
             display: inline-block; 
             padding: 12px 24px; 
-            background-color: #007bff; 
+            background-color: #00674F; 
             color: white; 
             text-decoration: none; 
             border-radius: 4px; 
@@ -117,6 +102,8 @@ The Team
         <p>Or copy and paste this link in your browser:</p>
         <p><small>${verifyUrl}</small></p>
         
+        <p>After verification, you can log in using your email and receive an OTP for authentication.</p>
+        
         <p>This link will expire in 24 hours.</p>
         
         <p>If you did not create an account, please ignore this email.</p>
@@ -140,12 +127,25 @@ The Team
         Charset: 'UTF-8'
       },
       Body: {
-        Text: {
-          Data: emailBody,
-          Charset: 'UTF-8'
-        },
         Html: {
           Data: htmlEmailBody,
+          Charset: 'UTF-8'
+        },
+        Text: {
+          Data: `Hi ${name || 'there'},
+
+Thank you for registering! Please verify your email address by clicking this link:
+
+${verifyUrl}
+
+After verification, you can log in using your email and receive an OTP for authentication.
+
+This link will expire in 24 hours.
+
+If you did not create an account, please ignore this email.
+
+Best regards,
+The Team`,
           Charset: 'UTF-8'
         }
       }
@@ -169,7 +169,7 @@ exports.handler = async (event) => {
     const body = typeof event.body === 'string' ? JSON.parse(event.body) : event.body;
     console.log('Request body:', body);
 
-    const { email, name, phone, password } = body || {};
+    const { email, name, phone } = body || {};
     const userPoolId = process.env.USER_POOL_ID;
 
     if (!email) {
@@ -186,10 +186,7 @@ exports.handler = async (event) => {
       });
     }
 
-    console.log(`Creating user: ${email} in pool: ${userPoolId}`);
-
-    // Generate a temporary password if not provided
-    const tempPassword = password || crypto.randomBytes(16).toString('hex');
+    console.log(`Creating passwordless user: ${email}`);
 
     // Prepare user attributes
     const userAttributes = [
@@ -205,11 +202,11 @@ exports.handler = async (event) => {
       userAttributes.push({ Name: 'phone_number', Value: phone });
     }
 
-    // Create user in Cognito (unverified)
+    // Create user in Cognito WITHOUT a temporary password
+    // For passwordless auth, we don't set TemporaryPassword
     await cognito.adminCreateUser({
       UserPoolId: userPoolId,
       Username: email,
-      TemporaryPassword: tempPassword,
       UserAttributes: userAttributes,
       MessageAction: 'SUPPRESS', // We'll send our own verification email
       DesiredDeliveryMediums: [] // Don't send default Cognito email
