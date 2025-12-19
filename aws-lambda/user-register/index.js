@@ -188,6 +188,21 @@ exports.handler = async (event) => {
 
     console.log(`Creating passwordless user: ${email}`);
 
+    // Helper to generate a compliant temporary password if needed
+    function generateTempPassword(len = 12) {
+      const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+      const lower = 'abcdefghijklmnopqrstuvwxyz'
+      const digits = '0123456789'
+      const all = upper + lower + digits
+      let pw = ''
+      pw += upper[Math.floor(Math.random() * upper.length)]
+      pw += lower[Math.floor(Math.random() * lower.length)]
+      pw += digits[Math.floor(Math.random() * digits.length)]
+      for (let i = 3; i < len; i++) pw += all[Math.floor(Math.random() * all.length)]
+      pw = pw.split('').sort(() => 0.5 - Math.random()).join('')
+      return pw
+    }
+
     // Prepare user attributes
     const userAttributes = [
       { Name: 'email', Value: email },
@@ -202,15 +217,36 @@ exports.handler = async (event) => {
       userAttributes.push({ Name: 'phone_number', Value: phone });
     }
 
-    // Create user in Cognito WITHOUT a temporary password
-    // For passwordless auth, we don't set TemporaryPassword
-    await cognito.adminCreateUser({
-      UserPoolId: userPoolId,
-      Username: email,
-      UserAttributes: userAttributes,
-      MessageAction: 'SUPPRESS', // We'll send our own verification email
-      DesiredDeliveryMediums: [] // Don't send default Cognito email
-    }).promise();
+    // Create user in Cognito WITHOUT a temporary password (preferred)
+    // If Cognito rejects due to a password policy validation, retry with
+    // a generated compliant TemporaryPassword while still suppressing the
+    // built-in Cognito email (we send our own verification link).
+    try {
+      await cognito.adminCreateUser({
+        UserPoolId: userPoolId,
+        Username: email,
+        UserAttributes: userAttributes,
+        MessageAction: 'SUPPRESS',
+        DesiredDeliveryMediums: []
+      }).promise();
+    } catch (createErr) {
+      console.warn('adminCreateUser failed (no temp password). Error:', createErr && createErr.message)
+      // If the failure mentions password policy, retry with a compliant temp password
+      if (createErr && /password/i.test(String(createErr.message || ''))) {
+        const tempPassword = generateTempPassword(12)
+        await cognito.adminCreateUser({
+          UserPoolId: userPoolId,
+          Username: email,
+          UserAttributes: userAttributes,
+          TemporaryPassword: tempPassword,
+          MessageAction: 'SUPPRESS',
+          DesiredDeliveryMediums: []
+        }).promise()
+        console.log('adminCreateUser succeeded with fallback TemporaryPassword for', email)
+      } else {
+        throw createErr
+      }
+    }
 
     console.log(`User created successfully: ${email}`);
 
