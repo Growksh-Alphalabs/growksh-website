@@ -210,6 +210,7 @@ Resources:
             RestApiId: !Ref ContactApiGateway
         LoginOptions:
           Type: Api
+          Properties:
             Path: /auth/login
             Method: options
             RestApiId: !Ref ContactApiGateway
