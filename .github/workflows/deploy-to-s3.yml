@@ -6,6 +6,16 @@ on:
 
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Deployment environment (dev or prod)"
+        required: false
+        default: dev
+      s3_bucket:
+        description: "Optional: S3 bucket to deploy to (overrides repo variable)"
+        required: false
+      cloudfront_distribution_id:
+        description: "Optional: CloudFront distribution id to invalidate (overrides repo variable)"
+        required: false
       domain_name:
         description: "Your domain (example.com)"
         required: false
@@ -25,6 +35,13 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       DOMAIN_NAME: ${{ github.event.inputs.domain_name }}
       HOSTED_ZONE_ID: ${{ github.event.inputs.hosted_zone_id }}
+      # expose workflow inputs and repo variables to steps for resolution
+      INPUT_S3_BUCKET: ${{ github.event.inputs.s3_bucket }}
+      INPUT_CLOUDFRONT: ${{ github.event.inputs.cloudfront_distribution_id }}
+      INPUT_ENVIRONMENT: ${{ github.event.inputs.environment }}
+      VARS_S3_BUCKET: ${{ vars.S3_BUCKET || '' }}
+      VARS_CLOUDFRONT: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID || '' }}
+      EVENT_NAME: ${{ github.event_name }}
 
     steps:
       - name: ✅ Checkout Repo
@@ -45,11 +62,55 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Determine deploy targets and environment
+        id: resolve
+        run: |
+          echo "Event: $EVENT_NAME"
+          if [ "$EVENT_NAME" = "push" ]; then
+            echo "DEPLOY_ENV=dev" >> $GITHUB_ENV
+            # prefer repository variable S3_BUCKET if available, else compute sanitized default
+            if [ -n "$VARS_S3_BUCKET" ]; then
+              echo "S3_BUCKET=$VARS_S3_BUCKET" >> $GITHUB_ENV
+            else
+              BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
+              SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
+              echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+            fi
+            if [ -n "$VARS_CLOUDFRONT" ]; then
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$VARS_CLOUDFRONT" >> $GITHUB_ENV
+            fi
+          else
+            # manual dispatch: use input environment and optional overrides
+            ENV=${INPUT_ENVIRONMENT:-dev}
+            echo "DEPLOY_ENV=$ENV" >> $GITHUB_ENV
+            if [ -n "$INPUT_S3_BUCKET" ]; then
+              echo "S3_BUCKET=$INPUT_S3_BUCKET" >> $GITHUB_ENV
+            elif [ -n "$VARS_S3_BUCKET" ]; then
+              echo "S3_BUCKET=$VARS_S3_BUCKET" >> $GITHUB_ENV
+            else
+              BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
+              SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
+              echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+            fi
+            if [ -n "$INPUT_CLOUDFRONT" ]; then
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$INPUT_CLOUDFRONT" >> $GITHUB_ENV
+            elif [ -n "$VARS_CLOUDFRONT" ]; then
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$VARS_CLOUDFRONT" >> $GITHUB_ENV
+            fi
+          fi
+          echo "Resolved S3_BUCKET=$S3_BUCKET"
+        shell: bash
+
       # ✅ CREATE S3 BUCKET
       - name: ✅ Create S3 Bucket
         run: |
-          BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
-          SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
+          # Use resolved S3_BUCKET if available, otherwise compute a sanitized default
+          if [ -n "$S3_BUCKET" ]; then
+            SANITIZED="$S3_BUCKET"
+          else
+            BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
+            SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
+          fi
 
           LEN=${#SANITIZED}
           if [ "$LEN" -lt 3 ] || [ "$LEN" -gt 63 ]; then exit 1; fi
