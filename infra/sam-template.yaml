@@ -218,6 +218,7 @@ Resources:
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
           VERIFY_SECRET: !Ref VerifySecret
+          DEBUG_LOG_VERIFY: '0'
       Policies:
         - Version: '2012-10-17'
           Statement:

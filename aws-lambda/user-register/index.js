@@ -79,6 +79,14 @@ exports.handler = async (event) => {
       const sig = crypto.createHmac('sha256', secret).update(payloadB64).digest('base64').replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_')
       const token = `${payloadB64}.${sig}`
       const verifyUrl = `${verifyBase}${verifyBase.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
+      // Optionally log the verification URL for debugging when enabled.
+      try {
+        if (process.env.DEBUG_LOG_VERIFY === '1') {
+          console.log(`DEBUG_VERIFY_URL for ${email}: ${verifyUrl}`)
+        }
+      } catch (e) {
+        console.warn('Failed to write debug verify log', e && e.message)
+      }
       const subject = 'Verify your email'
       const body = `Hi ${name || ''},\n\nPlease verify your email by clicking this link:\n\n${verifyUrl}\n\nIf you did not sign up, you can ignore this message.`
       try {
