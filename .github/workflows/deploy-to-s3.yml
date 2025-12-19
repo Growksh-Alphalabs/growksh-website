@@ -30,6 +30,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
