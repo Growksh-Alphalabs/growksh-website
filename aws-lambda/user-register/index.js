@@ -55,9 +55,20 @@ function generateVerificationToken(email) {
 async function sendVerificationEmail(email, name, token) {
   const sourceEmail = process.env.SES_SOURCE_EMAIL;
   const verifyBaseUrl = process.env.VERIFY_BASE_URL;
-  
-  if (!sourceEmail || !verifyBaseUrl) {
-    throw new Error('SES_SOURCE_EMAIL or VERIFY_BASE_URL not configured');
+  const debugLog = (process.env.DEBUG_LOG_VERIFY === '1' || String(process.env.DEBUG_LOG_VERIFY).toLowerCase() === 'true')
+
+  if (!verifyBaseUrl) {
+    throw new Error('VERIFY_BASE_URL not configured');
+  }
+
+  // If SES is not configured but debug logging is enabled, log the verify URL to CloudWatch instead of sending an email
+  if (!sourceEmail) {
+    if (debugLog) {
+      const verifyUrl = `${verifyBaseUrl}?token=${encodeURIComponent(token)}`;
+      console.warn('DEBUG_LOG_VERIFY enabled — verification URL (not sent):', verifyUrl);
+      return;
+    }
+    throw new Error('SES_SOURCE_EMAIL not configured');
   }
 
   // Construct verification URL
@@ -174,9 +185,11 @@ exports.handler = async (event) => {
 
     // Validate required environment variables early to avoid creating users when config is missing
     const missingEnvs = []
+    const debugLog = (process.env.DEBUG_LOG_VERIFY === '1' || String(process.env.DEBUG_LOG_VERIFY).toLowerCase() === 'true')
     if (!process.env.VERIFY_SECRET) missingEnvs.push('VERIFY_SECRET')
-    if (!process.env.SES_SOURCE_EMAIL) missingEnvs.push('SES_SOURCE_EMAIL')
     if (!process.env.VERIFY_BASE_URL) missingEnvs.push('VERIFY_BASE_URL')
+    // SES is optional when DEBUG_LOG_VERIFY is enabled (helps local/dev testing)
+    if (!process.env.SES_SOURCE_EMAIL && !debugLog) missingEnvs.push('SES_SOURCE_EMAIL')
     if (missingEnvs.length > 0) {
       console.error('Missing required env vars:', missingEnvs.join(', '))
       return response(500, {
