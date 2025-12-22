@@ -72,19 +72,10 @@ Resources:
     Properties:
       StageName: Prod
       TracingEnabled: true
-      GatewayResponses:
-        DEFAULT_4XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
-        DEFAULT_5XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
-              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
 
   # DynamoDB table for storing OTPs and verification tokens
   AuthOtpTable:
@@ -446,19 +437,10 @@ Resources:
     Properties:
       StageName: Prod
       TracingEnabled: true
-      GatewayResponses:
-        DEFAULT_4XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
-        DEFAULT_5XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
 
   # Signup Lambda Function
   SignupFunction:
@@ -467,85 +449,11 @@ Resources:
       FunctionName: !Sub "${AWS::StackName}-signup"
       Handler: index.handler
       Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth/signup/
       Role: !GetAtt AuthLambdaExecutionRole.Arn
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
-      InlineCode: |
-        const { CognitoIdentityServiceProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
-        const cognito = new CognitoIdentityServiceProviderClient({ region: process.env.AWS_REGION });
-        
-        const corsHeaders = {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-          'Content-Type': 'application/json'
-        };
-        
-        function response(statusCode, body) {
-          return {
-            statusCode,
-            headers: corsHeaders,
-            body: JSON.stringify(body),
-            isBase64Encoded: false
-          };
-        }
-        
-        exports.handler = async (event) => {
-          console.log('Signup event:', JSON.stringify(event, null, 2));
-          
-          if (event.httpMethod === 'OPTIONS') {
-            return response(200, { message: 'OK' });
-          }
-          
-          if (event.httpMethod !== 'POST') {
-            return response(405, { error: 'Method not allowed' });
-          }
-          
-          try {
-            const body = JSON.parse(event.body || '{}');
-            const { email, name, phone_number } = body;
-            
-            if (!email || !name) {
-              return response(400, { error: 'Email and name are required' });
-            }
-            
-            // Generate a temporary password
-            const tempPassword = 'TempPass' + Math.random().toString(36).substring(7) + '!';
-            
-            // Create user in Cognito
-            const createParams = {
-              UserPoolId: process.env.COGNITO_USER_POOL_ID,
-              Username: email,
-              TemporaryPassword: tempPassword,
-              UserAttributes: [
-                { Name: 'email', Value: email },
-                { Name: 'email_verified', Value: 'true' },
-                { Name: 'name', Value: name },
-                ...(phone_number ? [{ Name: 'phone_number', Value: phone_number }] : [])
-              ],
-              MessageAction: 'SUPPRESS'
-            };
-            
-            await cognito.send(new AdminCreateUserCommand(createParams));
-            
-            // Set permanent password for passwordless flow
-            const setPassParams = {
-              UserPoolId: process.env.COGNITO_USER_POOL_ID,
-              Username: email,
-              Password: tempPassword,
-              Permanent: false
-            };
-            
-            await cognito.send(new AdminSetUserPasswordCommand(setPassParams));
-            
-            return response(201, {
-              message: 'User created successfully',
-              email,
-              verified: true
-            });
-          } catch (error) {
-            console.error('Error:', error);
             
             if (error.name === 'UsernameExistsException') {
               return response(409, { error: 'User already exists' });
@@ -575,70 +483,10 @@ Resources:
       FunctionName: !Sub "${AWS::StackName}-verify-email"
       Handler: index.handler
       Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth/verify-email/
       Environment:
         Variables:
           VERIFY_SECRET: !Ref VerifySecret
-      InlineCode: |
-        const crypto = require('crypto');
-        
-        const corsHeaders = {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-          'Content-Type': 'application/json'
-        };
-        
-        function response(statusCode, body) {
-          return {
-            statusCode,
-            headers: corsHeaders,
-            body: JSON.stringify(body),
-            isBase64Encoded: false
-          };
-        }
-        
-        exports.handler = async (event) => {
-          console.log('Verify Email event:', JSON.stringify(event, null, 2));
-          
-          if (event.httpMethod === 'OPTIONS') {
-            return response(200, { message: 'OK' });
-          }
-          
-          try {
-            const { email, token, t } = event.queryStringParameters || {};
-            
-            if (!email || !token || !t) {
-              return response(400, { error: 'Missing email, token, or timestamp' });
-            }
-            
-            // Verify token signature
-            const secret = process.env.VERIFY_SECRET;
-            const expectedToken = crypto
-              .createHmac('sha256', secret)
-              .update(`${email}:${t}`)
-              .digest('hex');
-            
-            if (token !== expectedToken) {
-              return response(401, { error: 'Invalid verification token' });
-            }
-            
-            // Check token expiry (valid for 24 hours)
-            const now = Math.floor(Date.now() / 1000);
-            const tokenAge = now - parseInt(t);
-            if (tokenAge > 86400) {
-              return response(401, { error: 'Verification token expired' });
-            }
-            
-            return response(200, {
-              message: 'Email verified successfully',
-              email,
-              redirect: `/login?email=${encodeURIComponent(email)}`
-            });
-          } catch (error) {
-            console.error('Error:', error);
-            return response(500, { error: error.message || 'Internal server error' });
-          }
-        };
       Events:
         VerifyEmailGetEvent:
           Type: Api
