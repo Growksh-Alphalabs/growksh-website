@@ -472,8 +472,8 @@ Resources:
         Variables:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
       InlineCode: |
-        const { CognitoIdentityServiceProvider } = require("@aws-sdk/client-cognito-identity-provider");
-        const cognito = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
+        const { CognitoIdentityServiceProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
+        const cognito = new CognitoIdentityServiceProviderClient({ region: process.env.AWS_REGION });
         
         const corsHeaders = {
           'Access-Control-Allow-Origin': '*',
@@ -514,7 +514,7 @@ Resources:
             const tempPassword = 'TempPass' + Math.random().toString(36).substring(7) + '!';
             
             // Create user in Cognito
-            const params = {
+            const createParams = {
               UserPoolId: process.env.COGNITO_USER_POOL_ID,
               Username: email,
               TemporaryPassword: tempPassword,
@@ -527,15 +527,17 @@ Resources:
               MessageAction: 'SUPPRESS'
             };
             
-            await cognito.adminCreateUser(params);
+            await cognito.send(new AdminCreateUserCommand(createParams));
             
-            // Set permanent auth challenge for passwordless flow
-            await cognito.adminSetUserPassword({
+            // Set permanent password for passwordless flow
+            const setPassParams = {
               UserPoolId: process.env.COGNITO_USER_POOL_ID,
               Username: email,
               Password: tempPassword,
               Permanent: false
-            });
+            };
+            
+            await cognito.send(new AdminSetUserPasswordCommand(setPassParams));
             
             return response(201, {
               message: 'User created successfully',
