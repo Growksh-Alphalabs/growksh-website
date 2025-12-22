@@ -1,6 +1,6 @@
 const { CognitoIdentityServiceProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
 
-const cognito = new CognitoIdentityServiceProviderClient({ region: process.env.AWS_REGION });
+let cognito = null;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,6 +18,13 @@ function response(statusCode, body) {
   };
 }
 
+function getCognito() {
+  if (!cognito) {
+    cognito = new CognitoIdentityServiceProviderClient({ region: process.env.AWS_REGION });
+  }
+  return cognito;
+}
+
 exports.handler = async (event) => {
   try {
     console.log('Signup event:', JSON.stringify(event, null, 2));
@@ -30,6 +37,7 @@ exports.handler = async (event) => {
       return response(405, { error: 'Method not allowed' });
     }
     
+    const cognitoClient = getCognito();
     const body = JSON.parse(event.body || '{}');
     const { email, name, phone_number } = body;
     
@@ -54,7 +62,7 @@ exports.handler = async (event) => {
       MessageAction: 'SUPPRESS'
     };
     
-    await cognito.send(new AdminCreateUserCommand(createParams));
+    await cognitoClient.send(new AdminCreateUserCommand(createParams));
     
     // Set permanent password for passwordless flow
     const setPassParams = {
@@ -64,7 +72,7 @@ exports.handler = async (event) => {
       Permanent: false
     };
     
-    await cognito.send(new AdminSetUserPasswordCommand(setPassParams));
+    await cognitoClient.send(new AdminSetUserPasswordCommand(setPassParams));
     
     return response(201, {
       message: 'User created successfully',
