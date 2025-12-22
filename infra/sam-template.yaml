@@ -72,10 +72,19 @@ Resources:
     Properties:
       StageName: Prod
       TracingEnabled: true
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS,PUT,DELETE'"
-        AllowHeaders: "'Content-Type,Authorization'"
-        AllowOrigin: "'*'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
 
   # DynamoDB table for storing OTPs and verification tokens
   AuthOtpTable:
@@ -430,11 +439,19 @@ Resources:
     Properties:
       StageName: Prod
       TracingEnabled: true
-      Cors:
-        AllowMethods: "'GET,POST,OPTIONS,PUT,DELETE'"
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
-        AllowOrigin: "'*'"
-        MaxAge: 600
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+              Access-Control-Allow-Methods: "'GET,POST,OPTIONS,PUT,DELETE'"
 
   # Signup Lambda Function
   SignupFunction:
@@ -462,7 +479,8 @@ Resources:
           return {
             statusCode,
             headers: corsHeaders,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            isBase64Encoded: false
           };
         }
         
@@ -571,7 +589,8 @@ Resources:
           return {
             statusCode,
             headers: corsHeaders,
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            isBase64Encoded: false
           };
         }
         
