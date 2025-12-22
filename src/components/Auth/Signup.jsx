@@ -29,32 +29,51 @@ export default function Signup() {
     setErrorMessage('')
     setMessage('')
 
+    // Validate form
+    if (!formData.name.trim()) {
+      setErrorMessage('Name is required')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.email.trim()) {
+      setErrorMessage('Email is required')
+      setLoading(false)
+      return
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      setErrorMessage('Please enter a valid email address')
+      setLoading(false)
+      return
+    }
+
     try {
-      // Validate form
-      if (!formData.name.trim()) {
-        setErrorMessage('Name is required')
-        setLoading(false)
-        return
-      }
+      // Call signup Lambda function
+      const response = await signup({
+        name: formData.name,
+        email: formData.email,
+        phone_number: formData.phone_number,
+      })
 
-      if (!formData.email.trim()) {
-        setErrorMessage('Email is required')
-        setLoading(false)
-        return
-      }
+      console.log('Signup response:', response)
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        setErrorMessage('Please enter a valid email address')
-        setLoading(false)
-        return
-      }
+      // Success
+      setMessage(
+        'Account created successfully! A verification link has been sent to your email. Redirecting to login...'
+      )
+      setStage('success')
+
+      // Redirect to login after 5 seconds
+      setTimeout(() => {
+        navigate('/login')
+      }, 5000)
     } catch (error) {
       console.error('Signup error:', error)
       setStage('error')
       setErrorMessage(
         error.message || 'Failed to create account. Please try again.'
       )
-    } finally {
       setLoading(false)
     }
   }
