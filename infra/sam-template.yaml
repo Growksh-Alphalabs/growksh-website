@@ -73,9 +73,10 @@ Resources:
       StageName: Prod
       TracingEnabled: true
       Cors:
-        AllowMethods: "'*'"
-        AllowHeaders: "'*'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'*'"
+        MaxAge: 600
 
   # DynamoDB table for storing OTPs and verification tokens
   AuthOtpTable:
@@ -438,9 +439,10 @@ Resources:
       StageName: Prod
       TracingEnabled: true
       Cors:
-        AllowMethods: "'*'"
-        AllowHeaders: "'*'"
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
+        MaxAge: 600
 
   # Signup Lambda Function
   SignupFunction:
