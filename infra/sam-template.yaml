@@ -299,9 +299,13 @@ Resources:
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           DEBUG_LOG: !Ref DebugLogOTP
       InlineCode: |
-        const AWS = require('aws-sdk');
-        const dynamodb = new AWS.DynamoDB.DocumentClient();
-        const ses = new AWS.SES();
+        const { DynamoDBDocumentClient, PutCommand, DeleteCommand } = require("@aws-sdk/lib-dynamodb");
+        const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+        const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+        
+        const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+        const dynamodb = DynamoDBDocumentClient.from(dynamoDBClient);
+        const ses = new SESClient({ region: process.env.AWS_REGION });
         
         exports.handler = async (event) => {
           console.log('CreateAuthChallenge event:', JSON.stringify(event, null, 2));
@@ -320,7 +324,7 @@ Resources:
             
             // Store OTP in DynamoDB
             try {
-              await dynamodb.put({
+              await dynamodb.send(new PutCommand({
                 TableName: process.env.OTP_TABLE,
                 Item: {
                   email,
@@ -328,10 +332,10 @@ Resources:
                   ttl,
                   createdAt: new Date().toISOString()
                 }
-              }).promise();
+              }));
               
               // Send OTP via SES
-              await ses.sendEmail({
+              await ses.send(new SendEmailCommand({
                 Source: process.env.SES_SOURCE_EMAIL,
                 Destination: { ToAddresses: [email] },
                 Message: {
@@ -340,7 +344,7 @@ Resources:
                     Text: { Data: `Your OTP is: ${otp}. Valid for 10 minutes.` }
                   }
                 }
-              }).promise();
+              }));
               
               console.log('OTP sent successfully to:', email);
             } catch (error) {
@@ -369,8 +373,11 @@ Resources:
         Variables:
           OTP_TABLE: !Ref AuthOtpTable
       InlineCode: |
-        const AWS = require('aws-sdk');
-        const dynamodb = new AWS.DynamoDB.DocumentClient();
+        const { DynamoDBDocumentClient, DeleteCommand } = require("@aws-sdk/lib-dynamodb");
+        const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+        
+        const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+        const dynamodb = DynamoDBDocumentClient.from(dynamoDBClient);
         
         exports.handler = async (event) => {
           console.log('VerifyAuthChallenge event:', JSON.stringify(event, null, 2));
@@ -391,10 +398,10 @@ Resources:
             
             // Clean up OTP from DynamoDB
             try {
-              await dynamodb.delete({
+              await dynamodb.send(new DeleteCommand({
                 TableName: process.env.OTP_TABLE,
                 Key: { email }
-              }).promise();
+              }));
               console.log('OTP cleaned up for:', email);
             } catch (error) {
               console.error('Error cleaning up OTP:', error);
@@ -465,8 +472,8 @@ Resources:
         Variables:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
       InlineCode: |
-        const AWS = require('aws-sdk');
-        const cognito = new AWS.CognitoIdentityServiceProvider();
+        const { CognitoIdentityServiceProvider } = require("@aws-sdk/client-cognito-identity-provider");
+        const cognito = new CognitoIdentityServiceProvider({ region: process.env.AWS_REGION });
         
         const corsHeaders = {
           'Access-Control-Allow-Origin': '*',
@@ -520,21 +527,15 @@ Resources:
               MessageAction: 'SUPPRESS'
             };
             
-            await cognito.adminCreateUser(params).promise();
+            await cognito.adminCreateUser(params);
             
             // Set permanent auth challenge for passwordless flow
-            const setPermParams = {
-              UserPoolId: process.env.COGNITO_USER_POOL_ID,
-              Username: email,
-              DesiredUserStatus: 'CONFIRMED'
-            };
-            
             await cognito.adminSetUserPassword({
               UserPoolId: process.env.COGNITO_USER_POOL_ID,
               Username: email,
               Password: tempPassword,
               Permanent: false
-            }).promise();
+            });
             
             return response(201, {
               message: 'User created successfully',
@@ -544,7 +545,7 @@ Resources:
           } catch (error) {
             console.error('Error:', error);
             
-            if (error.code === 'UsernameExistsException') {
+            if (error.name === 'UsernameExistsException') {
               return response(409, { error: 'User already exists' });
             }
             
