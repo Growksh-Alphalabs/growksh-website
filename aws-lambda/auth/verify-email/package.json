@@ -1,0 +1,5 @@
+{
+  "name": "verify-email-handler",
+  "version": "1.0.0",
+  "description": "Email verification Lambda function"
+}
