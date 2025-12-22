@@ -10,7 +10,15 @@ Parameters:
   VerifyBaseUrl:
     Type: String
     Description: "Frontend URL where users will verify their email"
-    Default: "https://growksh.com/auth/verify-email"
+    Default: "https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email"
+  DebugLogVerify:
+    Type: String
+    Description: "Enable debug logging of verification URLs (set to '1' to enable)"
+    Default: '1'
+  DebugLogOTP:
+    Type: String
+    Description: "Enable debug logging of OTPs in CreateAuthChallenge (set to '1' to enable)"
+    Default: '0'
   VerifySecret:
     Type: String
     Description: "HMAC secret for signing verification tokens"
@@ -118,7 +126,7 @@ Resources:
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
           VERIFY_SECRET: !Ref VerifySecret
-          DEBUG_LOG_VERIFY: '0'
+          DEBUG_LOG_VERIFY: !Ref DebugLogVerify
       Policies:
         - Version: '2012-10-17'
           Statement:
@@ -189,7 +197,7 @@ Resources:
       Environment:
         Variables:
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
-          DEBUG_LOG_OTP: '0'
+          DEBUG_LOG_OTP: !Ref DebugLogOTP
       Policies:
         - Version: '2012-10-17'
           Statement:

@@ -302,12 +302,25 @@ exports.handler = async (event) => {
       });
     }
 
-    return response(201, {
+    // Prepare success response; include debug verification URL if enabled
+    const debugLog = (process.env.DEBUG_LOG_VERIFY === '1' || String(process.env.DEBUG_LOG_VERIFY).toLowerCase() === 'true')
+    const result = {
       message: 'Registration successful! Please check your email to verify your account.',
       success: true,
       email: email,
       emailSent: true
-    });
+    }
+    if (debugLog) {
+      // include verification URL for testing convenience
+      try {
+        const verifyUrl = `${process.env.VERIFY_BASE_URL}?token=${encodeURIComponent(verificationToken)}`
+        result.debugVerifyUrl = verifyUrl
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    return response(201, result);
 
   } catch (err) {
     console.error('Registration error:', err);
