@@ -1,3 +1,81 @@
+/*
+ * Cognito Create Auth Challenge trigger
+ * - Generates a 6-digit code for new sessions
+ * - Stores code in privateChallengeParameters.secretLoginCode
+ * - Puts a 'hint' into publicChallengeParameters
+ * - Sends the code via SES to the user's email
+ */
+
+const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses')
+
+// instantiate SES client once for connection reuse
+const ses = new SESClient({})
+
+function generateCode() {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+exports.handler = async (event) => {
+  try {
+    // Only support CUSTOM_CHALLENGE flows
+    if (event.request.challengeName && event.request.challengeName !== 'CUSTOM_CHALLENGE') {
+      return event
+    }
+
+    const session = event.request.session || []
+
+    // If this is a new session (no previous challenge), create a code
+    const isNew = !session || session.length === 0
+
+    if (isNew) {
+      const code = generateCode()
+
+      // Private: stored so client cannot see it
+      event.response.privateChallengeParameters = {
+        secretLoginCode: code
+      }
+
+      // Public hint (per prompt, we place the code under 'hint' — if you prefer masking, change here)
+      event.response.publicChallengeParameters = {
+        hint: code
+      }
+
+      event.response.challengeMetadata = 'SECRET_LOGIN_CODE'
+
+      // Send email via SES (non-blocking if SES not configured)
+      const to = event.request.userAttributes && event.request.userAttributes.email
+      const source = process.env.SES_SOURCE_EMAIL
+
+      if (to && source) {
+        const body = `Your login code is: ${code}`
+        const params = {
+          Destination: { ToAddresses: [to] },
+          Message: {
+            Subject: { Data: 'Your login code' },
+            Body: { Text: { Data: body } }
+          },
+          Source: source
+        }
+        try {
+          await ses.send(new SendEmailCommand(params))
+          console.log('Sent login code to', to)
+        } catch (sendErr) {
+          console.error('Failed to send login code via SES', sendErr)
+        }
+      } else {
+        console.warn('SES_SOURCE_EMAIL or recipient email not configured; skipping send')
+      }
+    } else {
+      // For subsequent challenges, keep existing private params
+      // AWS passes them through automatically; do nothing
+    }
+
+    return event
+  } catch (err) {
+    console.error('CreateAuthChallenge error', err)
+    return event
+  }
+}
 const AWS = require('aws-sdk')
 const ses = new AWS.SES({ region: process.env.AWS_REGION || 'us-east-1' })
 
