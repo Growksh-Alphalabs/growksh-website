@@ -432,8 +432,10 @@ Resources:
       TracingEnabled: true
       Cors:
         AllowMethods: "'GET,POST,OPTIONS,PUT,DELETE'"
-        AllowHeaders: "'Content-Type,Authorization'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
+        MaxAge: 600
+        ExposeHeaders: "'Content-Type'"
 
   # Signup Lambda Function
   SignupFunction:
