@@ -435,7 +435,6 @@ Resources:
         AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
         MaxAge: 600
-        ExposeHeaders: "'Content-Type'"
 
   # Signup Lambda Function
   SignupFunction:
