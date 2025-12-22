@@ -172,6 +172,19 @@ exports.handler = async (event) => {
     const { email, name, phone } = body || {};
     const userPoolId = process.env.USER_POOL_ID;
 
+    // Validate required environment variables early to avoid creating users when config is missing
+    const missingEnvs = []
+    if (!process.env.VERIFY_SECRET) missingEnvs.push('VERIFY_SECRET')
+    if (!process.env.SES_SOURCE_EMAIL) missingEnvs.push('SES_SOURCE_EMAIL')
+    if (!process.env.VERIFY_BASE_URL) missingEnvs.push('VERIFY_BASE_URL')
+    if (missingEnvs.length > 0) {
+      console.error('Missing required env vars:', missingEnvs.join(', '))
+      return response(500, {
+        message: 'Server configuration error. Missing environment variables: ' + missingEnvs.join(', '),
+        code: 'CONFIG_ERROR'
+      })
+    }
+
     if (!email) {
       return response(400, { 
         message: 'Email is required',
