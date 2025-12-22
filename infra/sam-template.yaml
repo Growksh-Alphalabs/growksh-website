@@ -133,8 +133,8 @@ Resources:
       ClientName: !Sub "${AWS::StackName}-client"
       UserPoolId: !Ref CognitoUserPool
       ExplicitAuthFlows:
-        - CUSTOM_AUTH
-        - CUSTOM_AUTH_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
       PreventUserExistenceErrors: ENABLED
       AllowedOAuthFlows: []
       ReadAttributes:
