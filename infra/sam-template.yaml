@@ -454,14 +454,6 @@ Resources:
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
-            
-            if (error.name === 'UsernameExistsException') {
-              return response(409, { error: 'User already exists' });
-            }
-            
-            return response(500, { error: error.message || 'Internal server error' });
-          }
-        };
       Events:
         SignupPostEvent:
           Type: Api
