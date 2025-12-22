@@ -218,211 +218,60 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-pre-sign-up"
-      Handler: index.handler
+      Handler: pre-sign-up.handler
       Runtime: nodejs18.x
-      InlineCode: |
-        exports.handler = async (event) => {
-          console.log('PreSignUp event:', JSON.stringify(event, null, 2));
-          
-          // Auto-confirm the user
-          event.response.autoConfirmUser = true;
-          // Auto-verify email
-          event.response.autoVerifiedAttributes = ['email'];
-          
-          return event;
-        };
+      CodeUri: ../aws-lambda/auth/
 
   # Custom Message Lambda - Send OTP via email
   CustomMessageFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-custom-message"
-      Handler: index.handler
+      Handler: custom-message.handler
       Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth/
       Environment:
         Variables:
           DEBUG_LOG: !Ref DebugLogVerify
           VERIFY_SECRET: !Ref VerifySecret
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
-      InlineCode: |
-        const crypto = require('crypto');
-        
-        exports.handler = async (event) => {
-          console.log('CustomMessage event:', JSON.stringify(event, null, 2));
-          
-          const { trigger_source, request, response } = event;
-          
-          if (trigger_source === 'CustomMessage_SignUp') {
-            // For signup - send verification link
-            const email = request.userAttributes.email;
-            const secret = process.env.VERIFY_SECRET;
-            const timestamp = Math.floor(Date.now() / 1000);
-            
-            // Create verification token
-            const token = crypto
-              .createHmac('sha256', secret)
-              .update(`${email}:${timestamp}`)
-              .digest('hex');
-            
-            const verificationLink = `${process.env.VERIFY_BASE_URL}?email=${encodeURIComponent(email)}&token=${token}&t=${timestamp}`;
-            
-            if (process.env.DEBUG_LOG === '1') {
-              console.log('Verification Link:', verificationLink);
-            }
-            
-            response.emailSubject = 'Verify your email for Growksh';
-            response.emailMessage = `Click this link to verify your email: ${verificationLink}`;
-          }
-          
-          return event;
-        };
 
   # Create Auth Challenge Lambda - Generate and send OTP
   CreateAuthChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-create-auth-challenge"
-      Handler: index.handler
+      Handler: create-auth-challenge.handler
       Runtime: nodejs18.x
       Role: !GetAtt AuthLambdaExecutionRole.Arn
+      CodeUri: ../aws-lambda/auth/
       Environment:
         Variables:
           OTP_TABLE: !Ref AuthOtpTable
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           DEBUG_LOG: !Ref DebugLogOTP
-      InlineCode: |
-        const { DynamoDBDocumentClient, PutCommand, DeleteCommand } = require("@aws-sdk/lib-dynamodb");
-        const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-        const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
-        
-        const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
-        const dynamodb = DynamoDBDocumentClient.from(dynamoDBClient);
-        const ses = new SESClient({ region: process.env.AWS_REGION });
-        
-        exports.handler = async (event) => {
-          console.log('CreateAuthChallenge event:', JSON.stringify(event, null, 2));
-          
-          const { request, response } = event;
-          
-          if (request.challengeName === 'CUSTOM_CHALLENGE') {
-            // Generate 6-digit OTP
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            const email = request.userAttributes.email;
-            const ttl = Math.floor(Date.now() / 1000) + (10 * 60); // 10 minutes
-            
-            if (process.env.DEBUG_LOG === '1') {
-              console.log('Generated OTP:', otp, 'for email:', email);
-            }
-            
-            // Store OTP in DynamoDB
-            try {
-              await dynamodb.send(new PutCommand({
-                TableName: process.env.OTP_TABLE,
-                Item: {
-                  email,
-                  otp,
-                  ttl,
-                  createdAt: new Date().toISOString()
-                }
-              }));
-              
-              // Send OTP via SES
-              await ses.send(new SendEmailCommand({
-                Source: process.env.SES_SOURCE_EMAIL,
-                Destination: { ToAddresses: [email] },
-                Message: {
-                  Subject: { Data: 'Your Growksh Login OTP' },
-                  Body: {
-                    Text: { Data: `Your OTP is: ${otp}. Valid for 10 minutes.` }
-                  }
-                }
-              }));
-              
-              console.log('OTP sent successfully to:', email);
-            } catch (error) {
-              console.error('Error sending OTP:', error);
-              throw error;
-            }
-            
-            // Set challenge metadata
-            response.publicChallengeParameters = { email };
-            response.privateChallengeParameters = { otp };
-            response.privateChallengeParameters.email = email;
-          }
-          
-          return event;
-        };
 
   # Verify Auth Challenge Lambda - Verify OTP
   VerifyAuthChallengeFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-verify-auth-challenge"
-      Handler: index.handler
+      Handler: verify-auth-challenge.handler
       Runtime: nodejs18.x
       Role: !GetAtt AuthLambdaExecutionRole.Arn
+      CodeUri: ../aws-lambda/auth/
       Environment:
         Variables:
           OTP_TABLE: !Ref AuthOtpTable
-      InlineCode: |
-        const { DynamoDBDocumentClient, DeleteCommand } = require("@aws-sdk/lib-dynamodb");
-        const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-        
-        const dynamoDBClient = new DynamoDBClient({ region: process.env.AWS_REGION });
-        const dynamodb = DynamoDBDocumentClient.from(dynamoDBClient);
-        
-        exports.handler = async (event) => {
-          console.log('VerifyAuthChallenge event:', JSON.stringify(event, null, 2));
-          
-          const { request, response } = event;
-          const expectedOtp = request.privateChallengeParameters.otp;
-          const userAnswer = request.challengeAnswer;
-          const email = request.userAttributes.email;
-          
-          if (!expectedOtp || !userAnswer) {
-            response.answerCorrect = false;
-            return event;
-          }
-          
-          // Verify OTP matches
-          if (userAnswer === expectedOtp) {
-            response.answerCorrect = true;
-            
-            // Clean up OTP from DynamoDB
-            try {
-              await dynamodb.send(new DeleteCommand({
-                TableName: process.env.OTP_TABLE,
-                Key: { email }
-              }));
-              console.log('OTP cleaned up for:', email);
-            } catch (error) {
-              console.error('Error cleaning up OTP:', error);
-              // Don't fail auth if cleanup fails
-            }
-          } else {
-            response.answerCorrect = false;
-            console.log('OTP mismatch for email:', email);
-          }
-          
-          return event;
-        };
 
   # Post-Confirmation Lambda - Update user attributes after email verification
   PostConfirmationFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-post-confirmation"
-      Handler: index.handler
+      Handler: post-confirmation.handler
       Runtime: nodejs18.x
-      InlineCode: |
-        exports.handler = async (event) => {
-          console.log('PostConfirmation event:', JSON.stringify(event, null, 2));
-          
-          // User email has been confirmed
-          // You can add custom logic here if needed
-          
-          return event;
-        };
+      CodeUri: ../aws-lambda/auth/
 
   PostConfirmationLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -449,9 +298,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-signup"
-      Handler: index.handler
+      Handler: signup.handler
       Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/auth/signup/
+      CodeUri: ../aws-lambda/auth/
       Role: !GetAtt AuthLambdaExecutionRole.Arn
       Environment:
         Variables:
@@ -475,9 +324,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-verify-email"
-      Handler: index.handler
+      Handler: verify-email.handler
       Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/auth/verify-email/
+      CodeUri: ../aws-lambda/auth/
       Environment:
         Variables:
           VERIFY_SECRET: !Ref VerifySecret
