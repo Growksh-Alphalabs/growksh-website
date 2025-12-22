@@ -1,71 +1,253 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { startAuth } from '../../lib/cognito'
+import { signup } from '../../lib/cognito'
 
 export default function Signup() {
   const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
+  const [stage, setStage] = useState('form') // form | success | error
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
-  const register = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setMessage('')
-    try {
-      let apiBase = import.meta.env.VITE_API_URL || ''
-      // If CI injected the Contact API endpoint (which may include a trailing /contact),
-      // normalize to the API root so we can call /auth/register correctly.
-      if (apiBase.endsWith('/contact')) apiBase = apiBase.replace(/\/contact$/, '')
-      const payload = { email, name, phone }
-      console.log('Signup: sending request', { url: `${apiBase}/auth/register`, payload })
-      const res = await fetch(`${apiBase}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-      console.log('Signup: response status', res.status, 'ok?', res.ok)
-      try { console.log('Signup: response headers', Object.fromEntries(res.headers.entries())) } catch (e) {}
-      
-      const contentType = res.headers.get('content-type') || ''
-      let data = null
-      if (contentType.includes('application/json')) {
-        data = await res.json()
-      } else {
-        // Non-JSON response (likely HTML error page or plain text)
-        const text = await res.text()
-        data = { __rawText: text }
-      }
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone_number: '',
+  })
 
-      if (res.ok) {
-        console.log('Signup succeeded', { data })
-        setMessage('Account created. Check your email for a verification link.')
-      } else {
-        console.warn('Signup failed', { status: res.status, data })
-        // Prefer message from JSON, otherwise show a short snippet of raw text
-        const errMsg = (data && data.message) || (data && data.__rawText && data.__rawText.slice(0, 300)) || 'Failed'
-        setMessage(`Error ${res.status}: ${errMsg}`)
-      }
-    } catch (err) {
-      // Handle JSON parse failures and other network errors
-      console.error('Signup exception', err)
-      setMessage(err.message || 'Error')
-    } finally { setLoading(false) }
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
   }
 
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setErrorMessage('')
+    setMessage('')
+
+    try {
+      // Validate form
+      if (!formData.name.trim()) {
+        setErrorMessage('Name is required')
+        setLoading(false)
+        return
+      }
+
+      if (!formData.email.trim()) {
+        setErrorMessage('Email is required')
+        setLoading(false)
+        return
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setErrorMessage('Please enter a valid email address')
+        setLoading(false)
+        return
+      }
+    } catch (error) {
+      console.error('Signup error:', error)
+      setStage('error')
+      setErrorMessage(
+        error.message || 'Failed to create account. Please try again.'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-lg">
-      <h3 className="text-xl font-bold mb-4">Sign up</h3>
-      <form onSubmit={register} className="space-y-4">
-        <input required value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" className="w-full p-3 border rounded" />
-        <input required value={email} onChange={e=>setEmail(e.target.value)} placeholder="Email" type="email" className="w-full p-3 border rounded" />
-        <input value={phone} onChange={e=>setPhone(e.target.value)} placeholder="Mobile (optional)" className="w-full p-3 border rounded" />
-        <button disabled={loading} className="w-full py-3 bg-[#00674F] text-white rounded-md font-bold">{loading ? 'Creating...' : 'Create account'}</button>
-      </form>
-      {message && <div className="mt-4 text-sm text-slate-700">{message}</div>}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Growksh</h1>
+          <h2 className="text-2xl font-semibold text-gray-700">Sign Up</h2>
+          <p className="text-gray-600 mt-2">
+            Create your account to get started
+          </p>
+        </div>
+
+        {/* Success State */}
+        {stage === 'success' && (
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <div className="flex items-start">
+              <svg
+                className="h-6 w-6 text-green-500 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-green-800">
+                  Account Created Successfully!
+                </h3>
+                <p className="text-green-700 mt-2">{message}</p>
+                <p className="text-sm text-green-600 mt-3">
+                  Redirecting to login page in 5 seconds...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {stage === 'error' && (
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 mb-6">
+            <div className="flex items-start">
+              <svg
+                className="h-6 w-6 text-red-500 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-red-800">
+                  Signup Failed
+                </h3>
+                <p className="text-red-700 mt-1">{errorMessage}</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setStage('form')
+                setErrorMessage('')
+              }}
+              className="mt-4 w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors font-medium"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Form State */}
+        {stage === 'form' && (
+          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
+            {/* Name Field */}
+            <div className="mb-5">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter your full name"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
+              />
+            </div>
+
+            {/* Email Field */}
+            <div className="mb-5">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                We'll send a verification link to this email
+              </p>
+            </div>
+
+            {/* Phone Number Field */}
+            <div className="mb-6">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number (Optional)
+              </label>
+              <input
+                id="phone"
+                name="phone_number"
+                type="tel"
+                value={formData.phone_number}
+                onChange={handleChange}
+                placeholder="Enter your phone number"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
+              />
+            </div>
+
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{errorMessage}</p>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-4 bg-[#00674F] text-white font-bold rounded-lg hover:bg-[#004d39] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-3"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Creating Account...
+                </span>
+              ) : (
+                'Sign Up'
+              )}
+            </button>
+
+            {/* Login Link */}
+            <p className="text-center text-sm text-gray-600 mt-4">
+              Already have an account?{' '}
+              <a
+                href="/login"
+                className="text-[#00674F] hover:text-[#004d39] font-semibold transition-colors"
+              >
+                Sign In
+              </a>
+            </p>
+          </form>
+        )}
+      </div>
     </div>
   )
 }

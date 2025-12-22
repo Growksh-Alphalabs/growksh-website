@@ -77,274 +77,563 @@ Resources:
         AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'*'"
 
-  # Cognito User Pool for passwordless OTP authentication
+  # DynamoDB table for storing OTPs and verification tokens
+  AuthOtpTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-auth-otp"
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # Cognito User Pool for authentication
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Sub "${AWS::StackName}-userpool"
+      UserPoolName: !Sub "${AWS::StackName}-user-pool"
       UsernameAttributes:
         - email
       AutoVerifiedAttributes:
         - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: false
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
       Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
         - Name: name
-          Required: false
+          AttributeDataType: String
           Mutable: true
         - Name: phone_number
-          Required: false
+          AttributeDataType: String
           Mutable: true
       LambdaConfig:
+        PreSignUp: !GetAtt PreSignUpFunction.Arn
+        CustomMessage: !GetAtt CustomMessageFunction.Arn
         CreateAuthChallenge: !GetAtt CreateAuthChallengeFunction.Arn
-        DefineAuthChallenge: !GetAtt DefineAuthChallengeFunction.Arn
         VerifyAuthChallengeResponse: !GetAtt VerifyAuthChallengeFunction.Arn
-        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
-      # Remove password policy for passwordless auth
-      AdminCreateUserConfig:
-        AllowAdminCreateUserOnly: false
 
+  # Cognito User Pool Client
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
       ClientName: !Sub "${AWS::StackName}-client"
       UserPoolId: !Ref CognitoUserPool
-      GenerateSecret: false
       ExplicitAuthFlows:
-        - ALLOW_CUSTOM_AUTH
-        - ALLOW_REFRESH_TOKEN_AUTH
+        - CUSTOM_AUTH
+        - CUSTOM_AUTH_USER_PASSWORD_AUTH
       PreventUserExistenceErrors: ENABLED
+      AllowedOAuthFlows: []
+      ReadAttributes:
+        - email
+        - name
+        - phone_number
 
-  # User registration API - creates user and sends verification email
-  UserRegisterFunction:
+  # Lambda Execution Role
+  AuthLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !GetAtt AuthOtpTable.Arn
+        - PolicyName: SESAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: '*'
+
+  # Lambda permission for Cognito to invoke PreSignUp
+  PreSignUpLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PreSignUpFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  # Lambda permission for Cognito to invoke CustomMessage
+  CustomMessageLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CustomMessageFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  # Lambda permission for Cognito to invoke CreateAuthChallenge
+  CreateAuthChallengeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  # Lambda permission for Cognito to invoke VerifyAuthChallenge
+  VerifyAuthChallengeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref VerifyAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  # Pre Sign Up Lambda - Auto-verify email and allow user signup
+  PreSignUpFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-pre-sign-up"
       Handler: index.handler
       Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/user-register/
+      InlineCode: |
+        exports.handler = async (event) => {
+          console.log('PreSignUp event:', JSON.stringify(event, null, 2));
+          
+          // Auto-confirm the user
+          event.response.autoConfirmUser = true;
+          // Auto-verify email
+          event.response.autoVerifiedAttributes = ['email'];
+          
+          return event;
+        };
+
+  # Custom Message Lambda - Send OTP via email
+  CustomMessageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-custom-message"
+      Handler: index.handler
+      Runtime: nodejs18.x
       Environment:
         Variables:
-          USER_POOL_ID: !Ref CognitoUserPool
-          SES_SOURCE_EMAIL: !Ref SESSourceEmail
-          VERIFY_BASE_URL: !Ref VerifyBaseUrl
+          DEBUG_LOG: !Ref DebugLogVerify
           VERIFY_SECRET: !Ref VerifySecret
-          DEBUG_LOG_VERIFY: !Ref DebugLogVerify
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:AdminCreateUser
-                - cognito-idp:AdminUpdateUserAttributes
-              Resource: !GetAtt CognitoUserPool.Arn
-            - Effect: Allow
-              Action:
-                - ses:SendEmail
-                - ses:SendRawEmail
-              Resource: '*'
+          VERIFY_BASE_URL: !Ref VerifyBaseUrl
+      InlineCode: |
+        const crypto = require('crypto');
+        
+        exports.handler = async (event) => {
+          console.log('CustomMessage event:', JSON.stringify(event, null, 2));
+          
+          const { trigger_source, request, response } = event;
+          
+          if (trigger_source === 'CustomMessage_SignUp') {
+            // For signup - send verification link
+            const email = request.userAttributes.email;
+            const secret = process.env.VERIFY_SECRET;
+            const timestamp = Math.floor(Date.now() / 1000);
+            
+            // Create verification token
+            const token = crypto
+              .createHmac('sha256', secret)
+              .update(`${email}:${timestamp}`)
+              .digest('hex');
+            
+            const verificationLink = `${process.env.VERIFY_BASE_URL}?email=${encodeURIComponent(email)}&token=${token}&t=${timestamp}`;
+            
+            if (process.env.DEBUG_LOG === '1') {
+              console.log('Verification Link:', verificationLink);
+            }
+            
+            response.emailSubject = 'Verify your email for Growksh';
+            response.emailMessage = `Click this link to verify your email: ${verificationLink}`;
+          }
+          
+          return event;
+        };
+
+  # Create Auth Challenge Lambda - Generate and send OTP
+  CreateAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-create-auth-challenge"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Role: !GetAtt AuthLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          OTP_TABLE: !Ref AuthOtpTable
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          DEBUG_LOG: !Ref DebugLogOTP
+      InlineCode: |
+        const AWS = require('aws-sdk');
+        const dynamodb = new AWS.DynamoDB.DocumentClient();
+        const ses = new AWS.SES();
+        
+        exports.handler = async (event) => {
+          console.log('CreateAuthChallenge event:', JSON.stringify(event, null, 2));
+          
+          const { request, response } = event;
+          
+          if (request.challengeName === 'CUSTOM_CHALLENGE') {
+            // Generate 6-digit OTP
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const email = request.userAttributes.email;
+            const ttl = Math.floor(Date.now() / 1000) + (10 * 60); // 10 minutes
+            
+            if (process.env.DEBUG_LOG === '1') {
+              console.log('Generated OTP:', otp, 'for email:', email);
+            }
+            
+            // Store OTP in DynamoDB
+            try {
+              await dynamodb.put({
+                TableName: process.env.OTP_TABLE,
+                Item: {
+                  email,
+                  otp,
+                  ttl,
+                  createdAt: new Date().toISOString()
+                }
+              }).promise();
+              
+              // Send OTP via SES
+              await ses.sendEmail({
+                Source: process.env.SES_SOURCE_EMAIL,
+                Destination: { ToAddresses: [email] },
+                Message: {
+                  Subject: { Data: 'Your Growksh Login OTP' },
+                  Body: {
+                    Text: { Data: `Your OTP is: ${otp}. Valid for 10 minutes.` }
+                  }
+                }
+              }).promise();
+              
+              console.log('OTP sent successfully to:', email);
+            } catch (error) {
+              console.error('Error sending OTP:', error);
+              throw error;
+            }
+            
+            // Set challenge metadata
+            response.publicChallengeParameters = { email };
+            response.privateChallengeParameters = { otp };
+            response.privateChallengeParameters.email = email;
+          }
+          
+          return event;
+        };
+
+  # Verify Auth Challenge Lambda - Verify OTP
+  VerifyAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-verify-auth-challenge"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Role: !GetAtt AuthLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          OTP_TABLE: !Ref AuthOtpTable
+      InlineCode: |
+        const AWS = require('aws-sdk');
+        const dynamodb = new AWS.DynamoDB.DocumentClient();
+        
+        exports.handler = async (event) => {
+          console.log('VerifyAuthChallenge event:', JSON.stringify(event, null, 2));
+          
+          const { request, response } = event;
+          const expectedOtp = request.privateChallengeParameters.otp;
+          const userAnswer = request.challengeAnswer;
+          const email = request.userAttributes.email;
+          
+          if (!expectedOtp || !userAnswer) {
+            response.answerCorrect = false;
+            return event;
+          }
+          
+          // Verify OTP matches
+          if (userAnswer === expectedOtp) {
+            response.answerCorrect = true;
+            
+            // Clean up OTP from DynamoDB
+            try {
+              await dynamodb.delete({
+                TableName: process.env.OTP_TABLE,
+                Key: { email }
+              }).promise();
+              console.log('OTP cleaned up for:', email);
+            } catch (error) {
+              console.error('Error cleaning up OTP:', error);
+              // Don't fail auth if cleanup fails
+            }
+          } else {
+            response.answerCorrect = false;
+            console.log('OTP mismatch for email:', email);
+          }
+          
+          return event;
+        };
+
+  # Post-Confirmation Lambda - Update user attributes after email verification
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-post-confirmation"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      InlineCode: |
+        exports.handler = async (event) => {
+          console.log('PostConfirmation event:', JSON.stringify(event, null, 2));
+          
+          // User email has been confirmed
+          // You can add custom logic here if needed
+          
+          return event;
+        };
+
+  PostConfirmationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostConfirmationFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
+  # Auth API Gateway for signup and verification endpoints
+  AuthApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS,PUT,DELETE'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+  # Signup Lambda Function
+  SignupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-signup"
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Role: !GetAtt AuthLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+      InlineCode: |
+        const AWS = require('aws-sdk');
+        const cognito = new AWS.CognitoIdentityServiceProvider();
+        
+        const corsHeaders = {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+          'Content-Type': 'application/json'
+        };
+        
+        function response(statusCode, body) {
+          return {
+            statusCode,
+            headers: corsHeaders,
+            body: JSON.stringify(body)
+          };
+        }
+        
+        exports.handler = async (event) => {
+          console.log('Signup event:', JSON.stringify(event, null, 2));
+          
+          if (event.httpMethod === 'OPTIONS') {
+            return response(200, { message: 'OK' });
+          }
+          
+          if (event.httpMethod !== 'POST') {
+            return response(405, { error: 'Method not allowed' });
+          }
+          
+          try {
+            const body = JSON.parse(event.body || '{}');
+            const { email, name, phone_number } = body;
+            
+            if (!email || !name) {
+              return response(400, { error: 'Email and name are required' });
+            }
+            
+            // Generate a temporary password
+            const tempPassword = 'TempPass' + Math.random().toString(36).substring(7) + '!';
+            
+            // Create user in Cognito
+            const params = {
+              UserPoolId: process.env.COGNITO_USER_POOL_ID,
+              Username: email,
+              TemporaryPassword: tempPassword,
+              UserAttributes: [
+                { Name: 'email', Value: email },
+                { Name: 'email_verified', Value: 'true' },
+                { Name: 'name', Value: name },
+                ...(phone_number ? [{ Name: 'phone_number', Value: phone_number }] : [])
+              ],
+              MessageAction: 'SUPPRESS'
+            };
+            
+            await cognito.adminCreateUser(params).promise();
+            
+            // Set permanent auth challenge for passwordless flow
+            const setPermParams = {
+              UserPoolId: process.env.COGNITO_USER_POOL_ID,
+              Username: email,
+              DesiredUserStatus: 'CONFIRMED'
+            };
+            
+            await cognito.adminSetUserPassword({
+              UserPoolId: process.env.COGNITO_USER_POOL_ID,
+              Username: email,
+              Password: tempPassword,
+              Permanent: false
+            }).promise();
+            
+            return response(201, {
+              message: 'User created successfully',
+              email,
+              verified: true
+            });
+          } catch (error) {
+            console.error('Error:', error);
+            
+            if (error.code === 'UsernameExistsException') {
+              return response(409, { error: 'User already exists' });
+            }
+            
+            return response(500, { error: error.message || 'Internal server error' });
+          }
+        };
       Events:
-        RegisterApi:
+        SignupPostEvent:
           Type: Api
           Properties:
-            Path: /auth/register
+            Path: /auth/signup
             Method: post
-            RestApiId: !Ref ContactApiGateway
-        RegisterOptions:
+            RestApiId: !Ref AuthApiGateway
+        SignupOptionsEvent:
           Type: Api
           Properties:
-            Path: /auth/register
+            Path: /auth/signup
             Method: options
-            RestApiId: !Ref ContactApiGateway
+            RestApiId: !Ref AuthApiGateway
 
   # Email verification endpoint
   VerifyEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-verify-email"
       Handler: index.handler
       Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/verify-email/
       Environment:
         Variables:
-          USER_POOL_ID: !Ref CognitoUserPool
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:AdminConfirmSignUp
-                - cognito-idp:AdminGetUser
-                - cognito-idp:AdminUpdateUserAttributes
-              Resource: !GetAtt CognitoUserPool.Arn
+          VERIFY_SECRET: !Ref VerifySecret
+      InlineCode: |
+        const crypto = require('crypto');
+        
+        const corsHeaders = {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+          'Content-Type': 'application/json'
+        };
+        
+        function response(statusCode, body) {
+          return {
+            statusCode,
+            headers: corsHeaders,
+            body: JSON.stringify(body)
+          };
+        }
+        
+        exports.handler = async (event) => {
+          console.log('Verify Email event:', JSON.stringify(event, null, 2));
+          
+          if (event.httpMethod === 'OPTIONS') {
+            return response(200, { message: 'OK' });
+          }
+          
+          try {
+            const { email, token, t } = event.queryStringParameters || {};
+            
+            if (!email || !token || !t) {
+              return response(400, { error: 'Missing email, token, or timestamp' });
+            }
+            
+            // Verify token signature
+            const secret = process.env.VERIFY_SECRET;
+            const expectedToken = crypto
+              .createHmac('sha256', secret)
+              .update(`${email}:${t}`)
+              .digest('hex');
+            
+            if (token !== expectedToken) {
+              return response(401, { error: 'Invalid verification token' });
+            }
+            
+            // Check token expiry (valid for 24 hours)
+            const now = Math.floor(Date.now() / 1000);
+            const tokenAge = now - parseInt(t);
+            if (tokenAge > 86400) {
+              return response(401, { error: 'Verification token expired' });
+            }
+            
+            return response(200, {
+              message: 'Email verified successfully',
+              email,
+              redirect: `/login?email=${encodeURIComponent(email)}`
+            });
+          } catch (error) {
+            console.error('Error:', error);
+            return response(500, { error: error.message || 'Internal server error' });
+          }
+        };
       Events:
-        VerifyEmailApi:
+        VerifyEmailGetEvent:
           Type: Api
           Properties:
             Path: /auth/verify-email
             Method: get
-            RestApiId: !Ref ContactApiGateway
-        VerifyEmailOptions:
+            RestApiId: !Ref AuthApiGateway
+        VerifyEmailOptionsEvent:
           Type: Api
           Properties:
             Path: /auth/verify-email
             Method: options
-            RestApiId: !Ref ContactApiGateway
+            RestApiId: !Ref AuthApiGateway
 
-  # Cognito trigger Lambdas for OTP authentication
-  CreateAuthChallengeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-create-auth-challenge/
-      Environment:
-        Variables:
-          SES_SOURCE_EMAIL: !Ref SESSourceEmail
-          DEBUG_LOG_OTP: !Ref DebugLogOTP
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - ses:SendEmail
-                - ses:SendRawEmail
-              Resource: '*'
-
-  DefineAuthChallengeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-define-auth-challenge/
-
-  VerifyAuthChallengeFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-verify-auth-challenge/
-
-  PostConfirmationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/cognito-post-confirmation/
-      Environment:
-        Variables:
-          USERS_TABLE: !Ref UsersTable
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsersTable
-
-  # DynamoDB table for storing user profiles
-  UsersTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub "${AWS::StackName}-users"
-      AttributeDefinitions:
-        - AttributeName: userId
-          AttributeType: S
-      KeySchema:
-        - AttributeName: userId
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-
-  # Permissions for Cognito to invoke trigger Lambdas
-  CreateAuthChallengePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref CreateAuthChallengeFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !GetAtt CognitoUserPool.Arn
-
-  DefineAuthChallengePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref DefineAuthChallengeFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !GetAtt CognitoUserPool.Arn
-
-  VerifyAuthChallengePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref VerifyAuthChallengeFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !GetAtt CognitoUserPool.Arn
-
-  PostConfirmationPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PostConfirmationFunction
-      Action: lambda:InvokeFunction
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !GetAtt CognitoUserPool.Arn
-
-  # Login initiation API
-  AuthInitiateFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/auth-initiate/
-      Environment:
-        Variables:
-          COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:InitiateAuth
-              Resource: '*'
-      Events:
-        AuthInitiateApi:
-          Type: Api
-          Properties:
-            Path: /auth/initiate
-            Method: post
-            RestApiId: !Ref ContactApiGateway
-        AuthInitiateOptions:
-          Type: Api
-          Properties:
-            Path: /auth/initiate
-            Method: options
-            RestApiId: !Ref ContactApiGateway
-
-  # OTP verification API
-  AuthVerifyFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/auth-verify/
-      Environment:
-        Variables:
-          COGNITO_CLIENT_ID: !Ref CognitoUserPoolClient
-      Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:RespondToAuthChallenge
-              Resource: '*'
-      Events:
-        AuthVerifyApi:
-          Type: Api
-          Properties:
-            Path: /auth/verify
-            Method: post
-            RestApiId: !Ref ContactApiGateway
-        AuthVerifyOptions:
-          Type: Api
-          Properties:
-            Path: /auth/verify
-            Method: options
-            RestApiId: !Ref ContactApiGateway
 
 Outputs:
   ContactApiEndpoint:
-    Description: "API Gateway endpoint"
+    Description: "API Gateway endpoint for contact form"
     Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
   ContactsTableName:
     Description: "DynamoDB table name for contacts"
@@ -352,18 +641,22 @@ Outputs:
   CognitoUserPoolId:
     Description: "Cognito User Pool ID"
     Value: !Ref CognitoUserPool
+    Export:
+      Name: !Sub "${AWS::StackName}-CognitoUserPoolId"
   CognitoUserPoolClientId:
     Description: "Cognito User Pool Client ID"
     Value: !Ref CognitoUserPoolClient
-  UserRegisterEndpoint:
-    Description: "Registration endpoint"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/register"
+    Export:
+      Name: !Sub "${AWS::StackName}-CognitoClientId"
+  AuthApiEndpoint:
+    Description: "Auth API Gateway endpoint"
+    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  SignupEndpoint:
+    Description: "Signup endpoint"
+    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/signup"
   VerifyEmailEndpoint:
     Description: "Email verification endpoint"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
-  AuthInitiateEndpoint:
-    Description: "Login initiation endpoint"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/initiate"
-  AuthVerifyEndpoint:
-    Description: "OTP verification endpoint"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify"
+    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
+  AuthOtpTableName:
+    Description: "DynamoDB table name for OTPs"
+    Value: !Ref AuthOtpTable
