@@ -49,13 +49,29 @@ async function getUserPool() {
  */
 export async function signup(userData) {
   try {
-    // Normalize API base URL
-    let apiBase = API_URL;
-    if (apiBase.endsWith('/contact')) {
-      apiBase = apiBase.replace(/\/contact$/, '');
+    if (!API_URL) {
+      throw new Error('API_URL is not configured. Set VITE_API_URL in .env.local');
     }
 
-    const response = await fetch(`${apiBase}/auth/signup`, {
+    // Clean up API base URL - remove trailing slashes and /contact or /Prod
+    let apiBase = API_URL.trim();
+    apiBase = apiBase.replace(/\/+$/, ''); // Remove trailing slashes
+    apiBase = apiBase.replace(/\/(Prod|contact)$/, ''); // Remove /Prod or /contact at end
+
+    // Ensure proper base structure (e.g., https://xxx.execute-api.region.amazonaws.com/Prod)
+    if (!apiBase.includes('/Prod')) {
+      // Add /Prod if not present
+      if (apiBase.endsWith('/')) {
+        apiBase = apiBase + 'Prod';
+      } else {
+        apiBase = apiBase + '/Prod';
+      }
+    }
+
+    const signupUrl = `${apiBase}/auth/signup`;
+    console.log('Calling signup endpoint:', signupUrl);
+
+    const response = await fetch(signupUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -66,7 +82,7 @@ export async function signup(userData) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Signup failed');
+      throw new Error(data.error || `Signup failed with status ${response.status}`);
     }
 
     return data;
