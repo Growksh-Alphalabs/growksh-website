@@ -3,10 +3,26 @@
  * Generates OTP and sends it via email for passwordless login
  */
 
-const AWS = require('aws-sdk');
+const { DynamoDBClient, PutItemCommand } = require("@aws-sdk/client-dynamodb");
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const { marshall } = require("@aws-sdk/util-dynamodb");
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const ses = new AWS.SES();
+let dynamodbClient = null;
+let sesClient = null;
+
+function getDynamoDBClient() {
+  if (!dynamodbClient) {
+    dynamodbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+  }
+  return dynamodbClient;
+}
+
+function getSESClient() {
+  if (!sesClient) {
+    sesClient = new SESClient({ region: process.env.AWS_REGION });
+  }
+  return sesClient;
+}
 
 exports.handler = async (event) => {
   console.log('CreateAuthChallenge event:', JSON.stringify(event, null, 2));
@@ -25,37 +41,35 @@ exports.handler = async (event) => {
       }
 
       // Store OTP in DynamoDB
-      await dynamodb
-        .put({
-          TableName: process.env.OTP_TABLE,
-          Item: {
-            email,
-            otp,
-            ttl,
-            createdAt: new Date().toISOString(),
-          },
-        })
-        .promise();
+      const dynamodb = getDynamoDBClient();
+      await dynamodb.send(new PutItemCommand({
+        TableName: process.env.OTP_TABLE,
+        Item: marshall({
+          email,
+          otp,
+          ttl,
+          createdAt: new Date().toISOString(),
+        }),
+      }));
 
       console.log('OTP stored in DynamoDB for:', email);
 
       // Send OTP via SES
-      await ses
-        .sendEmail({
-          Source: process.env.SES_SOURCE_EMAIL,
-          Destination: { ToAddresses: [email] },
-          Message: {
-            Subject: {
-              Data: 'Your Growksh Login OTP',
-            },
-            Body: {
-              Text: {
-                Data: `Your one-time password (OTP) is: ${otp}\n\nValid for 10 minutes.\n\nDo not share this code with anyone.`,
-              },
+      const ses = getSESClient();
+      await ses.send(new SendEmailCommand({
+        Source: process.env.SES_SOURCE_EMAIL,
+        Destination: { ToAddresses: [email] },
+        Message: {
+          Subject: {
+            Data: 'Your Growksh Login OTP',
+          },
+          Body: {
+            Text: {
+              Data: `Your one-time password (OTP) is: ${otp}\n\nValid for 10 minutes.\n\nDo not share this code with anyone.`,
             },
           },
-        })
-        .promise();
+        },
+      }));
 
       console.log('OTP sent successfully to:', email);
     } catch (error) {

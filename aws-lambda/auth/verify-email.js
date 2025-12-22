@@ -18,6 +18,7 @@ function response(statusCode, body) {
     statusCode,
     headers: corsHeaders,
     body: JSON.stringify(body),
+    isBase64Encoded: false
   };
 }
 

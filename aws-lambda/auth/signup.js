@@ -3,16 +3,15 @@
  * Handles user registration and creates user in Cognito User Pool
  */
 
-const AWS = require('aws-sdk');
+const { CognitoIdentityServiceProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
 
-const cognito = new AWS.CognitoIdentityServiceProvider();
+let cognito = null;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers':
-    'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-  'Content-Type': 'application/json',
+  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+  'Content-Type': 'application/json'
 };
 
 function response(statusCode, body) {
@@ -20,90 +19,78 @@ function response(statusCode, body) {
     statusCode,
     headers: corsHeaders,
     body: JSON.stringify(body),
+    isBase64Encoded: false
   };
 }
 
+function getCognito() {
+  if (!cognito) {
+    cognito = new CognitoIdentityServiceProviderClient({ region: process.env.AWS_REGION });
+  }
+  return cognito;
+}
+
 exports.handler = async (event) => {
-  console.log('Signup event:', JSON.stringify(event, null, 2));
-
-  // Handle preflight OPTIONS request
-  if (event.httpMethod === 'OPTIONS') {
-    return response(200, { message: 'OK' });
-  }
-
-  // Only allow POST
-  if (event.httpMethod !== 'POST') {
-    return response(405, { error: 'Method not allowed' });
-  }
-
   try {
+    console.log('Signup event:', JSON.stringify(event, null, 2));
+    
+    if (event.httpMethod === 'OPTIONS') {
+      return response(200, { message: 'OK' });
+    }
+    
+    if (event.httpMethod !== 'POST') {
+      return response(405, { error: 'Method not allowed' });
+    }
+    
+    const cognitoClient = getCognito();
     const body = JSON.parse(event.body || '{}');
     const { email, name, phone_number } = body;
-
-    // Validate required fields
+    
     if (!email || !name) {
       return response(400, { error: 'Email and name are required' });
     }
-
-    // Validate email format
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-      return response(400, { error: 'Invalid email format' });
-    }
-
-    console.log('Creating user:', email);
-
-    // Create user in Cognito User Pool
-    const params = {
+    
+    // Generate a temporary password
+    const tempPassword = 'TempPass' + Math.random().toString(36).substring(7) + '!';
+    
+    // Create user in Cognito
+    const createParams = {
       UserPoolId: process.env.COGNITO_USER_POOL_ID,
       Username: email,
+      TemporaryPassword: tempPassword,
       UserAttributes: [
         { Name: 'email', Value: email },
         { Name: 'email_verified', Value: 'true' },
         { Name: 'name', Value: name },
-        ...(phone_number ? [{ Name: 'phone_number', Value: phone_number }] : []),
+        ...(phone_number ? [{ Name: 'phone_number', Value: phone_number }] : [])
       ],
-      MessageAction: 'SUPPRESS', // Don't send any default message
-      TemporaryPassword: 'TempPass' + Math.random().toString(36).substring(7) + '!@',
+      MessageAction: 'SUPPRESS'
     };
-
-    const createResult = await cognito.adminCreateUser(params).promise();
-    console.log('User created successfully:', email);
-
-    // Set a non-expiring password for passwordless login
-    // This is required for CUSTOM_AUTH flow
-    const setPasswordParams = {
+    
+    await cognitoClient.send(new AdminCreateUserCommand(createParams));
+    
+    // Set permanent password for passwordless flow
+    const setPassParams = {
       UserPoolId: process.env.COGNITO_USER_POOL_ID,
       Username: email,
-      Password: 'Temporary' + Math.random().toString(36).substring(7) + '!@1',
-      Permanent: false,
+      Password: tempPassword,
+      Permanent: false
     };
-
-    await cognito.adminSetUserPassword(setPasswordParams).promise();
-    console.log('User password set for:', email);
-
+    
+    await cognitoClient.send(new AdminSetUserPasswordCommand(setPassParams));
+    
     return response(201, {
-      message: 'User created successfully. Please check your email for verification link.',
+      message: 'User created successfully',
       email,
-      userSub: createResult.User.Attributes.find((attr) => attr.Name === 'sub')?.Value,
+      verified: true
     });
   } catch (error) {
-    console.error('Error in signup:', error);
-
-    // Handle specific Cognito errors
-    if (error.code === 'UsernameExistsException') {
-      return response(409, {
-        error: 'User with this email already exists. Please login or use a different email.',
-      });
+    console.error('Signup error:', error);
+    
+    if (error.name === 'UsernameExistsException') {
+      return response(409, { error: 'User already exists' });
     }
-
-    if (error.code === 'InvalidPasswordException') {
-      return response(400, {
-        error: 'Password validation failed',
-      });
-    }
-
-    return response(500, {
-      error: error.message || 'Internal server error',
-    });
+    
+    return response(500, { error: error.message || 'Internal server error' });
   }
 };

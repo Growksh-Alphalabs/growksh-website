@@ -3,9 +3,17 @@
  * Verifies the OTP provided by the user matches the stored OTP
  */
 
-const AWS = require('aws-sdk');
+const { DynamoDBClient, DeleteItemCommand } = require("@aws-sdk/client-dynamodb");
+const { marshall } = require("@aws-sdk/util-dynamodb");
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+let dynamodbClient = null;
+
+function getDynamoDBClient() {
+  if (!dynamodbClient) {
+    dynamodbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
+  }
+  return dynamodbClient;
+}
 
 exports.handler = async (event) => {
   console.log('VerifyAuthChallenge event:', JSON.stringify(event, null, 2));
@@ -27,12 +35,11 @@ exports.handler = async (event) => {
 
     // Clean up OTP from DynamoDB
     try {
-      await dynamodb
-        .delete({
-          TableName: process.env.OTP_TABLE,
-          Key: { email },
-        })
-        .promise();
+      const dynamodb = getDynamoDBClient();
+      await dynamodb.send(new DeleteItemCommand({
+        TableName: process.env.OTP_TABLE,
+        Key: marshall({ email }),
+      }));
       console.log('OTP cleaned up for:', email);
     } catch (error) {
       console.error('Error cleaning up OTP:', error);
