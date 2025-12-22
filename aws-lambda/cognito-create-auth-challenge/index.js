@@ -103,7 +103,7 @@ exports.handler = async (event) => {
   event.response.challengeMetadata = `OTP:${Date.now()}`
 
   // Send the OTP via SES
-  const source = process.env.SES_SOURCE_EMAIL || 'noreply@example.com'
+  const source = process.env.SES_SOURCE_EMAIL || 'noreply@growksh.com'
   const subject = 'Your verification code'
   const body = `Your Growksh verification code is: ${otp}. It expires in 10 minutes.`
 
