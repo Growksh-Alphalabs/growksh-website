@@ -2,13 +2,13 @@
 
 ## Overview
 
-This document describes the complete passwordless authentication flow implemented for Growksh using AWS Cognito and Lambda functions.
+This document describes the complete passwordless authentication flow implemented for Growksh using AWS Cognito and Lambda functions, with a unified login/signup flow.
 
 ## Authentication Flow
 
 ### 1. Signup Flow
 ```
-User goes to /signup page
+User goes to /auth/signup page
     ↓
 Enters: Name, Email, Phone (optional)
     ↓
@@ -20,134 +20,257 @@ Cognito: Triggers PreSignUpFunction (auto-confirms user)
     ↓
 Cognito: Triggers CustomMessageFunction (sends verification email)
     ↓
-User receives email with verification link
+User receives email with verification link (HMAC-signed, 24-hour expiry)
     ↓
-User clicks link → /auth/verify-email
+User clicks link → /auth/verify-email?email=...&token=...&t=...
     ↓
-VerifyEmailFunction validates HMAC token
+VerifyEmailFunction validates HMAC token + timestamp
     ↓
-Redirects to /login with email pre-filled
+AdminUpdateUserAttributes sets email_verified=true in Cognito
+    ↓
+Redirects to /auth/login?email=... (pre-filled)
 ```
 
-### 2. Login/OTP Flow
+### 2. Unified Login/OTP Flow (with User Existence Check)
 ```
-User goes to /login page
+User goes to /auth/login page
     ↓
 Enters: Email
     ↓
-Click "Send OTP" button
+Frontend: POST /auth/check-user { email }
     ↓
-Cognito: initiateAuth() → CUSTOM_AUTH flow triggered
+Lambda: AdminGetUser checks if user exists in Cognito
     ↓
-Lambda: CreateAuthChallengeFunction generates 6-digit OTP
+If NOT found:
+    → Return { exists: false }
+    → Frontend redirects to /auth/signup?email=...
     ↓
-Lambda: Stores OTP in DynamoDB with 10-minute TTL
+If found:
+    → Return { exists: true }
+    → Frontend calls initiateAuth(email) → CUSTOM_AUTH flow
     ↓
-Lambda: Sends OTP via SES email
+Cognito: CreateAuthChallenge trigger fires
+    ↓
+Lambda: CreateAuthChallengeFunction
+    1. Generates 6-digit OTP
+    2. Stores OTP in DynamoDB with 10-minute TTL
+    3. Sends OTP via SES email
     ↓
 User receives OTP in email
     ↓
-User enters OTP on /login?stage=otp
+User enters OTP on /auth/login (now on OTP entry stage)
     ↓
 Click "Verify OTP" button
     ↓
-Cognito: respondToAuthChallenge() with OTP
+Frontend: verifyOTP({ email, otp, session })
     ↓
-Lambda: VerifyAuthChallengeFunction validates OTP
+Cognito: VerifyAuthChallenge trigger fires
     ↓
-Lambda: Deletes OTP from DynamoDB
+Lambda: VerifyAuthChallengeFunction
+    1. Retrieves OTP from DynamoDB
+    2. Validates OTP matches
+    3. Deletes OTP from DynamoDB
+    4. Returns success
     ↓
-User logged in successfully!
+Cognito: Returns AuthenticationResult
+    { IdToken, AccessToken, RefreshToken }
     ↓
-Tokens stored in localStorage:
-  - idToken
-  - accessToken
-  - refreshToken
-  - userEmail
+Frontend: Stores tokens in localStorage
+    ↓
+Redirect: → Home (logged in) + AuthContext updated
 ```
 
-### 3. Token Management
-- **ID Token**: Used for user identity (includes user claims)
+### 3. Logout Flow
+```
+User clicks profile dropdown (top-right navbar)
+    ↓
+Clicks "Logout" button
+    ↓
+Confirmation dialog: "Logout now?"
+    ↓
+If confirmed:
+    → logout() from AuthContext
+    ↓
+Frontend clears:
+    • localStorage: idToken, accessToken, refreshToken, userEmail
+    • CognitoIdentityServiceProvider.* keys (amazon-cognito-identity-js)
+    ↓
+AuthContext updates:
+    • isAuthenticated = false
+    • user = null
+    ↓
+Navbar shows "Login" button again
+    ↓
+Redirect: → Home page
+```
+
+### 4. Token Management
+- **ID Token**: Used for user identity (includes user claims: email, name, phone_number)
 - **Access Token**: Used for API authentication
-- **Refresh Token**: Used to get new tokens when current ones expire
-- **TTL**: Set to 10 minutes for OTP; tokens handled by Cognito
+- **Refresh Token**: Used to get new tokens when current ones expire (Cognito handles)
+- **Cognito Session**: String passed through custom challenge flow (not persisted)
+- **OTP**: 6-digit code, stored 10 minutes in DynamoDB, one-time use
 
 ## Architecture
 
-### Frontend Components
+### Frontend Components & Flow
 ```
-src/components/Auth/
-├── Login.jsx          - Email + OTP entry
-├── Signup.jsx         - Registration form
-└── VerifyEmail.jsx    - Email verification via magic link
+Navbar.jsx
+├── Shows "Login" button when logged out
+├── Shows profile dropdown when logged in
+│   └── Avatar, name, email, Logout button
+└── Uses AuthContext (useAuth hook)
 
-src/context/
-├── AuthContext.jsx    - Global auth state management with useAuth hook
+Login.jsx (/auth/login)
+├── Email entry stage
+│   ├── POST /auth/check-user { email }
+│   ├── If user not found → redirect to /auth/signup?email=...
+│   └── If found → initiateAuth(email) → show OTP stage
+├── OTP entry stage
+│   ├── Display "OTP sent to {email}"
+│   ├── verifyOTP({ email, otp, session })
+│   └── On success → redirect to Home
+└── Uses cognito.js functions
 
-src/lib/
-├── cognito.js         - Cognito SDK wrapper with all auth functions
-└── cognitoPasswordless.js - AWS SDK v3 implementation (optional)
+Signup.jsx (/auth/signup)
+├── Form: Name, Email, Phone
+├── POST /auth/signup → SignupFunction
+├── Success → redirect to /auth/login
+├── Email query param pre-fills email field
+└── Uses cognito.js functions
+
+VerifyEmail.jsx (/auth/verify-email)
+├── Validates HMAC token from URL
+├── GET /auth/verify-email?email=...&token=...&t=...
+├── On success → redirect to /auth/login?email=...
+└── Uses verify-email Lambda
+
+AuthContext.jsx (Global State)
+├── user: { email, name, phone_number, isAuthenticated }
+├── isAuthenticated: boolean
+├── signup(userData) → calls signup Lambda
+├── initiateAuth(email) → checks user exists + initiates auth
+├── verifyOTP({ email, otp, session }) → verifies OTP
+├── logout() → clears tokens + state
+└── On mount: checkAuth() validates existing session
+
+cognito.js (Auth Library)
+├── signup(userData) → POST /auth/signup
+├── checkUserExists(email) → POST /auth/check-user
+├── initiateAuth(email) → Cognito CUSTOM_AUTH
+├── verifyOTP({ email, otp, session }) → RespondToAuthChallenge
+├── logout() → clears localStorage + Cognito keys
+└── getCurrentUser() / getUserAttributes() / getIdToken()
 ```
 
 ### Backend (AWS Services)
 ```
 AWS Cognito User Pool
-├── Pre Sign Up Trigger
-│   └── Lambda: pre-sign-up.js (auto-confirms users)
-├── Custom Message Trigger
-│   └── Lambda: custom-message.js (sends verification email)
-├── Create Auth Challenge Trigger
-│   └── Lambda: create-auth-challenge.js (generates OTP, sends via SES)
-└── Verify Auth Challenge Trigger
-    └── Lambda: verify-auth-challenge.js (validates OTP)
+├── Users table: email, name, phone_number, email_verified
+├── Authentication Flow: CUSTOM_AUTH enabled
+├── Triggers:
+│   ├── PreSignUp → pre-sign-up.js (auto-confirm)
+│   ├── CustomMessage → custom-message.js (send verification email)
+│   ├── CreateAuthChallenge → create-auth-challenge.js (generate OTP + email)
+│   ├── DefineAuthChallenge → define-auth-challenge.js (orchestrate flow)
+│   ├── VerifyAuthChallenge → verify-auth-challenge.js (validate OTP)
+│   └── PostConfirmation → post-confirmation.js (post-signup hook)
+└── User Pool Client: CUSTOM_AUTH + REFRESH_TOKEN_AUTH flows
 
-API Gateway
-├── POST /auth/signup - Create new user
-├── GET /auth/verify-email - Verify email with token
-├── POST /auth/initiate - Start OTP flow (handled by Cognito)
-└── POST /auth/verify - Verify OTP (handled by Cognito)
+API Gateway (AuthApiGateway)
+├── /auth/signup (POST) → SignupFunction
+├── /auth/verify-email (GET) → VerifyEmailFunction
+├── /auth/check-user (POST) → CheckUserFunction
+└── All routes support OPTIONS (CORS)
+
+Lambda Functions
+├── SignupFunction
+│   ├── AdminCreateUser in Cognito
+│   ├── Sends verification email via SES (with HMAC link)
+│   └── Role: AuthLambdaExecutionRole
+│
+├── VerifyEmailFunction
+│   ├── Validates HMAC token (SHA-256)
+│   ├── Checks timestamp (24-hour expiry)
+│   ├── AdminUpdateUserAttributes → email_verified=true
+│   └── Role: Custom (AdminUpdateUserAttributes permission)
+│
+├── CheckUserFunction (NEW)
+│   ├── AdminGetUser to check if email exists
+│   ├── Returns { exists: true/false }
+│   └── Role: AuthLambdaExecutionRole
+│
+├── PreSignUpFunction
+│   ├── Auto-confirms user
+│   └── Returns: { autoConfirmUser: true, autoVerifyEmail: false }
+│
+├── CustomMessageFunction
+│   ├── Sends verification email (from SignupFunction trigger)
+│   └── Constructs verification link with HMAC token
+│
+├── CreateAuthChallengeFunction
+│   ├── Generates 6-digit OTP
+│   ├── Stores in DynamoDB auth-otp table (10-min TTL)
+│   ├── Sends OTP via SES
+│   └── Returns: { privateChallengeParameters: { otp } }
+│
+├── DefineAuthChallengeFunction
+│   ├── Orchestrates CUSTOM_AUTH challenge flow
+│   ├── Decides if challenge needed or token issued
+│   └── Returns: { issueTokens: true/false, challengeName: CUSTOM_CHALLENGE }
+│
+└── VerifyAuthChallengeFunction
+    ├── Retrieves OTP from DynamoDB
+    ├── Compares with user response
+    ├── Deletes OTP (one-time use)
+    └── Returns: { answerCorrect: true/false }
 
 DynamoDB
-├── auth-otp table - Stores OTPs with 10-minute TTL
-└── contacts table - Contact form submissions
+├── auth-otp table (automatic cleanup)
+│   ├── Partition Key: email
+│   ├── Attributes: otp, ttl, createdAt
+│   └── TTL: 10 minutes (auto-delete)
+│
+└── contacts table (from contact form)
+    └── Unrelated to auth
 
 SES (Simple Email Service)
-├── Sends verification emails (signup)
-└── Sends OTP emails (login)
+├── Sends verification emails (CustomMessageFunction)
+│   └── Contains HMAC-signed link
+├── Sends OTP emails (CreateAuthChallengeFunction)
+│   └── Contains 6-digit code
+└── Requires: Verified sender email + production access for external recipients
 ```
 
 ## Environment Variables
 
-### Required Frontend Variables (.env.local)
+### Required Frontend (.env.local for local dev, .env at build time for CI/CD)
 ```
-# Cognito
-VITE_COGNITO_USER_POOL_ID=<from CloudFormation outputs>
-VITE_COGNITO_CLIENT_ID=<from CloudFormation outputs>
-
-# API
-VITE_API_URL=<from CloudFormation outputs - AuthApiEndpoint>
-
-# Optional: Enable fake auth for testing
-VITE_USE_FAKE_AUTH=0
+VITE_COGNITO_USER_POOL_ID=ap-south-1_4eXRVfyQv
+VITE_COGNITO_CLIENT_ID=25ci4polvgbm7ekaic3p2c5n49
+VITE_API_URL=https://b5230xgtzl.execute-api.ap-south-1.amazonaws.com/Prod
+VITE_AWS_REGION=ap-south-1
+VITE_USE_FAKE_AUTH=0  # Set to 1 for local testing without AWS
 ```
 
-### Required AWS Secrets (GitHub)
+### Required AWS/GitHub Secrets
 ```
-AWS_ROLE_TO_ASSUME       - IAM role ARN for OIDC
-AWS_ACCESS_KEY_ID        - AWS access key (if not using OIDC)
-AWS_SECRET_ACCESS_KEY    - AWS secret key (if not using OIDC)
-AWS_SESSION_TOKEN        - Optional session token
-
-VERIFY_SECRET            - HMAC secret for email verification tokens (long random string)
-SES_SOURCE_EMAIL         - Verified SES email address
-VERIFY_BASE_URL          - Frontend URL for email verification callback
+AWS_ROLE_TO_ASSUME       # OIDC role ARN for GitHub Actions
+VERIFY_SECRET            # 32+ char random string (openssl rand -hex 32)
+SES_SOURCE_EMAIL         # Verified SES email: noreply@growksh.com
+VERIFY_BASE_URL          # https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email (dev)
+                         # https://growksh.com/auth/verify-email (prod)
 ```
 
-## Deployment
-
-### 1. Prerequisites
-- AWS Account with permissions for Cognito, Lambda, DynamoDB, SES, API Gateway
-- GitHub repository with Actions enabled
+### CloudFormation Parameters (sam-template.yaml)
+```
+Parameters:
+  SESSourceEmail          # Default: noreply@growksh.com
+  VerifyBaseUrl           # Default: https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email
+  DebugLogVerify          # Set to '1' to log verification URLs in Lambda
+  DebugLogOTP             # Set to '1' to log OTP codes in Lambda (dev only!)
+  VerifySecret            # HMAC secret for token signing
+```
 - Node.js 18+ for local development
 
 ### 2. Deploy with GitHub Actions

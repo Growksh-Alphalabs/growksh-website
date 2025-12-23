@@ -120,7 +120,7 @@ export default function Login() {
           <img
             src={Logo}
             alt="Growksh Logo"
-            className="w-20 h-20 mx-auto mb-4 object-contain"
+            className="w-32 h-32 mx-auto mb-4 object-contain"
           />
           <h2 className="text-2xl font-semibold text-gray-700">Sign In</h2>
           <p className="text-gray-600 mt-2">

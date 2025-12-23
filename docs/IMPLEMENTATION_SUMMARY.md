@@ -6,97 +6,246 @@ A complete **passwordless authentication system** for Growksh using AWS Cognito,
 
 ---
 
-## 📋 New Files Created
+## 📋 Backend Lambda Functions Created
 
-### Backend (AWS Lambda Functions)
 ```
 aws-lambda/auth/
-├── pre-sign-up.js              # Auto-confirms users in Cognito
-├── custom-message.js           # Sends verification email with magic link
-├── create-auth-challenge.js    # Generates and sends OTP
-├── verify-auth-challenge.js    # Validates OTP from user
-├── signup.js                   # Creates user endpoint
-├── verify-email.js             # Verifies email via magic link
-└── package.json                # Dependencies for Lambda
+├── check-user.js               # ✨ Checks if email exists in Cognito
+├── signup.js                   # Creates user account + sends verification email
+├── verify-email.js             # Validates email verification link (HMAC token)
+├── pre-sign-up.js              # Cognito trigger: auto-confirms users
+├── custom-message.js           # Cognito trigger: sends verification email
+├── create-auth-challenge.js    # Cognito trigger: generates & sends OTP
+├── verify-auth-challenge.js    # Cognito trigger: validates OTP
+├── define-auth-challenge.js    # Cognito trigger: orchestrates CUSTOM_AUTH flow
+└── post-confirmation.js        # Cognito trigger: post-confirmation hook
 ```
 
-### Frontend (React Components)
+## 📋 Frontend Components Updated
+
 ```
 src/components/Auth/
-├── Login.jsx                   # ✅ Updated - Passwordless OTP login
-├── Signup.jsx                  # ✅ Updated - User registration form
-└── VerifyEmail.jsx             # ✨ New - Email verification page
+├── Login.jsx                   # ✅ Unified login: Email entry → Email exists check → OTP flow
+├── Signup.jsx                  # ✅ Registration form with auto-populated email from query params
+└── VerifyEmail.jsx             # Email verification via magic link
+
+src/components/common/
+├── Navbar.jsx                  # ✅ Shows login button when logged out; profile dropdown when logged in
+├── Layout.jsx                  # Wraps navbar + footer around auth pages
+└── Button.jsx                  # Common button component
 
 src/context/
-└── AuthContext.jsx             # ✨ New - Global auth state management
-```
+└── AuthContext.jsx             # ✅ Global auth state: user, isAuthenticated, login, logout handlers
 
-### Libraries
-```
 src/lib/
-└── cognito.js                  # ✅ Updated - Complete auth API
-```
+├── cognito.js                  # ✅ Complete auth API (signup, checkUserExists, initiateAuth, verifyOTP, logout)
+└── cognitoPasswordless.js      # AWS SDK v3 implementation (reference)
 
-### Documentation
+src/App.jsx                     # ✅ Routes + AuthProvider wrapper
 ```
-AUTH_IMPLEMENTATION.md           # Detailed technical guide
-SETUP_CHECKLIST.md              # Step-by-step deployment guide
-QUICKSTART.md                   # Quick reference guide
-```
-
-### Infrastructure
-```
-infra/sam-template.yaml         # ✅ Updated - Complete IaC with Cognito + Lambda
-.github/workflows/deploy-sam.yml # ✅ Updated - Enhanced CI/CD pipeline
-```
-
-### Application
-```
-src/App.jsx                     # ✅ Updated - Added auth routes + AuthProvider
-```
-
----
 
 ## 🔄 Authentication Flows
 
 ### Signup Flow
 ```
-User → /signup (enter name, email, phone)
+User → /auth/signup (name, email, phone)
   ↓
-Lambda: signup() → Create user in Cognito
+checkUserExists() call to /auth/check-user (backend)
   ↓
-Cognito: PreSignUp trigger → Auto-confirm
+If exists: Error "User already registered"
   ↓
-Cognito: CustomMessage trigger → Send verification email
+If not exists: POST /auth/signup → SignupFunction
+  ↓
+Lambda: Create user in Cognito
+  ↓
+Cognito: PreSignUp trigger → auto-confirm user
+  ↓
+Cognito: CustomMessage trigger → send verification email with HMAC link
   ↓
 User: Click verification link
   ↓
-Lambda: verify-email() → Validate HMAC token
+/auth/verify-email?email=...&token=...&t=...
   ↓
-Redirect: → /login (pre-filled with email)
+VerifyEmailFunction: Validate HMAC token
+  ↓
+Redirect: → /auth/login with email pre-filled
 ```
 
-### Login/OTP Flow
+### Login Flow (Unified with User Existence Check)
 ```
-User → /login (enter email)
+User → /auth/login (email input)
   ↓
-Cognito: initiateAuth() → Start CUSTOM_AUTH flow
+POST /auth/check-user { email }
   ↓
-Lambda: CreateAuthChallenge → Generate OTP
+If not found: Auto-redirect to /auth/signup?email=...
   ↓
-Lambda: Send OTP via SES email
+If found: initiateAuth(email) → Start CUSTOM_AUTH flow
   ↓
-User: Enter OTP on /login
+Cognito: CreateAuthChallenge trigger → Generate 6-digit OTP
   ↓
-Cognito: respondToAuthChallenge() → Verify OTP
+Lambda: Store OTP in DynamoDB (10-min TTL)
   ↓
-Lambda: VerifyAuthChallenge → Validate & delete OTP
+Lambda: Send OTP via SES
   ↓
-Response: AuthenticationResult with tokens
+User: Receive OTP email
   ↓
-Storage: Save tokens in localStorage
+User: Enter OTP on login page
   ↓
-Redirect: → Home page (logged in)
+verifyOTP({ email, otp, session })
+  ↓
+Cognito: VerifyAuthChallenge trigger → Validate OTP
+  ↓
+Lambda: Delete OTP from DynamoDB
+  ↓
+Response: AuthenticationResult { IdToken, AccessToken, RefreshToken }
+  ↓
+Frontend: Store tokens in localStorage
+  ↓
+Redirect: → Home (logged in)
+```
+
+### Logout Flow
+```
+User: Click profile dropdown → Logout
+  ↓
+Confirmation dialog: "Logout now?"
+  ↓
+If confirmed: logout() from AuthContext
+  ↓
+Clear: localStorage (idToken, accessToken, refreshToken, userEmail)
+  ↓
+Clear: CognitoIdentityServiceProvider.* keys
+  ↓
+Update: AuthContext state (isAuthenticated=false, user=null)
+  ↓
+Redirect: → Home
+```
+
+## 🎨 Frontend UI Changes
+
+1. **Navbar**:
+   - When logged out: Single "Login" button (green pill)
+   - When logged in: Profile dropdown with user avatar + name/email + Logout button
+
+2. **Login Page** (`/auth/login`):
+   - Growksh logo (128x128px)
+   - Email input → Auto-check if user exists → If yes, show OTP form; if no, redirect to signup
+
+3. **Signup Page** (`/auth/signup`):
+   - Growksh logo (128x128px)
+   - Pre-filled email from query params (when redirected from login)
+   - Name, email, phone inputs
+
+4. **Profile Dropdown**:
+   - Shows: "Signed in as [Name]" + email (if different from name)
+   - Logout button with confirmation
+
+---
+
+## 🏗️ AWS Infrastructure (SAM Template)
+
+### API Gateways
+```
+ContactApiGateway
+├── /contact (POST) → ContactFunction
+└── /contact (OPTIONS) → CORS
+
+AuthApiGateway (separate, for auth endpoints)
+├── /auth/signup (POST) → SignupFunction
+├── /auth/signup (OPTIONS) → CORS
+├── /auth/verify-email (GET) → VerifyEmailFunction
+├── /auth/verify-email (OPTIONS) → CORS
+├── /auth/check-user (POST) → CheckUserFunction
+└── /auth/check-user (OPTIONS) → CORS
+```
+
+### Lambda Functions with Cognito Triggers
+```
+CognitoUserPool
+├── PreSignUp → PreSignUpFunction (auto-confirm)
+├── CustomMessage → CustomMessageFunction (send verification email)
+├── CreateAuthChallenge → CreateAuthChallengeFunction (generate OTP)
+├── DefineAuthChallenge → DefineAuthChallengeFunction (orchestrate CUSTOM_AUTH)
+├── VerifyAuthChallenge → VerifyAuthChallengeFunction (validate OTP)
+└── PostConfirmation → PostConfirmationFunction (post-signup hook)
+
+REST Endpoints
+├── SignupFunction → /auth/signup
+├── VerifyEmailFunction → /auth/verify-email
+└── CheckUserFunction → /auth/check-user
+```
+
+### Data Storage
+```
+DynamoDB Tables
+├── auth-otp
+│   ├── email (PK)
+│   ├── otp (6-digit code)
+│   ├── ttl (10 minutes)
+│   └── createdAt (timestamp)
+│
+└── contacts (from contact form)
+    ├── id (PK)
+    └── form data
+
+Cognito User Pool
+├── Users: email, name, phone_number, email_verified
+├── Custom Auth Flow: CUSTOM_AUTH enabled
+└── Triggers: 8 Lambda functions
+```
+
+### Email Service
+```
+SES (Simple Email Service)
+├── Verification emails: sent by CustomMessageFunction (signup)
+├── OTP emails: sent by CreateAuthChallengeFunction (login)
+└── Requires: Verified sender email + production access (for external recipients)
+```
+
+---
+
+## 🔐 Security Features
+
+1. **Email Verification**:
+   - HMAC-signed verification link (SHA-256)
+   - Token includes email + timestamp
+   - Expires in 24 hours
+
+2. **OTP Security**:
+   - 6-digit random code
+   - Stored in DynamoDB with 10-minute TTL (auto-deletes)
+   - One-time use (deleted after verification)
+
+3. **Session Management**:
+   - Cognito `Session` string passed through custom challenge flow
+   - ID Token, Access Token, Refresh Token from Cognito
+   - Tokens stored securely in localStorage
+
+4. **CORS**:
+   - API Gateway configured for CloudFront domain
+   - OPTIONS preflight enabled
+
+---
+
+## 📦 Deployment
+
+### Environment Variables (GitHub Secrets)
+```
+AWS_ROLE_TO_ASSUME          # OIDC role for GitHub Actions
+VERIFY_SECRET               # 32+ char random string for HMAC
+SES_SOURCE_EMAIL            # Verified SES email
+VERIFY_BASE_URL             # Frontend URL: https://growksh.com/auth/verify-email
+```
+
+### Build & Deploy
+```bash
+# Automatic via GitHub Actions
+git push origin main
+
+# Or manual
+cd infra
+aws cloudformation package --template-file sam-template.yaml --s3-bucket dev-growksh-website --output-template-file packaged.yaml
+aws cloudformation deploy --template-file packaged.yaml --stack-name "Growksh-Alphalabs-growksh-website-contact" --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM
 ```
 
 ---
