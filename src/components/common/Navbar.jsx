@@ -330,16 +330,9 @@ export default function Navbar() {
                       <Link
                         to="/auth/login"
                         onClick={onAuthClick}
-                        className="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-200 rounded-full hover:bg-slate-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
-                      >
-                        Login
-                      </Link>
-                      <Link
-                        to="/auth/signup"
-                        onClick={onAuthClick}
                         className="hidden md:inline-flex items-center justify-center px-5 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:bg-[#004d39] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00674F]/30"
                       >
-                        Sign up
+                        Login
                       </Link>
                     </>
                   )}
@@ -492,22 +485,13 @@ export default function Navbar() {
                 return (
                   <>
                     {!isAuthenticated && (
-                      <>
-                        <Link
-                          to="/auth/login"
-                          onClick={onAuthClick}
-                          className="block text-center w-full px-4 py-2 border border-slate-200 rounded-full font-semibold text-slate-700 hover:bg-slate-50 transition"
-                        >
-                          Login
-                        </Link>
-                        <Link
-                          to="/auth/signup"
-                          onClick={onAuthClick}
-                          className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-full font-semibold hover:bg-[#004d39] transition"
-                        >
-                          Sign up
-                        </Link>
-                      </>
+                      <Link
+                        to="/auth/login"
+                        onClick={onAuthClick}
+                        className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-full font-semibold hover:bg-[#004d39] transition"
+                      >
+                        Login
+                      </Link>
                     )}
 
                     {isAuthenticated && (
