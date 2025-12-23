@@ -113,7 +113,6 @@ exports.handler = async (event) => {
       TemporaryPassword: tempPassword,
       UserAttributes: [
         { Name: 'email', Value: email },
-        { Name: 'email_verified', Value: 'true' },
         { Name: 'name', Value: name },
         ...(hasValidPhone ? [{ Name: 'phone_number', Value: phone }] : [])
       ],

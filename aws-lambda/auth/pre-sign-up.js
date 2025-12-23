@@ -10,7 +10,7 @@ exports.handler = async (event) => {
   event.response.autoConfirmUser = true;
 
   // Auto-verify attributes
-  event.response.autoVerifyEmail = true;
+  event.response.autoVerifyEmail = false;
   event.response.autoVerifyPhone = false;
 
   return event;
