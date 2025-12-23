@@ -143,7 +143,7 @@ export async function checkUserExists(email) {
       apiBase = apiBase.endsWith('/') ? apiBase + 'Prod' : apiBase + '/Prod';
     }
 
-    const checkUrl = `${apiBase}/auth/check-user`;
+    const checkUrl = `${apiBase}/check-user`;
     console.log('Checking user at:', checkUrl);
 
     const response = await fetch(checkUrl, {
