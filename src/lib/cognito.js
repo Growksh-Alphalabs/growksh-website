@@ -134,9 +134,12 @@ export async function initiateAuth(email) {
       },
       customChallenge: (challengeParameters) => {
         console.log('Custom challenge received:', challengeParameters);
+        // For CUSTOM_AUTH flows, Cognito returns a `Session` string that must be
+        // provided back to Cognito when responding to the challenge.
+        const session = user.Session || '';
         resolve({
           challenge: true,
-          session: user.signInUserSession?.idToken?.jwtToken || '',
+          session,
           challengeParameters,
         });
       },
@@ -181,6 +184,19 @@ export async function verifyOTP({ email, otp, session }) {
 
   return new Promise((resolve, reject) => {
     const user = new CognitoUser({ Username: email, Pool: userPool });
+
+    if (!session) {
+      reject(
+        new Error(
+          'Missing Cognito session. Call initiateAuth(email) first and pass its returned session into verifyOTP.'
+        )
+      );
+      return;
+    }
+
+    // amazon-cognito-identity-js expects `user.Session` to be set when responding
+    // to a custom challenge (RespondToAuthChallenge requires the Session).
+    user.Session = session;
 
     user.sendCustomChallengeAnswer(otp, {
       onSuccess: (result) => {
