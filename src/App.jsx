@@ -20,11 +20,6 @@ export default function App() {
       <AuthProvider>
         <ScrollToTop>
           <Routes>
-            {/* Auth Routes - without Layout */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/auth/signup" element={<Signup />} />
-            <Route path="/auth/verify-email" element={<VerifyEmail />} />
-            
             {/* Main Routes - with Layout */}
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
@@ -34,6 +29,14 @@ export default function App() {
               <Route path="/ventures" element={<Ventures />} />
               <Route path="/insights" element={<Insights />} />
               <Route path="/contact" element={<Contact />} />
+
+              {/* Auth Routes - with Layout (Navbar) */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/signup" element={<Signup />} />
+              <Route path="/signup" element={<Signup />} />
+
+              <Route path="/auth/verify-email" element={<VerifyEmail />} />
             </Route>
           </Routes>
         </ScrollToTop>
