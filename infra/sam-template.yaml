@@ -190,6 +190,7 @@ Resources:
                   - cognito-idp:AdminCreateUser
                   - cognito-idp:AdminSetUserPassword
                   - cognito-idp:AdminUpdateUserAttributes
+                  - cognito-idp:AdminGetUser
                 Resource: '*'
         - PolicyName: SESAccess
           PolicyDocument:
@@ -316,6 +317,21 @@ Resources:
         Variables:
           OTP_TABLE: !Ref AuthOtpTable
 
+  # Check User Lambda - Check if user exists by email
+  CheckUserFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-check-user"
+      Handler: check-user.handler
+      Runtime: nodejs18.x
+      Role: !GetAtt AuthLambdaExecutionRole.Arn
+      CodeUri: ../aws-lambda/auth/
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+
   # Post-Confirmation Lambda - Update user attributes after email verification
   PostConfirmationFunction:
     Type: AWS::Serverless::Function
@@ -424,6 +440,58 @@ Resources:
             Path: /auth/verify-email
             Method: options
             RestApiId: !Ref AuthApiGateway
+
+  # Check user endpoint
+  CheckUserFunctionEvents:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref AuthApiGateway
+      ParentId: !GetAtt AuthApiGateway.RootResourceId
+      PathPart: check-user
+
+  CheckUserPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref AuthApiGateway
+      ResourceId: !Ref CheckUserFunctionEvents
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${CheckUserFunction.Arn}/invocations"
+
+  CheckUserOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref AuthApiGateway
+      ResourceId: !Ref CheckUserFunctionEvents
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,GET,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  CheckUserLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CheckUserFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AuthApiGateway}/*/*"
 
 
 Outputs:
