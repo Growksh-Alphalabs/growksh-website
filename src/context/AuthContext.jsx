@@ -21,17 +21,35 @@ export function AuthProvider({ children }) {
         setIsLoading(true)
         const currentUser = await cognitoLib.getCurrentUser()
         if (currentUser) {
-          const attributes = await cognitoLib.getUserAttributes()
-          setUser({
-            ...currentUser,
-            ...attributes,
-          })
-          setIsAuthenticated(true)
+          try {
+            const attributes = await cognitoLib.getUserAttributes()
+            // If session is stale, getUserAttributes() may return null.
+            if (!attributes) {
+              setUser(null)
+              setIsAuthenticated(false)
+              return
+            }
+
+            setUser({
+              ...currentUser,
+              ...attributes,
+            })
+            setIsAuthenticated(true)
+          } catch (attrErr) {
+            const msg = (attrErr && attrErr.message) || ''
+            if (msg.toLowerCase().includes('not authenticated')) {
+              try { await cognitoLib.signOut() } catch (e) {}
+              setUser(null)
+              setIsAuthenticated(false)
+              return
+            }
+            throw attrErr
+          }
         } else {
           // Check for fake auth tokens
           const token = localStorage.getItem('idToken')
           const email = localStorage.getItem('userEmail')
-          if (token && email) {
+          if (token && token !== 'undefined' && email) {
             setUser({ email, isAuthenticated: true })
             setIsAuthenticated(true)
           }
