@@ -3,7 +3,7 @@
  * Handles user registration and creates user in Cognito User Pool
  */
 
-const { CognitoIdentityServiceProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
+const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
 
 let cognito = null;
 
@@ -25,7 +25,7 @@ function response(statusCode, body) {
 
 function getCognito() {
   if (!cognito) {
-    cognito = new CognitoIdentityServiceProviderClient({ region: process.env.AWS_REGION });
+    cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
   }
   return cognito;
 }
