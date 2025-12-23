@@ -188,6 +188,15 @@ Resources:
                   - dynamodb:PutItem
                   - dynamodb:UpdateItem
                 Resource: !GetAtt AuthOtpTable.Arn
+        - PolicyName: CognitoAdminAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminCreateUser
+                  - cognito-idp:AdminSetUserPassword
+                Resource: !GetAtt CognitoUserPool.Arn
         - PolicyName: SESAccess
           PolicyDocument:
             Version: '2012-10-17'

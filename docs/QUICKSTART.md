@@ -28,8 +28,10 @@ aws cloudformation describe-stacks \
 ```
 VITE_COGNITO_USER_POOL_ID=<from outputs>
 VITE_COGNITO_CLIENT_ID=<from outputs>
-VITE_API_URL=<from outputs>
+VITE_API_URL=<AuthApiEndpoint from outputs>
 ```
+
+Note: `.env.local` is for local development only. In production (CloudFront/S3), Vite reads env vars at **build time**. The GitHub Actions workflow generates a `.env` during the build using CloudFormation outputs.
 
 ### 5. Done! 🎉
 - Signup: http://localhost:5173/signup
