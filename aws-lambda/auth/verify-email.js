@@ -4,6 +4,7 @@
  */
 
 const crypto = require('crypto');
+const { CognitoIdentityProviderClient, AdminUpdateUserAttributesCommand } = require('@aws-sdk/client-cognito-identity-provider');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://d2eipj1xhqte5b.cloudfront.net',
@@ -69,6 +70,22 @@ exports.handler = async (event) => {
     }
 
     console.log('Email verified successfully:', email);
+
+    // Mark email as verified in Cognito
+    const userPoolId = process.env.COGNITO_USER_POOL_ID;
+    if (userPoolId) {
+      const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
+      await client.send(
+        new AdminUpdateUserAttributesCommand({
+          UserPoolId: userPoolId,
+          Username: email,
+          UserAttributes: [{ Name: 'email_verified', Value: 'true' }],
+        })
+      );
+      console.log('Cognito email_verified set to true for:', email);
+    } else {
+      console.warn('COGNITO_USER_POOL_ID not set; skipping Cognito email_verified update');
+    }
 
     return response(200, {
       message: 'Email verified successfully',
