@@ -330,17 +330,17 @@ export default function Navbar() {
                       <Link
                         to="/auth/login"
                         onClick={onAuthClick}
-                        className="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-200 rounded-full hover:bg-slate-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                        className="hidden md:inline-flex items-center gap-2 px-4 py-2 text-slate-700 border border-slate-200 rounded-full hover:bg-slate-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
                       >
                         Login
                       </Link>
-                      <Link
+                      {/* <Link
                         to="/auth/signup"
                         onClick={onAuthClick}
                         className="hidden md:inline-flex items-center justify-center px-5 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:bg-[#004d39] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00674F]/30"
                       >
                         Sign up
-                      </Link>
+                      </Link> */}
                     </>
                   )}
 
