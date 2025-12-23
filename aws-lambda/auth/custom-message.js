@@ -8,9 +8,9 @@ const crypto = require('crypto');
 exports.handler = async (event) => {
   console.log('CustomMessage event:', JSON.stringify(event, null, 2));
 
-  const { trigger_source, request, response } = event;
+  const { triggerSource, request, response } = event;
 
-  if (trigger_source === 'CustomMessage_SignUp') {
+  if (triggerSource === 'CustomMessage_SignUp' || triggerSource === 'CustomMessage_AdminCreateUser') {
     // Generate email verification link for signup
     const email = request.userAttributes.email;
     const secret = process.env.VERIFY_SECRET;

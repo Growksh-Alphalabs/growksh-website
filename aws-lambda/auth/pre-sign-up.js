@@ -8,9 +8,10 @@ exports.handler = async (event) => {
 
   // Auto-confirm the user (skip confirmation step)
   event.response.autoConfirmUser = true;
-  
-  // Auto-verify email attribute
-  event.response.autoVerifiedAttributes = ['email'];
+
+  // Auto-verify attributes
+  event.response.autoVerifyEmail = true;
+  event.response.autoVerifyPhone = false;
 
   return event;
 };
