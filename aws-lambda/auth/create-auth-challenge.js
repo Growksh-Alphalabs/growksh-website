@@ -29,10 +29,12 @@ exports.handler = async (event) => {
 
   const { request, response } = event;
 
+  let otp;
+
   if (request.challengeName === 'CUSTOM_CHALLENGE') {
     try {
       // Generate 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      otp = Math.floor(100000 + Math.random() * 900000).toString();
       const email = request.userAttributes.email;
       const ttl = Math.floor(Date.now() / 1000) + 10 * 60; // 10 minutes expiry
 
@@ -82,7 +84,7 @@ exports.handler = async (event) => {
       email: request.userAttributes.email,
     };
     response.privateChallengeParameters = {
-      otp: otp,
+      otp,
       email: request.userAttributes.email,
     };
   }

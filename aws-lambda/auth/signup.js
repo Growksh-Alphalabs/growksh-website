@@ -30,6 +30,10 @@ function getCognito() {
   return cognito;
 }
 
+function isE164(phone) {
+  return typeof phone === 'string' && /^\+[1-9]\d{1,14}$/.test(phone.trim());
+}
+
 exports.handler = async (event) => {
   try {
     console.log('Signup event:', JSON.stringify(event, null, 2));
@@ -54,6 +58,9 @@ exports.handler = async (event) => {
     const tempPassword = 'TempPass' + Math.random().toString(36).substring(7) + '!';
     
     // Create user in Cognito
+    const phone = typeof phone_number === 'string' ? phone_number.trim() : '';
+    const hasValidPhone = phone ? isE164(phone) : false;
+
     const createParams = {
       UserPoolId: process.env.COGNITO_USER_POOL_ID,
       Username: email,
@@ -62,7 +69,7 @@ exports.handler = async (event) => {
         { Name: 'email', Value: email },
         { Name: 'email_verified', Value: 'true' },
         { Name: 'name', Value: name },
-        ...(phone_number ? [{ Name: 'phone_number', Value: phone_number }] : [])
+        ...(hasValidPhone ? [{ Name: 'phone_number', Value: phone }] : [])
       ],
       MessageAction: 'SUPPRESS'
     };
@@ -86,6 +93,12 @@ exports.handler = async (event) => {
     });
   } catch (error) {
     console.error('Signup error:', error);
+
+    if (error.name === 'InvalidParameterException' && /phone/i.test(error.message || '')) {
+      return response(400, {
+        error: 'Invalid phone number format. Use E.164 format like +919876543210, or leave phone blank.'
+      });
+    }
     
     if (error.name === 'UsernameExistsException') {
       return response(409, { error: 'User already exists' });
