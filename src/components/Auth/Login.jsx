@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { initiateAuth, verifyOTP } from '../../lib/cognito'
+import { initiateAuth, verifyOTP, checkUserExists } from '../../lib/cognito'
+import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -114,9 +115,13 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        {/* Header */}
+        {/* Logo and Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Growksh</h1>
+          <img
+            src={Logo}
+            alt="Growksh Logo"
+            className="w-20 h-20 mx-auto mb-4 object-contain"
+          />
           <h2 className="text-2xl font-semibold text-gray-700">Sign In</h2>
           <p className="text-gray-600 mt-2">
             Enter your email to sign in

@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { signup } from '../../lib/cognito'
+import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
 export default function Signup() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [stage, setStage] = useState('form') // form | success | error
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -11,7 +13,7 @@ export default function Signup() {
 
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
+    email: searchParams.get('email') || '',
     phone_number: '',
   })
 
@@ -79,11 +81,15 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        {/* Header */}
+        {/* Logo and Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Growksh</h1>
+          <img
+            src={Logo}
+            alt="Growksh Logo"
+            className="w-20 h-20 mx-auto mb-4 object-contain"
+          />
           <h2 className="text-2xl font-semibold text-gray-700">Sign Up</h2>
           <p className="text-gray-600 mt-2">
             Create your account to get started
