@@ -19,6 +19,19 @@ const cognitoIdpClient = new CognitoIdentityProviderClient({ region: REGION });
 
 let runtimeFakeOverride = false;
 
+function clearCognitoLocalStorage() {
+  try {
+    const keysToRemove = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('CognitoIdentityServiceProvider.')) {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k))
+  } catch (e) {}
+}
+
 // Provide a helpful error when env vars are missing
 const missingMsg =
   'Cognito UserPoolId and ClientId are not configured. Set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID in .env.local or enable VITE_USE_FAKE_AUTH=1 for local testing.';
@@ -227,20 +240,33 @@ export async function verifyOTP({ email, otp, session }) {
  * @returns {Promise<Object|null>} User object or null if not authenticated
  */
 export async function getCurrentUser() {
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
-    // Check fake tokens in localStorage
-    const token = localStorage.getItem('idToken');
+  if (USE_FAKE || runtimeFakeOverride) {
+    const token = localStorage.getItem('idToken')
     if (token && token.startsWith('fake-id-token')) {
-      return { email: localStorage.getItem('userEmail'), isAuthenticated: true };
+      return { email: localStorage.getItem('userEmail'), isAuthenticated: true }
     }
-    return null;
+    return null
   }
+
+  if (!USER_POOL_ID || !CLIENT_ID) return null;
 
   const userPool = await getUserPool();
   if (!userPool) return null;
 
   const user = userPool.getCurrentUser();
-  return user || null;
+  if (!user) return null;
+
+  // Validate session; Cognito can return a user even when the session is expired.
+  return await new Promise((resolve) => {
+    user.getSession((error, session) => {
+      if (error || !session || (typeof session.isValid === 'function' && !session.isValid())) {
+        clearCognitoLocalStorage()
+        resolve(null)
+        return
+      }
+      resolve(user)
+    })
+  })
 }
 
 /**
@@ -260,17 +286,25 @@ export async function getUserAttributes() {
       return;
     }
 
-    user.getUserAttributes((error, attributes) => {
-      if (error) {
-        reject(error);
-      } else {
-        const attrs = {};
-        attributes.forEach((attr) => {
-          attrs[attr.Name] = attr.Value;
-        });
-        resolve(attrs);
+    user.getSession((sessionError, session) => {
+      if (sessionError || !session || (typeof session.isValid === 'function' && !session.isValid())) {
+        clearCognitoLocalStorage()
+        resolve(null)
+        return
       }
-    });
+
+      user.getUserAttributes((error, attributes) => {
+        if (error) {
+          reject(error);
+        } else {
+          const attrs = {};
+          attributes.forEach((attr) => {
+            attrs[attr.Name] = attr.Value;
+          });
+          resolve(attrs);
+        }
+      });
+    })
   });
 }
 
@@ -345,18 +379,7 @@ export async function signOut() {
   localStorage.removeItem('userEmail');
   localStorage.removeItem('userName');
 
-  // Also clear amazon-cognito-identity-js persisted session keys so
-  // `userPool.getCurrentUser()` doesn't treat the browser as logged in.
-  try {
-    const keysToRemove = []
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i)
-      if (key && key.startsWith('CognitoIdentityServiceProvider.')) {
-        keysToRemove.push(key)
-      }
-    }
-    keysToRemove.forEach((k) => localStorage.removeItem(k))
-  } catch (e) {}
+  clearCognitoLocalStorage()
 
   if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
     return;
