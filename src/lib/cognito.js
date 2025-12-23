@@ -2,7 +2,6 @@ import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
   RespondToAuthChallengeCommand,
-  AdminGetUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID;
@@ -116,39 +115,6 @@ export async function signup(userData) {
     return data;
   } catch (error) {
     console.error('Signup error:', error);
-    throw error;
-  }
-}
-
-/**
- * Check if a user exists in Cognito by email
- * @param {string} email - User's email
- * @returns {Promise<boolean>} true if user exists, false otherwise
- */
-export async function checkUserExists(email) {
-  if (USE_FAKE || runtimeFakeOverride) {
-    // In fake mode, assume all emails from pending map exist
-    return pending.has(email);
-  }
-
-  if (!USER_POOL_ID || !CLIENT_ID) {
-    return Promise.reject(new Error(missingMsg));
-  }
-
-  try {
-    const cmd = new AdminGetUserCommand({
-      UserPoolId: USER_POOL_ID,
-      Username: email,
-    });
-
-    const res = await cognitoIdpClient.send(cmd);
-    return !!res.Username;
-  } catch (error) {
-    // UserNotFoundException means the user doesn't exist
-    if (error.name === 'UserNotFoundException') {
-      return false;
-    }
-    // If it's any other error, reject it
     throw error;
   }
 }

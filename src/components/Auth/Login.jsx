@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { initiateAuth, verifyOTP, checkUserExists } from '../../lib/cognito'
+import { initiateAuth, verifyOTP } from '../../lib/cognito'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -40,15 +40,6 @@ export default function Login() {
         return
       }
 
-      console.log('Checking if user exists:', email)
-      const userExists = await checkUserExists(email)
-      
-      if (!userExists) {
-        console.log('User not found, redirecting to signup')
-        navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
-        return
-      }
-
       console.log('Initiating auth for:', email)
       const result = await initiateAuth(email)
       console.log('Auth initiated:', result)
@@ -58,13 +49,9 @@ export default function Login() {
       setMessage(`OTP sent to ${email}. Please check your email.`)
     } catch (error) {
       console.error('Auth error:', error)
-      const msg = error.message || ''
-      if (msg.toLowerCase().includes('user does not exist') || msg.toLowerCase().includes('notauthorizedException')) {
-        navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
-        return
-      }
       setErrorMessage(
-        msg || 'Failed to initiate login. Please check your email and try again.'
+        error.message ||
+          'Failed to initiate login. Please check your email and try again.'
       )
     } finally {
       setLoading(false)
@@ -232,6 +219,17 @@ export default function Login() {
                 'Send OTP'
               )}
             </button>
+
+            {/* Signup Link */}
+            <p className="text-center text-sm text-gray-600 mt-4">
+              Don't have an account?{' '}
+              <a
+                href="/auth/signup"
+                className="text-[#00674F] hover:text-[#004d39] font-semibold transition-colors"
+              >
+                Sign Up
+              </a>
+            </p>
           </form>
         )}
 
