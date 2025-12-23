@@ -1,7 +1,21 @@
+import {
+  CognitoIdentityProviderClient,
+  InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
+} from '@aws-sdk/client-cognito-identity-provider';
+
 const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID;
 const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID;
 const API_URL = import.meta.env.VITE_API_URL || '';
 const USE_FAKE = import.meta.env.VITE_USE_FAKE_AUTH === '1' || import.meta.env.VITE_USE_FAKE_AUTH === 'true';
+
+const REGION =
+  import.meta.env.VITE_AWS_REGION ||
+  (USER_POOL_ID ? USER_POOL_ID.split('_')[0] : undefined) ||
+  'ap-south-1';
+
+// For CUSTOM_AUTH, using the AWS SDK keeps session handling explicit and reliable.
+const cognitoIdpClient = new CognitoIdentityProviderClient({ region: REGION });
 
 let runtimeFakeOverride = false;
 
@@ -116,35 +130,30 @@ export async function initiateAuth(email) {
     return Promise.reject(new Error(missingMsg));
   }
 
-  const { CognitoUser, AuthenticationDetails } = await getCognitoSDK();
-  const userPool = await getUserPool();
-
-  return new Promise((resolve, reject) => {
-    const user = new CognitoUser({ Username: email, Pool: userPool });
-    const authDetails = new AuthenticationDetails({ Username: email, Password: 'DUMMY' });
-
-    user.initiateAuth(authDetails, {
-      onSuccess: (result) => {
-        console.log('Auth success:', result);
-        resolve({ success: true, result });
-      },
-      onFailure: (err) => {
-        console.error('Auth failure:', err);
-        reject(err);
-      },
-      customChallenge: (challengeParameters) => {
-        console.log('Custom challenge received:', challengeParameters);
-        // For CUSTOM_AUTH flows, Cognito returns a `Session` string that must be
-        // provided back to Cognito when responding to the challenge.
-        const session = user.Session || '';
-        resolve({
-          challenge: true,
-          session,
-          challengeParameters,
-        });
-      },
-    });
+  const cmd = new InitiateAuthCommand({
+    AuthFlow: 'CUSTOM_AUTH',
+    ClientId: CLIENT_ID,
+    AuthParameters: {
+      USERNAME: email,
+    },
   });
+
+  const res = await cognitoIdpClient.send(cmd);
+
+  // If Cognito ever decides to return tokens immediately, support that too.
+  if (res.AuthenticationResult) {
+    return {
+      success: true,
+      AuthenticationResult: res.AuthenticationResult,
+    };
+  }
+
+  return {
+    challenge: true,
+    session: res.Session || '',
+    challengeParameters: res.ChallengeParameters || {},
+    challengeName: res.ChallengeName,
+  };
 }
 
 /**
@@ -179,39 +188,38 @@ export async function verifyOTP({ email, otp, session }) {
     return Promise.reject(new Error(missingMsg));
   }
 
-  const { CognitoUser } = await getCognitoSDK();
-  const userPool = await getUserPool();
+  if (!session) {
+    throw new Error(
+      'Missing Cognito session. Call initiateAuth(email) first and pass its returned session into verifyOTP.'
+    );
+  }
 
-  return new Promise((resolve, reject) => {
-    const user = new CognitoUser({ Username: email, Pool: userPool });
-
-    if (!session) {
-      reject(
-        new Error(
-          'Missing Cognito session. Call initiateAuth(email) first and pass its returned session into verifyOTP.'
-        )
-      );
-      return;
-    }
-
-    // amazon-cognito-identity-js expects `user.Session` to be set when responding
-    // to a custom challenge (RespondToAuthChallenge requires the Session).
-    user.Session = session;
-
-    user.sendCustomChallengeAnswer(otp, {
-      onSuccess: (result) => {
-        console.log('OTP verification success:', result);
-        resolve({
-          success: true,
-          AuthenticationResult: result,
-        });
-      },
-      onFailure: (err) => {
-        console.error('OTP verification failure:', err);
-        reject(err);
-      },
-    });
+  const cmd = new RespondToAuthChallengeCommand({
+    ChallengeName: 'CUSTOM_CHALLENGE',
+    ClientId: CLIENT_ID,
+    Session: session,
+    ChallengeResponses: {
+      USERNAME: email,
+      ANSWER: otp,
+    },
   });
+
+  const res = await cognitoIdpClient.send(cmd);
+
+  if (res.AuthenticationResult) {
+    return {
+      success: true,
+      AuthenticationResult: res.AuthenticationResult,
+    };
+  }
+
+  // If Cognito wants another round of challenge, propagate the new session.
+  return {
+    challenge: true,
+    session: res.Session || '',
+    challengeParameters: res.ChallengeParameters || {},
+    challengeName: res.ChallengeName,
+  };
 }
 
 /**
