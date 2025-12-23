@@ -144,13 +144,67 @@ User          Browser         Frontend        API Gateway      Lambda           
 
 ---
 
-## 4. Login/OTP Flow Sequence Diagram
+## 4. Login Flow - User Existence Check Sequence Diagram
+
+```
+User          Frontend        API Gateway      CheckUser        Cognito
+                              Lambda           UserPool
+ │               │                │               │               │
+ ├ Enter email──>│               │               │               │
+ │               │               │               │               │
+ │               ├─ POST /auth/check-user       │               │
+ │               │               │               │               │
+ │               │               ├─ check-user.js              │
+ │               │               │               │               │
+ │               │               │               ├─ AdminGetUser│
+ │               │               │               │─────────────>│
+ │               │               │               │               │
+ │               │               │    If NOT found:             │
+ │               │               │    Return { exists: false }  │
+ │               │               │<────────────────────────────│
+ │               │               │               │               │
+ │               │<───────────────────────────────────────────────
+ │               │               │               │               │
+ │<─ Redirect ──┤                │               │               │
+ │ to /signup   │                │               │               │
+ │ ?email=...   │                │               │               │
+ │               │                │               │               │
+ │               └─ If NOT found: user goes to signup
+ │
+ │
+ │ (Or, if user found:)
+ │
+ ├─ Enter email (already registered)
+ │               │               │               │               │
+ │               ├─ POST /auth/check-user       │               │
+ │               │               │               │               │
+ │               │               ├─ check-user.js              │
+ │               │               │               │               │
+ │               │               │               ├─ AdminGetUser│
+ │               │               │               │─────────────>│
+ │               │               │               │               │
+ │               │               │    If found:                 │
+ │               │               │    Return { exists: true }   │
+ │               │               │<────────────────────────────│
+ │               │               │               │               │
+ │               │<────────────────────────────────────────────────
+ │               │               │               │               │
+ │<─ Proceed ───>│                │               │               │
+ │ to OTP        │                │               │               │
+ │ entry         │                │               │               │
+ │
+ │ (Continues in OTP verification below)
+```
+
+---
+
+## 5. Login/OTP Flow Sequence Diagram
 
 ```
 User          Frontend        Cognito     CreateAuth        DynamoDB     SES        User
                               UserPool      Lambda            (OTP)
  │               │               │             │                │          │         │
- ├ Enter email──>│               │             │                │          │         │
+ ├ Enter OTP────>│               │             │                │          │         │
  │               │               │             │                │          │         │
  │               ├─ initiateAuth()            │                │          │         │
  │               │ (CUSTOM_AUTH)─>│           │                │          │         │
@@ -208,7 +262,7 @@ User          Frontend        Cognito     CreateAuth        DynamoDB     SES    
 
 ---
 
-## 5. Data Flow Diagram
+## 6. Data Flow Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
@@ -248,6 +302,26 @@ Email Link                    API Request                   AWS Services
                                  │<──── Redirect ───────  /login?email=...
                                  │
                           Browser redirects
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                       LOGIN - USER EXISTENCE CHECK                              │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+User Email                    API Request                   AWS Services
+   │                             │                             │
+   └─ Enter email  ───────>  POST /auth/check-user ──>  Lambda check-user()
+                             params: email                     │
+                                 │                        Cognito.AdminGetUser()
+                                 │                             │
+                                 │                        UserNotFoundException
+                                 │                             │
+                                 │<──── Response ────────  { exists: true/false }
+                                 │
+                          If exists: false
+                          ├─ Redirect to signup page
+                          │
+                          If exists: true
+                          └─ Proceed to OTP entry
                           Pre-filled email
 
 ┌─────────────────────────────────────────────────────────────────────────────────┐

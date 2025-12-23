@@ -32,8 +32,11 @@ growksh-website/
 │       ├── 🆕 custom-message.js     - Send verification email
 │       ├── 🆕 create-auth-challenge.js - Generate & send OTP
 │       ├── 🆕 verify-auth-challenge.js - Validate OTP from user
-│       ├── 🆕 signup.js             - Create user endpoint
-│       ├── 🆕 verify-email.js       - Verify email with magic link
+       ├── 🆕 define-auth-challenge.js - Orchestrate auth challenge flow
+       ├── 🆕 post-confirmation.js  - Post-signup hook
+       ├── 🆕 signup.js             - Create user endpoint
+       ├── 🆕 verify-email.js       - Verify email with magic link
+       ├── 🆕 check-user.js         - Check if email exists (NEW)
 │       └── 🆕 package.json          - Dependencies
 │
 ├── src/
@@ -122,17 +125,17 @@ Legend:
 ## Key Files Explained
 
 ### 1. Core Infrastructure
-**`infra/sam-template.yaml`** (560+ lines)
+**`infra/sam-template.yaml`** (600+ lines)
 - Complete AWS infrastructure definition
-- Cognito User Pool configuration
-- 6 Lambda functions defined
+- Cognito User Pool configuration with 8 triggers
+- 9 Lambda functions defined
 - DynamoDB tables
 - API Gateway endpoints
 - IAM roles and permissions
 - CloudFormation outputs
 
 ### 2. Lambda Functions (Backend)
-**`aws-lambda/auth/`** - 6 serverless functions
+**`aws-lambda/auth/`** - 9 serverless functions
 
 | File | Purpose | Trigger | Language |
 |------|---------|---------|----------|
@@ -140,8 +143,11 @@ Legend:
 | `custom-message.js` | Send verification email | Cognito CustomMessage | Node.js |
 | `create-auth-challenge.js` | Generate OTP, send email | Cognito CreateAuthChallenge | Node.js |
 | `verify-auth-challenge.js` | Validate OTP | Cognito VerifyAuthChallenge | Node.js |
+| `define-auth-challenge.js` | Orchestrate auth flow | Cognito DefineAuthChallenge | Node.js |
+| `post-confirmation.js` | Post-signup hook | Cognito PostConfirmation | Node.js |
 | `signup.js` | Create user endpoint | API Gateway POST | Node.js |
 | `verify-email.js` | Verify email link | API Gateway GET | Node.js |
+| `check-user.js` | Check if email exists | API Gateway POST | Node.js |
 
 ### 3. Frontend Components
 **`src/components/Auth/`** - React authentication UI

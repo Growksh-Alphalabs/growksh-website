@@ -111,21 +111,49 @@ const token = await getIdToken()
    
 2. User clicks email link → /auth/verify-email
    └─ Backend: Validates HMAC token
-   └─ Redirect: To login page
+   └─ Redirect: To login page with email pre-filled
    
 3. User enters email → /login
-   └─ Backend: Generate OTP
+   └─ Frontend: Check if email exists (POST /auth/check-user)
+   └─ If NOT found: Redirect to /signup?email=...
+   └─ If found: Proceed to OTP stage
+   
+4. OTP sent to email (if user found)
+   └─ Backend: CreateAuthChallenge generates 6-digit OTP
    └─ Email: OTP sent
    
-4. User enters OTP → /login (OTP screen)
-   └─ Backend: Validate OTP
+5. User enters OTP → /login (OTP entry screen)
+   └─ Backend: VerifyAuthChallenge validates OTP
    └─ Token: Stored in localStorage
    └─ Redirect: To home page
+   
+6. User logged in
+   └─ Navbar: Shows profile dropdown with user details
+   └─ Logout: Button available with confirmation dialog
 ```
 
 ---
 
 ## API Endpoints
+
+### Check User Exists (Lambda)
+```
+POST /auth/check-user
+{
+  "email": "john@example.com"
+}
+
+Response (User Found):
+{
+  "exists": true
+}
+
+Response (User Not Found):
+{
+  "exists": false
+}
+```
+**Purpose**: Before OTP flow, check if email is registered. If not found, redirect to signup.
 
 ### Signup (Lambda)
 ```
@@ -135,12 +163,19 @@ POST /auth/signup
   "email": "john@example.com",
   "phone_number": "+1234567890"
 }
+
+Response:
+{
+  "message": "User created. Check your email for verification link."
+}
 ```
+**Purpose**: Create new user in Cognito and send verification email.
 
 ### Verify Email (Lambda)
 ```
 GET /auth/verify-email?email=john@example.com&token=xxxxx&t=1234567890
 ```
+**Purpose**: Validate HMAC token from email link and mark email as verified.
 
 ### Login OTP (Cognito - Automatic)
 - Email + OTP handled via Cognito CUSTOM_AUTH flow
