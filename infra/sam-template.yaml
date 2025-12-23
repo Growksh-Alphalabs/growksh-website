@@ -137,6 +137,7 @@ Resources:
       LambdaConfig:
         PreSignUp: !GetAtt PreSignUpFunction.Arn
         CustomMessage: !GetAtt CustomMessageFunction.Arn
+        DefineAuthChallenge: !GetAtt DefineAuthChallengeFunction.Arn
         CreateAuthChallenge: !GetAtt CreateAuthChallengeFunction.Arn
         VerifyAuthChallengeResponse: !GetAtt VerifyAuthChallengeFunction.Arn
 
@@ -218,6 +219,15 @@ Resources:
       Action: lambda:InvokeFunction
       SourceArn: !GetAtt CognitoUserPool.Arn
 
+  # Lambda permission for Cognito to invoke DefineAuthChallenge
+  DefineAuthChallengeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DefineAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
   # Lambda permission for Cognito to invoke CreateAuthChallenge
   CreateAuthChallengeLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -279,6 +289,17 @@ Resources:
           OTP_TABLE: !Ref AuthOtpTable
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           DEBUG_LOG: !Ref DebugLogOTP
+
+  # Define Auth Challenge Lambda - Orchestrate custom challenge flow
+  DefineAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-define-auth-challenge"
+      Handler: define-auth-challenge.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth/
 
   # Verify Auth Challenge Lambda - Verify OTP
   VerifyAuthChallengeFunction:
@@ -380,6 +401,12 @@ Resources:
       Handler: verify-email.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:AdminUpdateUserAttributes
+              Resource: !GetAtt CognitoUserPool.Arn
       Environment:
         Variables:
           VERIFY_SECRET: !Ref VerifySecret
