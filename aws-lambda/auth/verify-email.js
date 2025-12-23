@@ -6,10 +6,9 @@
 const crypto = require('crypto');
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-  'Access-Control-Allow-Headers':
-    'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+  'Access-Control-Allow-Origin': 'https://d2eipj1xhqte5b.cloudfront.net',
+  'Access-Control-Allow-Methods': 'OPTIONS,GET',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   'Content-Type': 'application/json',
 };
 
