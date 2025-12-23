@@ -24,6 +24,12 @@ export default function Navbar() {
   const avatarText = (displayName || displayEmail || 'U').trim().charAt(0).toUpperCase()
 
   const handleLogout = async () => {
+    const ok = window.confirm('Logout now?')
+    if (!ok) {
+      setProfileOpen(false)
+      setOpen(false)
+      return
+    }
     try {
       await logout()
     } finally {
@@ -321,8 +327,20 @@ export default function Navbar() {
                 <>
                   {!isAuthenticated && (
                     <>
-                      <Link to="/auth/login" onClick={onAuthClick} className="hidden md:inline-flex items-center px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50">Login</Link>
-                      <Link to="/auth/signup" onClick={onAuthClick} className="hidden md:inline-flex items-center px-4 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:opacity-95">Sign up</Link>
+                      <Link
+                        to="/auth/login"
+                        onClick={onAuthClick}
+                        className="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-semibold text-slate-700 border border-slate-200 rounded-full hover:bg-slate-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        to="/auth/signup"
+                        onClick={onAuthClick}
+                        className="hidden md:inline-flex items-center justify-center px-5 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:bg-[#004d39] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00674F]/30"
+                      >
+                        Sign up
+                      </Link>
                     </>
                   )}
 
@@ -355,7 +373,7 @@ export default function Navbar() {
                         <button
                           type="button"
                           onClick={handleLogout}
-                          className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md"
+                          className="w-full text-left px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 rounded-md"
                         >
                           Logout
                         </button>
@@ -475,8 +493,20 @@ export default function Navbar() {
                   <>
                     {!isAuthenticated && (
                       <>
-                        <Link to="/auth/login" onClick={onAuthClick} className="block text-center w-full px-4 py-2 border rounded-md text-slate-700">Login</Link>
-                        <Link to="/auth/signup" onClick={onAuthClick} className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-md font-semibold">Sign up</Link>
+                        <Link
+                          to="/auth/login"
+                          onClick={onAuthClick}
+                          className="block text-center w-full px-4 py-2 border border-slate-200 rounded-full font-semibold text-slate-700 hover:bg-slate-50 transition"
+                        >
+                          Login
+                        </Link>
+                        <Link
+                          to="/auth/signup"
+                          onClick={onAuthClick}
+                          className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-full font-semibold hover:bg-[#004d39] transition"
+                        >
+                          Sign up
+                        </Link>
                       </>
                     )}
 
@@ -492,7 +522,7 @@ export default function Navbar() {
                         <button
                           type="button"
                           onClick={handleLogout}
-                          className="block text-center w-full px-4 py-2 border rounded-md text-slate-700 hover:bg-slate-50"
+                          className="block text-center w-full px-4 py-2 border rounded-md font-medium text-slate-700 hover:bg-slate-50"
                         >
                           Logout
                         </button>
