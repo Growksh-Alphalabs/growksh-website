@@ -91,8 +91,8 @@ export default function Login() {
       // Store tokens in localStorage
       if (result.AuthenticationResult) {
         const { IdToken, AccessToken, RefreshToken } = result.AuthenticationResult
-        localStorage.setItem('idToken', IdToken)
-        localStorage.setItem('accessToken', AccessToken)
+        if (IdToken) localStorage.setItem('idToken', IdToken)
+        if (AccessToken) localStorage.setItem('accessToken', AccessToken)
         if (RefreshToken) {
           localStorage.setItem('refreshToken', RefreshToken)
         }
@@ -112,7 +112,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
