@@ -405,6 +405,9 @@ Outputs:
   ContactApiEndpoint:
     Description: "API Gateway endpoint for contact form"
     Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  ContactApiId:
+    Description: "API Gateway RestApiId for contact form"
+    Value: !Ref ContactApiGateway
   ContactsTableName:
     Description: "DynamoDB table name for contacts"
     Value: !Ref ContactsTable
@@ -421,6 +424,9 @@ Outputs:
   AuthApiEndpoint:
     Description: "Auth API Gateway endpoint"
     Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  AuthApiId:
+    Description: "API Gateway RestApiId for auth endpoints"
+    Value: !Ref AuthApiGateway
   SignupEndpoint:
     Description: "Signup endpoint"
     Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/signup"
