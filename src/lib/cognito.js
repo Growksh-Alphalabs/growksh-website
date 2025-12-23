@@ -2,6 +2,7 @@ import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
   RespondToAuthChallengeCommand,
+  AdminGetUserCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
 const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID;
@@ -120,7 +121,7 @@ export async function signup(userData) {
 }
 
 /**
- * Check if a user exists in Cognito by email (calls backend)
+ * Check if a user exists in Cognito by email
  * @param {string} email - User's email
  * @returns {Promise<boolean>} true if user exists, false otherwise
  */
@@ -130,37 +131,24 @@ export async function checkUserExists(email) {
     return pending.has(email);
   }
 
-  if (!API_URL) {
-    throw new Error('API_URL is not configured. Set VITE_API_URL in .env.local');
+  if (!USER_POOL_ID || !CLIENT_ID) {
+    return Promise.reject(new Error(missingMsg));
   }
 
   try {
-    // Clean up API base URL
-    let apiBase = API_URL.trim();
-    apiBase = apiBase.replace(/\/+$/, '');
-    apiBase = apiBase.replace(/\/(Prod|contact)$/, '');
-    if (!apiBase.includes('/Prod')) {
-      apiBase = apiBase.endsWith('/') ? apiBase + 'Prod' : apiBase + '/Prod';
-    }
-
-    const checkUrl = `${apiBase}/check-user`;
-    console.log('Checking user at:', checkUrl);
-
-    const response = await fetch(checkUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+    const cmd = new AdminGetUserCommand({
+      UserPoolId: USER_POOL_ID,
+      Username: email,
     });
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || `Failed to check user with status ${response.status}`);
-    }
-
-    return data.exists === true;
+    const res = await cognitoIdpClient.send(cmd);
+    return !!res.Username;
   } catch (error) {
-    console.error('Check user error:', error);
+    // UserNotFoundException means the user doesn't exist
+    if (error.name === 'UserNotFoundException') {
+      return false;
+    }
+    // If it's any other error, reject it
     throw error;
   }
 }
