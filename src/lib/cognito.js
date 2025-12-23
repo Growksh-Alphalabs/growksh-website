@@ -345,6 +345,19 @@ export async function signOut() {
   localStorage.removeItem('userEmail');
   localStorage.removeItem('userName');
 
+  // Also clear amazon-cognito-identity-js persisted session keys so
+  // `userPool.getCurrentUser()` doesn't treat the browser as logged in.
+  try {
+    const keysToRemove = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('CognitoIdentityServiceProvider.')) {
+        keysToRemove.push(key)
+      }
+    }
+    keysToRemove.forEach((k) => localStorage.removeItem(k))
+  } catch (e) {}
+
   if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
     return;
   }
@@ -364,20 +377,9 @@ export async function startAuth(email) {
 }
 
 export async function respondToChallenge(email, answer) {
-  if (USE_FAKE || runtimeFakeOverride) {
-    return verifyOTP({ email, otp: answer, session: '' });
-  }
-
-  const { CognitoUser } = await getCognitoSDK();
-  const userPool = await getUserPool();
-
-  return new Promise((resolve, reject) => {
-    const user = new CognitoUser({ Username: email, Pool: userPool });
-    user.sendCustomChallengeAnswer(answer, {
-      onSuccess: (session) => resolve({ success: true, session }),
-      onFailure: (err) => reject(err),
-    });
-  });
+  throw new Error(
+    'respondToChallenge(email, answer) is deprecated. Use verifyOTP({ email, otp: answer, session }) with the Session returned by initiateAuth(email).'
+  );
 }
 
 export function enableFakeAuth() {

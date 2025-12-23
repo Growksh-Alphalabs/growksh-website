@@ -4,13 +4,34 @@ import Logo1 from '../../assets/Website images/Growksh Logo 1.png'
 import LogoWealth from '../../assets/Website images/Wealthcraft logo.png'
 import LogoAlpha from '../../assets/Website images/Growksh Alphalabs logo.png'
 import LogoVentures from '../../assets/Website images/Growksh Ventures Logo.png'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [mobileAlphaOpen, setMobileAlphaOpen] = useState(false)
   const [mobileWealthOpen, setMobileWealthOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
+  const { isAuthenticated, user, logout } = useAuth()
+
+  useEffect(() => {
+    setProfileOpen(false)
+  }, [location.pathname])
+
+  const displayName = (user && (user.name || user.email)) || ''
+  const displayEmail = (user && user.email) || ''
+  const avatarText = (displayName || displayEmail || 'U').trim().charAt(0).toUpperCase()
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } finally {
+      setProfileOpen(false)
+      setOpen(false)
+      navigate('/')
+    }
+  }
 
   // Keep a CSS variable updated with the header height + offset so
   // native scrolling (and `scroll-margin-top`) positions anchors correctly.
@@ -286,7 +307,7 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link to="/contact" className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full text-base md:text-lg shadow hover:opacity-95 transition">Contact</Link>
+            <Link to="/contact" className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-600 to-violet-600 text-white rounded-full text-base md:text-lg shadow hover:opacity-95 transition">Contact</Link>
             {(() => {
               const useOidc = !!import.meta.env.VITE_COGNITO_AUTHORITY
               const onAuthClick = (e) => {
@@ -298,8 +319,49 @@ export default function Navbar() {
 
               return (
                 <>
-                  <Link to="/auth/login" onClick={onAuthClick} className="hidden md:inline-flex items-center px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50">Login</Link>
-                  <Link to="/auth/signup" onClick={onAuthClick} className="hidden md:inline-flex items-center px-4 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:opacity-95">Sign up</Link>
+                  {!isAuthenticated && (
+                    <>
+                      <Link to="/auth/login" onClick={onAuthClick} className="hidden md:inline-flex items-center px-3 py-2 text-sm text-slate-700 border border-slate-200 rounded-md hover:bg-slate-50">Login</Link>
+                      <Link to="/auth/signup" onClick={onAuthClick} className="hidden md:inline-flex items-center px-4 py-2 bg-[#00674F] text-white rounded-full text-sm font-semibold hover:opacity-95">Sign up</Link>
+                    </>
+                  )}
+
+                  {isAuthenticated && (
+                    <div className="hidden md:block relative">
+                      <button
+                        type="button"
+                        onClick={() => setProfileOpen(v => !v)}
+                        aria-expanded={profileOpen}
+                        className="inline-flex items-center gap-2 px-2 py-1.5 rounded-full border border-slate-200 hover:bg-slate-50"
+                      >
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-semibold">
+                          {avatarText}
+                        </span>
+                        <span className="max-w-40 truncate text-sm text-slate-700">
+                          {displayName || displayEmail}
+                        </span>
+                        <span className="text-slate-500" aria-hidden>▾</span>
+                      </button>
+
+                      <div className={`${profileOpen ? 'block' : 'hidden'} absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg border border-slate-100 p-2 z-50`}>
+                        <div className="px-3 py-2">
+                          <p className="text-xs text-slate-500">Signed in as</p>
+                          <p className="text-sm font-medium text-slate-800 truncate">{displayName || displayEmail}</p>
+                          {displayEmail && displayName && displayName !== displayEmail && (
+                            <p className="text-xs text-slate-600 truncate">{displayEmail}</p>
+                          )}
+                        </div>
+                        <div className="h-px bg-slate-100 my-1" />
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 rounded-md"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </>
               )
             })()}
@@ -397,7 +459,7 @@ export default function Navbar() {
             })}
 
             <div className="mt-2">
-              <Link to="/contact" onClick={() => setOpen(false)} className="block text-center px-4 py-2 bg-gradient-to-r from-purple-600 to-violet-600 text-white rounded-full">Schedule a Call</Link>
+              <Link to="/contact" onClick={() => setOpen(false)} className="block text-center px-4 py-2 bg-linear-to-r from-purple-600 to-violet-600 text-white rounded-full">Schedule a Call</Link>
             </div>
             <div className="mt-3 space-y-2">
               {(() => {
@@ -411,8 +473,31 @@ export default function Navbar() {
 
                 return (
                   <>
-                    <Link to="/auth/login" onClick={onAuthClick} className="block text-center w-full px-4 py-2 border rounded-md text-slate-700">Login</Link>
-                    <Link to="/auth/signup" onClick={onAuthClick} className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-md font-semibold">Sign up</Link>
+                    {!isAuthenticated && (
+                      <>
+                        <Link to="/auth/login" onClick={onAuthClick} className="block text-center w-full px-4 py-2 border rounded-md text-slate-700">Login</Link>
+                        <Link to="/auth/signup" onClick={onAuthClick} className="block text-center w-full px-4 py-2 bg-[#00674F] text-white rounded-md font-semibold">Sign up</Link>
+                      </>
+                    )}
+
+                    {isAuthenticated && (
+                      <div className="space-y-2">
+                        <div className="px-4 py-3 bg-slate-50 rounded-md border border-slate-100">
+                          <p className="text-xs text-slate-500">Signed in as</p>
+                          <p className="text-sm font-medium text-slate-800 truncate">{displayName || displayEmail}</p>
+                          {displayEmail && displayName && displayName !== displayEmail && (
+                            <p className="text-xs text-slate-600 truncate">{displayEmail}</p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleLogout}
+                          className="block text-center w-full px-4 py-2 border rounded-md text-slate-700 hover:bg-slate-50"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
                   </>
                 )
               })()}
