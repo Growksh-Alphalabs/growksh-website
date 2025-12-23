@@ -352,6 +352,9 @@ Resources:
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          VERIFY_SECRET: !Ref VerifySecret
+          VERIFY_BASE_URL: !Ref VerifyBaseUrl
       Events:
         SignupPostEvent:
           Type: Api

@@ -4,8 +4,11 @@
  */
 
 const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const crypto = require('crypto');
 
 let cognito = null;
+let ses = null;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': 'https://d2eipj1xhqte5b.cloudfront.net',
@@ -30,8 +33,51 @@ function getCognito() {
   return cognito;
 }
 
+function getSes() {
+  if (!ses) {
+    ses = new SESClient({ region: process.env.AWS_REGION });
+  }
+  return ses;
+}
+
 function isE164(phone) {
   return typeof phone === 'string' && /^\+[1-9]\d{1,14}$/.test(phone.trim());
+}
+
+async function sendVerificationEmail({ email, name }) {
+  const sourceEmail = process.env.SES_SOURCE_EMAIL;
+  const secret = process.env.VERIFY_SECRET;
+  const baseUrl = process.env.VERIFY_BASE_URL;
+
+  if (!sourceEmail || !secret || !baseUrl) {
+    console.warn('Verification email not configured. Missing SES_SOURCE_EMAIL, VERIFY_SECRET, or VERIFY_BASE_URL');
+    return { sent: false, reason: 'missing_config' };
+  }
+
+  const timestamp = Math.floor(Date.now() / 1000);
+  const token = crypto
+    .createHmac('sha256', secret)
+    .update(`${email}:${timestamp}`)
+    .digest('hex');
+
+  const verificationLink = `${baseUrl}?email=${encodeURIComponent(email)}&token=${token}&t=${timestamp}`;
+
+  const subject = 'Verify your email for Growksh';
+  const body = `Hello ${name || 'User'},\n\nWelcome to Growksh! To complete your signup, please click the link below to verify your email:\n\n${verificationLink}\n\nThis link will expire in 24 hours.\n\nBest regards,\nGrowksh Team\n`;
+
+  const client = getSes();
+  await client.send(
+    new SendEmailCommand({
+      Source: sourceEmail,
+      Destination: { ToAddresses: [email] },
+      Message: {
+        Subject: { Data: subject },
+        Body: { Text: { Data: body } },
+      },
+    })
+  );
+
+  return { sent: true };
 }
 
 exports.handler = async (event) => {
@@ -85,11 +131,20 @@ exports.handler = async (event) => {
     };
     
     await cognitoClient.send(new AdminSetUserPasswordCommand(setPassParams));
+
+    let verificationEmailSent = false;
+    try {
+      const res = await sendVerificationEmail({ email, name });
+      verificationEmailSent = !!res.sent;
+    } catch (e) {
+      console.error('Failed to send verification email:', e);
+    }
     
     return response(201, {
       message: 'User created successfully',
       email,
-      verified: true
+      verified: true,
+      verificationEmailSent
     });
   } catch (error) {
     console.error('Signup error:', error);
