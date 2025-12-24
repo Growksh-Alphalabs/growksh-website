@@ -1,0 +1,222 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CloudFormationOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:CreateStack",
+                "cloudformation:UpdateStack",
+                "cloudformation:DeleteStack",
+                "cloudformation:DescribeStacks",
+                "cloudformation:DescribeStackResources",
+                "cloudformation:GetTemplate",
+                "cloudformation:ListStacks",
+                "cloudformation:ValidateTemplate",
+                "cloudformation:TagResource",
+                "cloudformation:UntagResource"
+            ],
+            "Resource": "arn:aws:cloudformation:*:720427058396:stack/growksh-*"
+        },
+        {
+            "Sid": "CloudFormationGlobalOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStackEvents"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "LambdaOperations",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:UpdateFunction",
+                "lambda:UpdateFunctionCode",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:DeleteFunction",
+                "lambda:GetFunction",
+                "lambda:GetFunctionConfiguration",
+                "lambda:ListFunctions",
+                "lambda:PublishVersion",
+                "lambda:PublishLayerVersion",
+                "lambda:AddPermission",
+                "lambda:RemovePermission"
+            ],
+            "Resource": "arn:aws:lambda:*:720427058396:function:growksh-*"
+        },
+        {
+            "Sid": "APIGatewayOperations",
+            "Effect": "Allow",
+            "Action": [
+                "apigateway:POST",
+                "apigateway:GET",
+                "apigateway:PUT",
+                "apigateway:DELETE",
+                "apigateway:PATCH",
+                "apigateway:CreateRestApi",
+                "apigateway:DeleteRestApi",
+                "apigateway:UpdateRestApi",
+                "apigateway:GetRestApi",
+                "apigateway:GetRestApis"
+            ],
+            "Resource": "arn:aws:apigateway:*::*"
+        },
+        {
+            "Sid": "DynamoDBOperations",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:CreateTable",
+                "dynamodb:UpdateTable",
+                "dynamodb:DeleteTable",
+                "dynamodb:DescribeTable",
+                "dynamodb:ListTables",
+                "dynamodb:TagResource",
+                "dynamodb:UntagResource"
+            ],
+            "Resource": "arn:aws:dynamodb:*:720427058396:table/growksh-*"
+        },
+        {
+            "Sid": "S3Operations",
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:DeleteBucket",
+                "s3:GetBucketPolicy",
+                "s3:PutBucketPolicy",
+                "s3:DeleteBucketPolicy",
+                "s3:GetBucketVersioning",
+                "s3:PutBucketVersioning",
+                "s3:GetBucketAcl",
+                "s3:PutBucketAcl",
+                "s3:GetBucketPublicAccessBlock",
+                "s3:PutBucketPublicAccessBlock",
+                "s3:GetBucketEncryption",
+                "s3:PutBucketEncryption",
+                "s3:GetBucketWebsite",
+                "s3:PutBucketWebsite",
+                "s3:ListBucket",
+                "s3:ListAllMyBuckets",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:GetObjectVersion",
+                "s3:ListBucketVersions",
+                "s3:TagResource",
+                "s3:UntagResource"
+            ],
+            "Resource": [
+                "arn:aws:s3:::growksh-*",
+                "arn:aws:s3:::growksh-*/*"
+            ]
+        },
+        {
+            "Sid": "CognitoOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cognito-idp:CreateUserPool",
+                "cognito-idp:UpdateUserPool",
+                "cognito-idp:DeleteUserPool",
+                "cognito-idp:DescribeUserPool",
+                "cognito-idp:ListUserPools",
+                "cognito-idp:CreateUserPoolClient",
+                "cognito-idp:UpdateUserPoolClient",
+                "cognito-idp:DeleteUserPoolClient",
+                "cognito-idp:DescribeUserPoolClient",
+                "cognito-idp:AdminCreateUser",
+                "cognito-idp:AdminUpdateUserAttributes",
+                "cognito-idp:AdminSetUserPassword",
+                "cognito-idp:AdminDeleteUser",
+                "cognito-idp:TagResource",
+                "cognito-idp:UntagResource"
+            ],
+            "Resource": "arn:aws:cognito-idp:*:720427058396:userpool/*"
+        },
+        {
+            "Sid": "CloudFrontOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:CreateDistribution",
+                "cloudfront:UpdateDistribution",
+                "cloudfront:DeleteDistribution",
+                "cloudfront:GetDistribution",
+                "cloudfront:GetDistributionConfig",
+                "cloudfront:ListDistributions",
+                "cloudfront:CreateOriginAccessControl",
+                "cloudfront:UpdateOriginAccessControl",
+                "cloudfront:DeleteOriginAccessControl",
+                "cloudfront:GetOriginAccessControl",
+                "cloudfront:GetOriginAccessControlConfig",
+                "cloudfront:ListOriginAccessControls",
+                "cloudfront:CreateInvalidation",
+                "cloudfront:GetInvalidation",
+                "cloudfront:ListInvalidations"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SESOperations",
+            "Effect": "Allow",
+            "Action": [
+                "ses:SendEmail",
+                "ses:SendRawEmail",
+                "ses:VerifyEmailIdentity",
+                "ses:VerifyDomainIdentity"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "IAMPassRole",
+            "Effect": "Allow",
+            "Action": [
+                "iam:PassRole",
+                "iam:GetRole",
+                "iam:GetRolePolicy"
+            ],
+            "Resource": "arn:aws:iam::720427058396:role/growksh-*"
+        },
+        {
+            "Sid": "IAMReadOnly",
+            "Effect": "Allow",
+            "Action": [
+                "iam:ListRoles",
+                "iam:ListPolicies",
+                "iam:GetPolicy",
+                "iam:GetPolicyVersion",
+                "iam:ListRolePolicies",
+                "iam:ListAttachedRolePolicies"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "ECROperations",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:CreateRepository",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:PutImage",
+                "ecr:InitiateLayerUpload",
+                "ecr:UploadLayerPart",
+                "ecr:CompleteLayerUpload"
+            ],
+            "Resource": "arn:aws:ecr:*:720427058396:repository/growksh-*"
+        },
+        {
+            "Sid": "LogsOperations",
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "logs:DescribeLogGroups",
+                "logs:DescribeLogStreams"
+            ],
+            "Resource": "arn:aws:logs:*:720427058396:log-group:/aws/lambda/growksh-*"
+        }
+    ]
+}
