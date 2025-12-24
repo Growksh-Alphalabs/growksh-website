@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { initiateAuth, verifyOTP } from '../../lib/cognito'
+import { initiateAuth, verifyOTP, checkAdminUser } from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
@@ -38,6 +38,16 @@ export default function AdminLogin() {
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         setErrorMessage('Please enter a valid email address')
+        setLoading(false)
+        return
+      }
+
+      console.log('Checking admin status for:', email)
+      const adminCheck = await checkAdminUser(email)
+      console.log('Admin check result:', adminCheck)
+
+      if (!adminCheck.success) {
+        setErrorMessage(adminCheck.message || 'You do not have admin access.')
         setLoading(false)
         return
       }
