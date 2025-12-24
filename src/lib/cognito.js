@@ -394,6 +394,35 @@ export async function signOut() {
   }
 }
 
+/**
+ * Check if user exists and is in admin group
+ * @param {string} email - User's email
+ * @returns {Promise<Object>} { success, exists, isAdmin, message }
+ */
+export async function checkAdminUser(email) {
+  try {
+    const checkAdminUrl = `${API_URL}/auth/check-admin`;
+    const response = await fetch(checkAdminUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || `Check admin failed with status ${response.status}`);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Check admin error:', error);
+    throw error;
+  }
+}
+
 // Legacy functions for backward compatibility
 export async function startAuth(email) {
   return initiateAuth(email);
