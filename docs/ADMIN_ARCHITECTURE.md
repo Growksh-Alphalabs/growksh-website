@@ -33,41 +33,50 @@
 
 ```
 1. User visits /admin/login
-   └─ Displays email + password form
+   └─ Displays email form
 
-2. User submits credentials
+2. User submits email
    └─ Email: admin@growksh.com
-   └─ Password: SecurePassword123
 
-3. Frontend calls adminLogin(email, password)
-   ├─ Method: USER_PASSWORD_AUTH
-   └─ No OTP involved
+3. Frontend calls initiateAuth(email)
+   ├─ Method: CUSTOM_AUTH (OTP flow)
+   ├─ Same as regular user login
+   └─ Cognito CreateAuthChallenge trigger fires
 
-4. Cognito validates credentials
-   ├─ Checks user exists
-   ├─ Verifies password hash
-   └─ Returns ID Token (with cognito:groups)
+4. Cognito generates OTP
+   ├─ Lambda CreateAuthChallenge creates 6-digit code
+   ├─ Stores in DynamoDB with 10-min TTL
+   └─ Sends via SES email
 
-5. Frontend receives tokens
+5. Frontend receives OTP
+   └─ User enters 6-digit code from email
+
+6. Frontend calls verifyOTP(email, otp, session)
+   ├─ Method: CUSTOM_AUTH (OTP verification)
+   ├─ Lambda VerifyAuthChallenge validates code
+   └─ Returns ID Token (with cognito:groups if admin)
+
+7. Frontend receives tokens
    ├─ ID Token: { "cognito:groups": ["admin"], ... }
    ├─ Access Token: JWT for API calls
    └─ Refresh Token: For token renewal
 
-6. Frontend stores tokens
+8. Frontend stores tokens
    ├─ localStorage.setItem('idToken', IdToken)
    ├─ localStorage.setItem('accessToken', AccessToken)
    └─ localStorage.setItem('userEmail', email)
 
-7. AuthContext.checkAuth() runs
+9. AuthContext.checkAuth() runs
    ├─ Reads ID token from localStorage
    ├─ Decodes JWT payload
    ├─ Checks cognito:groups array
    ├─ Sets isAdmin = true (if "admin" found)
    └─ Sets isAuthenticated = true
 
-8. Component re-renders
-   ├─ ProtectedRoute checks: isAuthenticated && isAdmin
-   └─ Both true: Show AdminDashboard
+10. ProtectedRoute checks permissions
+    ├─ Verifies: isAuthenticated = true AND isAdmin = true
+    ├─ Both true: Show AdminDashboard ✓
+    └─ Not admin: Show "Access Denied" ✗
 ```
 
 ## Token Inspection
@@ -130,10 +139,11 @@ Layer 4: Role Enforcement (Cognito)
 ├─ User can only be in groups assigned by admin
 └─ Cannot self-assign admin role
 
-Layer 5: Password Security (Cognito)
-├─ Passwords hashed with bcrypt
-├─ Salted per user
-└─ Not stored in plaintext
+Layer 5: OTP Security (DynamoDB + SES)
+├─ OTP stored with 10-minute TTL (auto-delete)
+├─ One-time use only (deleted after verification)
+├─ Sent via email (not stored in app)
+└─ Cannot be reused or brute-forced easily
 ```
 
 ## State Management
@@ -180,7 +190,7 @@ AdminDashboard renders
 /insights            → Resources (public)
 /contact             → Contact form (public)
 
-/admin/login         → Admin password login (public, but redirects if authed)
+/admin/login         → Admin OTP login (public, but redirects if authed)
 /admin/dashboard     → Admin panel (PROTECTED - requires isAuthenticated && isAdmin)
 ```
 
@@ -190,10 +200,14 @@ AdminDashboard renders
 REGULAR USER LOGIN                 ADMIN LOGIN
 ────────────────────────────────   ────────────────────
 Route: /login                      Route: /admin/login
-Flow: OTP (email-based)            Flow: PASSWORD
-Auth: CUSTOM_AUTH                  Auth: USER_PASSWORD_AUTH
+Flow: OTP (email-based)            Flow: OTP (email-based)
+Auth: CUSTOM_AUTH                  Auth: CUSTOM_AUTH
 Duration: 60 min (default)         Duration: 60 min (default)
 Role: User (default)               Role: Admin (in cognito:groups)
 Dashboard: None                    Dashboard: /admin/dashboard
 Logout: Regular                    Logout: Regular
+
+✨ Both use PASSWORDLESS OTP verification!
+   The only difference is the admin user must be
+   in Cognito "admin" group to access admin panel.
 ```
