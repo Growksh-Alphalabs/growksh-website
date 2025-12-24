@@ -28,7 +28,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: pre-sign-up.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/pre-sign-up-${Environment}.zip'
@@ -47,7 +47,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: custom-message.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/custom-message-${Environment}.zip'
@@ -69,7 +69,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: define-auth-challenge.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/define-auth-challenge-${Environment}.zip'
@@ -88,7 +88,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: create-auth-challenge.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/create-auth-challenge-${Environment}.zip'
@@ -113,7 +113,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: verify-auth-challenge.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/verify-auth-challenge-${Environment}.zip'
@@ -136,7 +136,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: post-confirmation.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/post-confirmation-${Environment}.zip'
