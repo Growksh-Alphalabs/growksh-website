@@ -10,6 +10,14 @@ Parameters:
   BucketName:
     Type: String
     Description: S3 bucket name (must be globally unique)
+  DomainNames:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Alternative domain names (CNAMEs) for CloudFront (e.g., growksh.com, www.growksh.com)
+  CertificateArn:
+    Type: String
+    Default: ""
+    Description: ACM Certificate ARN for custom domains (must be in us-east-1 region)
 
 Resources:
   AssetsBucket:
@@ -79,13 +87,17 @@ Resources:
         Enabled: true
         Comment: !Sub 'Growksh website ${Environment}'
         DefaultRootObject: index.html
-        PriceClass: PriceClass_100
-        HttpVersion: http2
+        PriceClass: PriceClass_All
+        HttpVersion: http2and3
+        Aliases: !If 
+          - HasDomainNames
+          - !Ref DomainNames
+          - !Ref AWS::NoValue
         Origins:
           - Id: S3Origin
             DomainName: !GetAtt AssetsBucket.RegionalDomainName
-            S3OriginConfig: {}
             OriginAccessControlId: !Ref OriginAccessControl
+            S3OriginConfig: {}
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: redirect-to-https
@@ -97,10 +109,7 @@ Resources:
             - GET
             - HEAD
           Compress: true
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
         CustomErrorResponses:
           - ErrorCode: 403
             ResponsePagePath: /index.html
@@ -110,11 +119,19 @@ Resources:
             ResponsePagePath: /index.html
             ResponseCode: 200
             ErrorCachingMinTTL: 0
-        ViewerCertificate:
-          CloudFrontDefaultCertificate: true
+        ViewerCertificate: !If
+          - HasCertificate
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
         Restrictions:
           GeoRestriction:
             RestrictionType: none
+
+Conditions:
+  HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
 
 Outputs:
   BucketName:
