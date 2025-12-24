@@ -1,0 +1,186 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: API Gateway for Growksh website
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod, ephemeral]
+    Description: Environment name
+
+Resources:
+  UnifiedApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'growksh-api-${Environment}'
+      Description: Unified API for Growksh website
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: !Ref Environment
+      RestApiId: !Ref UnifiedApiGateway
+      DeploymentId: !Ref ApiDeployment
+      TracingEnabled: true
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          DataTraceEnabled: true
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - ContactOptionsMethod
+      - ContactPostMethod
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+
+  # Contact endpoints
+  ContactResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ParentId: !GetAtt UnifiedApiGateway.RootResourceId
+      PathPart: contact
+
+  ContactPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ResourceId: !Ref ContactResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-contact-${Environment}/invocations'
+
+  ContactOptionsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ResourceId: !Ref ContactResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              method.response.header.Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  # Auth endpoints
+  AuthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ParentId: !GetAtt UnifiedApiGateway.RootResourceId
+      PathPart: auth
+
+  SignupResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ParentId: !Ref AuthResource
+      PathPart: signup
+
+  SignupPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ResourceId: !Ref SignupResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-signup-${Environment}/invocations'
+
+  VerifyEmailResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ParentId: !Ref AuthResource
+      PathPart: verify-email
+
+  VerifyEmailGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ResourceId: !Ref VerifyEmailResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-verify-email-${Environment}/invocations'
+
+  CheckAdminResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ParentId: !Ref AuthResource
+      PathPart: check-admin
+
+  CheckAdminPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref UnifiedApiGateway
+      ResourceId: !Ref CheckAdminResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-check-admin-${Environment}/invocations'
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint
+    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub 'growksh-${Environment}-api-endpoint'
+
+  ApiId:
+    Description: API Gateway REST API ID
+    Value: !Ref UnifiedApiGateway
+    Export:
+      Name: !Sub 'growksh-${Environment}-api-id'
+
+  ContactEndpoint:
+    Description: Contact endpoint
+    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/contact'
+    Export:
+      Name: !Sub 'growksh-${Environment}-contact-endpoint'
+
+  SignupEndpoint:
+    Description: Signup endpoint
+    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/signup'
+    Export:
+      Name: !Sub 'growksh-${Environment}-signup-endpoint'
+
+  VerifyEmailEndpoint:
+    Description: Verify email endpoint
+    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/verify-email'
+    Export:
+      Name: !Sub 'growksh-${Environment}-verify-endpoint'
+
+  CheckAdminEndpoint:
+    Description: Check admin endpoint
+    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/check-admin'
+    Export:
+      Name: !Sub 'growksh-${Environment}-check-admin-endpoint'

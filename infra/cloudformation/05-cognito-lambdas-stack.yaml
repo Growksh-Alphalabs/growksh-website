@@ -1,0 +1,200 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Cognito Lambda triggers for Growksh website
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod, ephemeral]
+    Description: Environment name
+  SESSourceEmail:
+    Type: String
+    Description: Verified SES email for sending OTPs
+    Default: noreply@growksh.com
+  VerifyBaseUrl:
+    Type: String
+    Description: Frontend URL for email verification
+    Default: https://dev.growksh.com/auth/verify-email
+  DebugLogOTP:
+    Type: String
+    Default: '0'
+    Description: Enable OTP debug logging
+
+Resources:
+  PreSignUpFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-pre-sign-up-${Environment}'
+      Runtime: nodejs18.x
+      Handler: pre-sign-up.handler
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/pre-sign-up-${Environment}.zip'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  CustomMessageFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-custom-message-${Environment}'
+      Runtime: nodejs18.x
+      Handler: custom-message.handler
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/custom-message-${Environment}.zip'
+      Environment:
+        Variables:
+          VERIFY_BASE_URL: !Ref VerifyBaseUrl
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  DefineAuthChallengeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-define-auth-challenge-${Environment}'
+      Runtime: nodejs18.x
+      Handler: define-auth-challenge.handler
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/define-auth-challenge-${Environment}.zip'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  CreateAuthChallengeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-create-auth-challenge-${Environment}'
+      Runtime: nodejs18.x
+      Handler: create-auth-challenge.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/create-auth-challenge-${Environment}.zip'
+      Environment:
+        Variables:
+          OTP_TABLE: !ImportValue
+            Fn::Sub: 'growksh-${Environment}-auth-otp-table'
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          DEBUG_LOG: !Ref DebugLogOTP
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  VerifyAuthChallengeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-verify-auth-challenge-${Environment}'
+      Runtime: nodejs18.x
+      Handler: verify-auth-challenge.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/verify-auth-challenge-${Environment}.zip'
+      Environment:
+        Variables:
+          OTP_TABLE: !ImportValue
+            Fn::Sub: 'growksh-${Environment}-auth-otp-table'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  PostConfirmationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-post-confirmation-${Environment}'
+      Runtime: nodejs18.x
+      Handler: post-confirmation.handler
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/post-confirmation-${Environment}.zip'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Lambda permissions for Cognito to invoke
+  PreSignUpPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PreSignUpFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+
+  CustomMessagePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CustomMessageFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+
+  DefineAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DefineAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+
+  CreateAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CreateAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+
+  VerifyAuthChallengePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref VerifyAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+
+  PostConfirmationPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostConfirmationFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+
+  # Attach Lambda functions to Cognito
+  CognitoLambdaConfig:
+    Type: AWS::Cognito::UserPoolResourceServer
+    Properties:
+      UserPoolId: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-user-pool-id'
+      Identifier: growksh-api
+      Name: Growksh API
+      Scopes:
+        - ScopeName: access
+          ScopeDescription: Access to Growksh API
+
+Outputs:
+  PreSignUpFunctionArn:
+    Value: !GetAtt PreSignUpFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-pre-sign-up-arn'
+
+  CreateAuthChallengeFunctionArn:
+    Value: !GetAtt CreateAuthChallengeFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-create-auth-challenge-arn'
+
+  VerifyAuthChallengeFunctionArn:
+    Value: !GetAtt VerifyAuthChallengeFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-verify-auth-challenge-arn'

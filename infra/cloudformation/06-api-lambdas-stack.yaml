@@ -1,0 +1,154 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Contact and Auth API Lambda functions for Growksh website
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod, ephemeral]
+    Description: Environment name
+  SESSourceEmail:
+    Type: String
+    Description: Verified SES email address
+    Default: noreply@growksh.com
+  VerifyBaseUrl:
+    Type: String
+    Description: Frontend URL for email verification
+    Default: https://dev.growksh.com/auth/verify-email
+
+Resources:
+  ContactFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-contact-${Environment}'
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-contact-lambda-role-arn'
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'contact/contact-${Environment}.zip'
+      Environment:
+        Variables:
+          CONTACTS_TABLE: !ImportValue
+            Fn::Sub: 'growksh-${Environment}-contacts-table'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  ContactFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ContactFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UnifiedApiGateway}/*'
+
+  SignupFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-signup-${Environment}'
+      Runtime: nodejs18.x
+      Handler: signup.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/signup-${Environment}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-${Environment}-user-pool-id'
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          VERIFY_BASE_URL: !Ref VerifyBaseUrl
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  SignupFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SignupFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UnifiedApiGateway}/*'
+
+  VerifyEmailFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-verify-email-${Environment}'
+      Runtime: nodejs18.x
+      Handler: verify-email.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/verify-email-${Environment}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-${Environment}-user-pool-id'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  VerifyEmailFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref VerifyEmailFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UnifiedApiGateway}/*'
+
+  CheckAdminFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-check-admin-${Environment}'
+      Runtime: nodejs18.x
+      Handler: check-admin.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Key: !Sub 'auth/check-admin-${Environment}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-${Environment}-user-pool-id'
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  CheckAdminFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CheckAdminFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${UnifiedApiGateway}/*'
+
+  UnifiedApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'growksh-api-${Environment}'
+
+Outputs:
+  ContactFunctionArn:
+    Value: !GetAtt ContactFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-contact-function-arn'
+
+  SignupFunctionArn:
+    Value: !GetAtt SignupFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-signup-function-arn'
+
+  VerifyEmailFunctionArn:
+    Value: !GetAtt VerifyEmailFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-verify-email-function-arn'
+
+  CheckAdminFunctionArn:
+    Value: !GetAtt CheckAdminFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-check-admin-function-arn'
