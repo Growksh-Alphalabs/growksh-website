@@ -306,6 +306,28 @@
   - [ ] Ephemeral testing guide
   - Status: ⭕ Pending
 
+### Cleanup & Security
+
+- [ ] **3.8** Delete legacy GitHub secrets and variables
+  - [ ] **Delete Repository Secrets**:
+    - ❌ AWS_ACCESS_KEY_ID (dev environment)
+    - ❌ AWS_ACCESS_KEY_ID (prod environment)
+    - ❌ AWS_SECRET_ACCESS_KEY (dev environment)
+    - ❌ AWS_SECRET_ACCESS_KEY (prod environment)
+    - ❌ AWS_REGION (dev environment)
+    - ❌ AWS_REGION (prod environment)
+  - [ ] **Delete Repository Variables**:
+    - ❌ CLOUDFRONT_DISTRIBUTION_ID (dev environment)
+    - ❌ CLOUDFRONT_DISTRIBUTION_ID (prod environment)
+    - ❌ S3_BUCKET (dev environment)
+    - ❌ S3_BUCKET (prod environment)
+  - [ ] **Verify** no static AWS credentials remain
+  - [ ] **Confirm** new OIDC workflow works after cleanup
+  - Status: ⏳ Pending (after Phase 3 testing complete)
+  - **Rationale**: Old secrets/variables no longer needed. Using GitHub OIDC is more secure than static credentials. S3 bucket names and CloudFront IDs are now derived from CloudFormation stack outputs.
+  - **Timeline**: Only delete after confirming workflows work for 1-2 cycles
+  - **Rollback**: If needed, secrets can be restored from GitHub's deletion history
+
 ### Cleanup & Finalization
 
 - [ ] **3.8** Archive old SAM template
