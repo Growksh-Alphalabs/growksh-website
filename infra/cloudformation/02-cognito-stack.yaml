@@ -9,10 +9,10 @@ Parameters:
     Description: Environment name
 
 Resources:
-  CognitoUserPool:
+  UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Sub 'growksh-website-${Environment}'
+      UserPoolName: !Sub 'growksh-website-pool-${Environment}'
       UsernameAttributes:
         - email
       AutoVerifiedAttributes:
@@ -36,14 +36,15 @@ Resources:
           AttributeDataType: String
           Mutable: true
       Tags:
-        Environment: !Ref Environment
-        Application: growksh-website
+        App: Website
+        Partner: Growksh
+        Env: !Ref Environment
 
-  CognitoUserPoolClient:
+  UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: !Sub 'growksh-${Environment}-client'
-      UserPoolId: !Ref CognitoUserPool
+      ClientName: !Sub 'growksh-website-client-\$\{Environment\}'
+      UserPoolId: !Ref UserPool
       ExplicitAuthFlows:
         - ALLOW_CUSTOM_AUTH
         - ALLOW_REFRESH_TOKEN_AUTH
@@ -55,20 +56,20 @@ Resources:
         - phone_number
 
 Outputs:
-  CognitoUserPoolId:
+  UserPoolId:
     Description: Cognito User Pool ID
-    Value: !Ref CognitoUserPool
+    Value: !Ref UserPool
     Export:
-      Name: !Sub 'growksh-${Environment}-user-pool-id'
+      Name: !Sub 'growksh-website-${Environment}-pool-id'
 
-  CognitoUserPoolArn:
+  UserPoolArn:
     Description: Cognito User Pool ARN
-    Value: !GetAtt CognitoUserPool.Arn
+    Value: !GetAtt UserPool.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-user-pool-arn'
+      Name: !Sub 'growksh-website-${Environment}-pool-arn'
 
-  CognitoUserPoolClientId:
+  UserPoolClientId:
     Description: Cognito User Pool Client ID
-    Value: !Ref CognitoUserPoolClient
+    Value: !Ref UserPoolClient
     Export:
-      Name: !Sub 'growksh-${Environment}-client-id'
+      Name: !Sub 'growksh-website-client-\$\{Environment\}-id'

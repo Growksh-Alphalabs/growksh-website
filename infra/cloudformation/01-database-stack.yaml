@@ -13,7 +13,7 @@ Resources:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Delete
     Properties:
-      TableName: !Sub 'growksh-auth-otp-${Environment}'
+      TableName: !Sub 'growksh-website-otp-${Environment}'
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: email
@@ -25,16 +25,18 @@ Resources:
         AttributeName: ttl
         Enabled: true
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
-        - Key: Application
-          Value: growksh-website
 
   ContactsTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Delete
     Properties:
-      TableName: !Sub 'growksh-contacts-${Environment}'
+      TableName: !Sub 'growksh-website-contact-${Environment}'
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: id
@@ -43,32 +45,34 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
-        - Key: Application
-          Value: growksh-website
 
 Outputs:
   AuthOtpTableName:
     Description: Name of Auth OTP DynamoDB table
     Value: !Ref AuthOtpTable
     Export:
-      Name: !Sub 'growksh-${Environment}-auth-otp-table'
+      Name: !Sub 'growksh-website-${Environment}-auth-otp-table'
 
   AuthOtpTableArn:
     Description: ARN of Auth OTP DynamoDB table
     Value: !GetAtt AuthOtpTable.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-auth-otp-table-arn'
+      Name: !Sub 'growksh-website-${Environment}-auth-otp-table-arn'
 
   ContactsTableName:
     Description: Name of Contacts DynamoDB table
     Value: !Ref ContactsTable
     Export:
-      Name: !Sub 'growksh-${Environment}-contacts-table'
+      Name: !Sub 'growksh-website-${Environment}-contacts-table'
 
   ContactsTableArn:
     Description: ARN of Contacts DynamoDB table
     Value: !GetAtt ContactsTable.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-contacts-table-arn'
+      Name: !Sub 'growksh-website-${Environment}-contacts-table-arn'

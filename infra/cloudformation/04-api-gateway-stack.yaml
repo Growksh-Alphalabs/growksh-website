@@ -9,11 +9,15 @@ Parameters:
     Description: Environment name
 
 Resources:
-  UnifiedApiGateway:
+  ApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: !Sub 'growksh-api-${Environment}'
+      Name: !Sub 'growksh-website-api-${Environment}'
       Description: Unified API for Growksh website
+      Tags:
+        App: Website
+        Partner: Growksh
+        Env: !Ref Environment
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -22,7 +26,7 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       StageName: !Ref Environment
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       DeploymentId: !Ref ApiDeployment
       TracingEnabled: true
       MethodSettings:
@@ -37,20 +41,20 @@ Resources:
       - ContactOptionsMethod
       - ContactPostMethod
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
 
   # Contact endpoints
   ContactResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
-      ParentId: !GetAtt UnifiedApiGateway.RootResourceId
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
       PathPart: contact
 
   ContactPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref ContactResource
       HttpMethod: POST
       AuthorizationType: NONE
@@ -62,7 +66,7 @@ Resources:
   ContactOptionsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref ContactResource
       HttpMethod: OPTIONS
       AuthorizationType: NONE
@@ -87,21 +91,21 @@ Resources:
   AuthResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
-      ParentId: !GetAtt UnifiedApiGateway.RootResourceId
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
       PathPart: auth
 
   SignupResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ParentId: !Ref AuthResource
       PathPart: signup
 
   SignupPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref SignupResource
       HttpMethod: POST
       AuthorizationType: NONE
@@ -113,14 +117,14 @@ Resources:
   VerifyEmailResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ParentId: !Ref AuthResource
       PathPart: verify-email
 
   VerifyEmailGetMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref VerifyEmailResource
       HttpMethod: GET
       AuthorizationType: NONE
@@ -132,14 +136,14 @@ Resources:
   CheckAdminResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ParentId: !Ref AuthResource
       PathPart: check-admin
 
   CheckAdminPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref UnifiedApiGateway
+      RestApiId: !Ref ApiGateway
       ResourceId: !Ref CheckAdminResource
       HttpMethod: POST
       AuthorizationType: NONE
@@ -151,36 +155,36 @@ Resources:
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint
-    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
     Export:
-      Name: !Sub 'growksh-${Environment}-api-endpoint'
+      Name: !Sub 'growksh-website-${Environment}-api-endpoint'
 
   ApiId:
     Description: API Gateway REST API ID
-    Value: !Ref UnifiedApiGateway
+    Value: !Ref ApiGateway
     Export:
-      Name: !Sub 'growksh-${Environment}-api-id'
+      Name: !Sub 'growksh-website-${Environment}-api-id'
 
   ContactEndpoint:
     Description: Contact endpoint
-    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/contact'
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/contact'
     Export:
-      Name: !Sub 'growksh-${Environment}-contact-endpoint'
+      Name: !Sub 'growksh-website-${Environment}-contact-endpoint'
 
   SignupEndpoint:
     Description: Signup endpoint
-    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/signup'
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/signup'
     Export:
-      Name: !Sub 'growksh-${Environment}-signup-endpoint'
+      Name: !Sub 'growksh-website-${Environment}-signup-endpoint'
 
   VerifyEmailEndpoint:
     Description: Verify email endpoint
-    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/verify-email'
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/verify-email'
     Export:
-      Name: !Sub 'growksh-${Environment}-verify-endpoint'
+      Name: !Sub 'growksh-website-${Environment}-verify-endpoint'
 
   CheckAdminEndpoint:
     Description: Check admin endpoint
-    Value: !Sub 'https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/check-admin'
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/auth/check-admin'
     Export:
-      Name: !Sub 'growksh-${Environment}-check-admin-endpoint'
+      Name: !Sub 'growksh-website-${Environment}-check-admin-endpoint'

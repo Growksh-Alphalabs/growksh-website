@@ -24,93 +24,117 @@ Resources:
   PreSignUpFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'growksh-pre-sign-up-${Environment}'
+      FunctionName: !Sub 'growksh-website-pre-sign-up-${Environment}'
       Runtime: nodejs18.x
       Handler: pre-sign-up.handler
       Code:
-        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/pre-sign-up-${Environment}.zip'
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
 
   CustomMessageFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'growksh-custom-message-${Environment}'
+      FunctionName: !Sub 'growksh-website-custom-message-${Environment}'
       Runtime: nodejs18.x
       Handler: custom-message.handler
       Code:
-        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/custom-message-${Environment}.zip'
       Environment:
         Variables:
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
 
   DefineAuthChallengeFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'growksh-define-auth-challenge-${Environment}'
+      FunctionName: !Sub 'growksh-website-define-auth-challenge-${Environment}'
       Runtime: nodejs18.x
       Handler: define-auth-challenge.handler
       Code:
-        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/define-auth-challenge-${Environment}.zip'
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
 
   CreateAuthChallengeFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'growksh-create-auth-challenge-${Environment}'
+      FunctionName: !Sub 'growksh-website-create-auth-challenge-${Environment}'
       Runtime: nodejs18.x
       Handler: create-auth-challenge.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
       Code:
-        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/create-auth-challenge-${Environment}.zip'
       Environment:
         Variables:
           OTP_TABLE: !ImportValue
-            Fn::Sub: 'growksh-${Environment}-auth-otp-table'
+            Fn::Sub: 'growksh-website-${Environment}-auth-otp-table'
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           DEBUG_LOG: !Ref DebugLogOTP
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
 
   VerifyAuthChallengeFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'growksh-verify-auth-challenge-${Environment}'
+      FunctionName: !Sub 'growksh-website-verify-auth-challenge-${Environment}'
       Runtime: nodejs18.x
       Handler: verify-auth-challenge.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-auth-lambda-role-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
       Code:
-        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/verify-auth-challenge-${Environment}.zip'
       Environment:
         Variables:
           OTP_TABLE: !ImportValue
-            Fn::Sub: 'growksh-${Environment}-auth-otp-table'
+            Fn::Sub: 'growksh-website-${Environment}-auth-otp-table'
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
 
   PostConfirmationFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub 'growksh-post-confirmation-${Environment}'
+      FunctionName: !Sub 'growksh-website-post-confirmation-${Environment}'
       Runtime: nodejs18.x
       Handler: post-confirmation.handler
-      Code:
-        S3Bucket: !Sub 'growksh-lambda-code-${AWS::AccountId}'
+      Code:App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/post-confirmation-${Environment}.zip'
       Tags:
         - Key: Environment
@@ -124,7 +148,7 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+        Fn::Sub: 'growksh-website-${Environment}-pool-arn'
 
   CustomMessagePermission:
     Type: AWS::Lambda::Permission
@@ -133,7 +157,7 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+        Fn::Sub: 'growksh-website-${Environment}-pool-arn'
 
   DefineAuthChallengePermission:
     Type: AWS::Lambda::Permission
@@ -142,7 +166,7 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+        Fn::Sub: 'growksh-website-${Environment}-pool-arn'
 
   CreateAuthChallengePermission:
     Type: AWS::Lambda::Permission
@@ -151,7 +175,7 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+        Fn::Sub: 'growksh-website-${Environment}-pool-arn'
 
   VerifyAuthChallengePermission:
     Type: AWS::Lambda::Permission
@@ -160,7 +184,7 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+        Fn::Sub: 'growksh-website-${Environment}-pool-arn'
 
   PostConfirmationPermission:
     Type: AWS::Lambda::Permission
@@ -169,14 +193,14 @@ Resources:
       Principal: cognito-idp.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-arn'
+        Fn::Sub: 'growksh-website-${Environment}-pool-arn'
 
   # Attach Lambda functions to Cognito
-  CognitoLambdaConfig:
+  PoolResourceServer:
     Type: AWS::Cognito::UserPoolResourceServer
     Properties:
       UserPoolId: !ImportValue
-        Fn::Sub: 'growksh-${Environment}-user-pool-id'
+        Fn::Sub: 'growksh-website-${Environment}-pool-id'
       Identifier: growksh-api
       Name: Growksh API
       Scopes:
@@ -187,14 +211,14 @@ Outputs:
   PreSignUpFunctionArn:
     Value: !GetAtt PreSignUpFunction.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-pre-sign-up-arn'
+      Name: !Sub 'growksh-website-${Environment}-pre-sign-up-arn'
 
   CreateAuthChallengeFunctionArn:
     Value: !GetAtt CreateAuthChallengeFunction.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-create-auth-challenge-arn'
+      Name: !Sub 'growksh-website-${Environment}-create-auth-challenge-arn'
 
   VerifyAuthChallengeFunctionArn:
     Value: !GetAtt VerifyAuthChallengeFunction.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-verify-auth-challenge-arn'
+      Name: !Sub 'growksh-website-${Environment}-verify-auth-challenge-arn'
