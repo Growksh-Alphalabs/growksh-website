@@ -110,6 +110,27 @@ Resources:
                   - dynamodb:GetItem
                 Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/growksh-contacts'
 
+  ApiGatewayCloudWatchLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'growksh-website-apigw-logs-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+
 Outputs:
   AuthLambdaRoleArn:
     Description: ARN of Auth Lambda Execution Role
@@ -128,3 +149,9 @@ Outputs:
     Value: !GetAtt CognitoTriggerRole.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-cognito-lambda-role-arn'
+
+  ApiGatewayCloudWatchLogsRoleArn:
+    Description: ARN of API Gateway CloudWatch Logs Role
+    Value: !GetAtt ApiGatewayCloudWatchLogsRole.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-apigw-logs-role-arn'
