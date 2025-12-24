@@ -73,6 +73,27 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}'
 
+  # AWS WAF Web ACL - Required for Free plan and other flat-rate pricing
+  CloudFrontWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub 'growksh-website-${Environment}-waf'
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules: []
+      VisibilityConfig:
+        SampledRequestsEnabled: false
+        CloudWatchMetricsEnabled: false
+        MetricName: !Sub 'growksh-website-${Environment}-waf'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
   CdnDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -89,6 +110,7 @@ Resources:
         DefaultRootObject: index.html
         PriceClass: PriceClass_All
         HttpVersion: http2and3
+        WebACLId: !GetAtt CloudFrontWebACL.Arn
         Aliases: !If 
           - HasDomainNames
           - !Ref DomainNames
@@ -169,3 +191,9 @@ Outputs:
     Value: !Ref OriginAccessControl
     Export:
       Name: !Sub 'growksh-website-${Environment}-oac-id'
+
+  WebACLArn:
+    Description: AWS WAF Web ACL ARN (required for Free plan)
+    Value: !GetAtt CloudFrontWebACL.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-waf-arn'
