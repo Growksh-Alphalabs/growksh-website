@@ -1,16 +1,106 @@
-# React + Vite
+# Growksh Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack React + Vite application with passwordless authentication powered by AWS Cognito, Lambda, and DynamoDB.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Prerequisites
+- Node.js 18+
+- AWS Account with Cognito User Pool, Lambda, DynamoDB, SES, and API Gateway configured
+- Environment variables configured in `.env.local`
 
-## React Compiler
+### Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Expanding the ESLint configuration
+2. **Configure environment:**
+   Create `.env.local` with:
+   ```
+   VITE_COGNITO_USER_POOL_ID=ap-south-1_xxxxx
+   VITE_COGNITO_CLIENT_ID=xxxxx
+   VITE_API_URL=https://your-api-gateway-id.execute-api.ap-south-1.amazonaws.com/Prod
+   VITE_AWS_REGION=ap-south-1
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. **Run development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for production:**
+   ```bash
+   npm run build
+   ```
+
+## Architecture
+
+### Frontend (React + Vite)
+- **Auth Pages:** Signup, Login (unified), OTP verification, Email verification
+- **Admin Panel:** Protected admin dashboard with role-based access control
+- **State Management:** AuthContext with Cognito integration
+- **Styling:** Tailwind CSS with custom theme
+
+### Backend (AWS Lambda + Cognito)
+- **9 Lambda Functions:**
+  - `pre-sign-up.js` - Auto-verify users on signup
+  - `custom-message.js` - Customize Cognito emails
+  - `define-auth-challenge.js` - Define CUSTOM_AUTH flow
+  - `create-auth-challenge.js` - Generate 6-digit OTP
+  - `verify-auth-challenge.js` - Validate OTP
+  - `signup.js` - Handle signup endpoint
+  - `verify-email.js` - Verify email with HMAC tokens
+  - `post-confirmation.js` - User post-signup setup
+  - `check-admin.js` - Verify admin group membership
+
+- **Database:** DynamoDB table for OTP storage (10-min TTL)
+- **Email:** SES for OTP and verification email delivery
+
+## Key Features
+
+### User Authentication
+- **Passwordless OTP Flow:** 6-digit codes sent via email
+- **Email Verification:** HMAC-signed links (24-hr expiry)
+- **Unified Login:** Auto-detects if email is registered
+- **Session Management:** Token storage in localStorage with validation
+
+### Admin Features
+- **Protected Routes:** Admin dashboard accessible only to admin group members
+- **Role-Based Access:** Cognito groups integration
+- **OTP Login:** Same passwordless flow as regular users
+- **Admin Check:** Pre-verification before OTP is sent
+
+## Important Files
+
+- `src/context/AuthContext.jsx` - Global auth state and functions
+- `src/lib/cognito.js` - AWS Cognito integration
+- `src/components/Auth/` - Auth components (Signup, Login, AdminLogin, VerifyEmail)
+- `src/components/common/ProtectedRoute.jsx` - Route protection wrapper
+- `infra/sam-template.yaml` - AWS infrastructure as code
+- `docs/` - Comprehensive documentation
+
+## Deployment
+
+### Frontend (React)
+- Build artifacts deployed to S3 + CloudFront
+- GitHub Actions workflow: `.github/workflows/deploy-to-s3.yml`
+
+### Backend (Lambda + Cognito)
+- Infrastructure managed by SAM template
+- GitHub Actions workflow: `.github/workflows/deploy-sam.yml`
+- Deploy with: `sam deploy` in `infra/` folder
+
+## Documentation
+
+Comprehensive documentation available in `/docs/`:
+- `QUICKSTART.md` - Getting started guide
+- `IMPLEMENTATION_SUMMARY.md` - Feature overview
+- `AUTH_IMPLEMENTATION.md` - Technical implementation details
+- `ADMIN_SETUP.md` - Admin user setup and configuration
+- `PROJECT_STRUCTURE.md` - Project file organization
+
+## Support
+
+For detailed setup instructions and troubleshooting, see the `/docs/` folder.
