@@ -12,7 +12,7 @@ Parameters:
     Description: S3 bucket name (must be globally unique)
 
 Resources:
-  StaticSiteBucket:
+  AssetsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     UpdateReplacePolicy: Delete
@@ -31,25 +31,27 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
       Tags:
-        - Key: Environment
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
           Value: !Ref Environment
-        - Key: Application
-          Value: growksh-website
 
-  StaticSiteOriginAccessControl:
+  OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
       OriginAccessControlConfig:
-        Name: !Sub 'growksh-${Environment}-oac'
+        Name: !Sub 'growksh-website-${Environment}-oac'
         Description: OAC for CloudFront to access private S3 bucket
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
 
-  StaticSiteBucketPolicy:
+  AssetsBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref StaticSiteBucket
+      Bucket: !Ref AssetsBucket
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -58,14 +60,21 @@ Resources:
             Principal:
               Service: cloudfront.amazonaws.com
             Action: s3:GetObject
-            Resource: !Sub '${StaticSiteBucket.Arn}/*'
+            Resource: !Sub '${AssetsBucket.Arn}/*'
             Condition:
               StringEquals:
-                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}'
 
-  CloudFrontDistribution:
+  CdnDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
       DistributionConfig:
         Enabled: true
         Comment: !Sub 'Growksh website ${Environment}'
@@ -74,9 +83,9 @@ Resources:
         HttpVersion: http2
         Origins:
           - Id: S3Origin
-            DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
+            DomainName: !GetAtt AssetsBucket.RegionalDomainName
             S3OriginConfig: {}
-            OriginAccessControlId: !Ref StaticSiteOriginAccessControl
+            OriginAccessControlId: !Ref OriginAccessControl
         DefaultCacheBehavior:
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: redirect-to-https
@@ -110,36 +119,36 @@ Resources:
 Outputs:
   BucketName:
     Description: S3 bucket name
-    Value: !Ref StaticSiteBucket
+    Value: !Ref AssetsBucket
     Export:
-      Name: !Sub 'growksh-${Environment}-bucket'
+      Name: !Sub 'growksh-website-${Environment}-bucket'
 
   BucketArn:
     Description: S3 bucket ARN
-    Value: !GetAtt StaticSiteBucket.Arn
+    Value: !GetAtt AssetsBucket.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-bucket-arn'
+      Name: !Sub 'growksh-website-${Environment}-bucket-arn'
 
-  CloudFrontDistributionId:
+  CdnDistributionId:
     Description: CloudFront distribution ID
-    Value: !Ref CloudFrontDistribution
+    Value: !Ref CdnDistribution
     Export:
-      Name: !Sub 'growksh-${Environment}-cloudfront-id'
+      Name: !Sub 'growksh-website-${Environment}-cloudfront-id'
 
   CloudFrontDomainName:
     Description: CloudFront domain name
-    Value: !GetAtt CloudFrontDistribution.DomainName
+    Value: !GetAtt CdnDistribution.DomainName
     Export:
-      Name: !Sub 'growksh-${Environment}-cloudfront-domain'
+      Name: !Sub 'growksh-website-${Environment}-cdn-domain'
 
   CloudFrontUrl:
     Description: CloudFront URL
-    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+    Value: !Sub 'https://${CdnDistribution.DomainName}'
     Export:
-      Name: !Sub 'growksh-${Environment}-url'
+      Name: !Sub 'growksh-website-${Environment}-url'
 
   OriginAccessControlId:
     Description: CloudFront Origin Access Control ID
-    Value: !Ref StaticSiteOriginAccessControl
+    Value: !Ref OriginAccessControl
     Export:
-      Name: !Sub 'growksh-${Environment}-oac-id'
+      Name: !Sub 'growksh-website-${Environment}-oac-id'

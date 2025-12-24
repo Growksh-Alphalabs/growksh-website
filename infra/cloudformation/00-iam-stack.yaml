@@ -9,10 +9,17 @@ Parameters:
     Description: Environment name
 
 Resources:
-  AuthLambdaExecutionRole:
+  AuthLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub 'growksh-auth-lambda-role-${Environment}'
+      RoleName: !Sub 'growksh-website-auth-lambda-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -53,10 +60,17 @@ Resources:
                   - ses:SendRawEmail
                 Resource: '*'
 
-  CognitoLambdaInvokeRole:
+  CognitoTriggerRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub 'growksh-cognito-lambda-role-${Environment}'
+      RoleName: !Sub 'growksh-website-cognito-trigger-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -65,10 +79,17 @@ Resources:
               Service: cognito-idp.amazonaws.com
             Action: sts:AssumeRole
 
-  ContactLambdaExecutionRole:
+  ContactLambdaRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub 'growksh-contact-lambda-role-${Environment}'
+      RoleName: !Sub 'growksh-website-contact-lambda-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -90,20 +111,20 @@ Resources:
                 Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/growksh-contacts'
 
 Outputs:
-  AuthLambdaExecutionRoleArn:
+  AuthLambdaRoleArn:
     Description: ARN of Auth Lambda Execution Role
-    Value: !GetAtt AuthLambdaExecutionRole.Arn
+    Value: !GetAtt AuthLambdaRole.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-auth-lambda-role-arn'
+      Name: !Sub 'growksh-website-${Environment}-auth-lambda-role-arn'
 
-  ContactLambdaExecutionRoleArn:
+  ContactLambdaRoleArn:
     Description: ARN of Contact Lambda Execution Role
-    Value: !GetAtt ContactLambdaExecutionRole.Arn
+    Value: !GetAtt ContactLambdaRole.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-contact-lambda-role-arn'
+      Name: !Sub 'growksh-website-${Environment}-contact-lambda-role-arn'
 
-  CognitoLambdaInvokeRoleArn:
+  CognitoTriggerRoleArn:
     Description: ARN of Cognito Lambda Invoke Role
-    Value: !GetAtt CognitoLambdaInvokeRole.Arn
+    Value: !GetAtt CognitoTriggerRole.Arn
     Export:
-      Name: !Sub 'growksh-${Environment}-cognito-lambda-role-arn'
+      Name: !Sub 'growksh-website-${Environment}-cognito-lambda-role-arn'
