@@ -31,6 +31,12 @@ Resources:
           LoggingLevel: INFO
           DataTraceEnabled: true
 
+  ApiAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-apigw-logs-role-arn'
+
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -57,7 +63,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-contact-${Environment}/invocations'
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-contact-${Environment}/invocations'
 
   ContactOptionsMethod:
     Type: AWS::ApiGateway::Method
@@ -108,7 +114,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-signup-${Environment}/invocations'
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-signup-${Environment}/invocations'
 
   VerifyEmailResource:
     Type: AWS::ApiGateway::Resource
@@ -127,7 +133,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-verify-email-${Environment}/invocations'
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-verify-email-${Environment}/invocations'
 
   CheckAdminResource:
     Type: AWS::ApiGateway::Resource
@@ -146,7 +152,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-check-admin-${Environment}/invocations'
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-check-admin-${Environment}/invocations'
 
 Outputs:
   ApiEndpoint:
