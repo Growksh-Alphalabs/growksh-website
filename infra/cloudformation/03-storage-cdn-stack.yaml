@@ -18,6 +18,15 @@ Parameters:
     Type: String
     Default: ""
     Description: ACM Certificate ARN for custom domains (must be in us-east-1 region)
+  WAFArn:
+    Type: String
+    Default: ""
+    Description: WAF Web ACL ARN for CloudFront protection (must be in us-east-1 region)
+
+Conditions:
+  HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
+  HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
 
 Resources:
   AssetsBucket:
@@ -99,7 +108,7 @@ Resources:
             Resource: !Sub '${AssetsBucket.Arn}/*'
             Condition:
               StringEquals:
-                AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}'
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}'
 
   CdnDistribution:
     Type: AWS::CloudFront::Distribution
@@ -147,6 +156,10 @@ Resources:
             ResponsePagePath: /index.html
             ResponseCode: 200
             ErrorCachingMinTTL: 0
+        WebACLId: !If
+          - HasWAF
+          - !Ref WAFArn
+          - !Ref AWS::NoValue
         ViewerCertificate: !If
           - HasCertificate
           - AcmCertificateArn: !Ref CertificateArn
@@ -156,10 +169,6 @@ Resources:
         Restrictions:
           GeoRestriction:
             RestrictionType: none
-
-Conditions:
-  HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
-  HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
 
 Outputs:
   BucketName:
