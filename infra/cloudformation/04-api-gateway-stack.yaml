@@ -14,10 +14,6 @@ Resources:
     Properties:
       Name: !Sub 'growksh-website-api-${Environment}'
       Description: Unified API for Growksh website
-      Tags:
-        App: Website
-        Partner: Growksh
-        Env: !Ref Environment
       EndpointConfiguration:
         Types:
           - REGIONAL
