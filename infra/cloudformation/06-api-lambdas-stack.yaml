@@ -46,7 +46,7 @@ Resources:
       FunctionName: !Ref ContactFunction
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/contact'
 
   SignupFunction:
     Type: AWS::Lambda::Function
@@ -79,7 +79,7 @@ Resources:
       FunctionName: !Ref SignupFunction
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/auth/signup'
 
   VerifyEmailFunction:
     Type: AWS::Lambda::Function
@@ -110,14 +110,14 @@ Resources:
       FunctionName: !Ref VerifyEmailFunction
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/auth/verify-email'
 
   CheckAdminFunction:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-check-admin-${Environment}'
       Runtime: nodejs18.x
-      Handler: check-admin.handler
+      Handler: define-auth-challenge.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
@@ -141,12 +141,8 @@ Resources:
       FunctionName: !Ref CheckAdminFunction
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
-      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*'
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/auth/check-admin'
 
-  ApiGateway:
-    Type: AWS::ApiGateway::RestApi
-    Properties:
-      Name: !Sub 'growksh-website-api-${Environment}'
 
 Outputs:
   ContactFunctionArn:
