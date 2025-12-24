@@ -183,7 +183,7 @@ jobs:
               --s3-bucket "$S3_BUCKET" \
               --output-template-file infra/packaged.yaml
 
-            STACK_NAME="growksh-website"
+            STACK_NAME="growksh-website-auth"
 
             # If stack is in ROLLBACK_COMPLETE, delete it first
             STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "")
