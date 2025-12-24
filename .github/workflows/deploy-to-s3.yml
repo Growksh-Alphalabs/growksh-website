@@ -285,7 +285,7 @@ jobs:
 
               # Tag the CloudFront distribution
               ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-              aws cloudfront tag-resource --resource "arn:aws:cloudfront::$ACCOUNT_ID:distribution/$DIST_ID" --tags 'Items={Key=App,Value=Website},{Key=Env,Value=Prod},{Key=Name,Value=prod-growksh-static-website},{Key=Partner,Value=Growksh}'
+              aws cloudfront tag-resource --resource "arn:aws:cloudfront::$ACCOUNT_ID:distribution/$DIST_ID" --tags 'Items=[{Key=App,Value=Website},{Key=Env,Value=Prod},{Key=Name,Value=prod-growksh-static-website},{Key=Partner,Value=Growksh}]'
             fi
           fi
 
