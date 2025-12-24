@@ -105,30 +105,46 @@ jobs:
           echo "Resolved S3_BUCKET=$S3_BUCKET"
         shell: bash
 
-      # ✅ GET S3 BUCKET FROM SAM STACK OUTPUTS
-      - name: ✅ Get S3 Bucket from CloudFormation Stack
+      # ✅ CREATE S3 BUCKET (if doesn't exist)
+      - name: ✅ Create or Verify S3 Bucket
         run: |
-          STACK_NAME="growksh-website"
-          
-          # Check if stack exists
-          if ! aws cloudformation describe-stacks --stack-name "$STACK_NAME" 2>/dev/null; then
-            echo "::error::CloudFormation stack $STACK_NAME not found. Run deploy-sam.yml first to create the stack."
+          echo "Creating or verifying S3 bucket: $S3_BUCKET"
+
+          # Validate bucket name length
+          LEN=${#S3_BUCKET}
+          if [ "$LEN" -lt 3 ] || [ "$LEN" -gt 63 ]; then
+            echo "::error::S3 bucket name must be between 3 and 63 characters. Got: $LEN"
             exit 1
           fi
 
-          # Get S3 bucket name from stack outputs
-          SAM_S3_BUCKET=$(aws cloudformation describe-stacks \
-            --stack-name "$STACK_NAME" \
-            --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
-            --output text)
-
-          if [ -z "$SAM_S3_BUCKET" ] || [ "$SAM_S3_BUCKET" = "None" ]; then
-            echo "::error::Could not retrieve S3BucketName from CloudFormation stack outputs"
-            exit 1
+          # Check if bucket already exists
+          if aws s3api head-bucket --bucket "$S3_BUCKET" 2>/dev/null; then
+            echo "✅ S3 bucket already exists: $S3_BUCKET"
+          else
+            echo "Creating new S3 bucket: $S3_BUCKET"
+            if [ "$AWS_REGION" = "ap-south-1" ]; then
+              aws s3api create-bucket --bucket "$S3_BUCKET"
+            else
+              aws s3api create-bucket --bucket "$S3_BUCKET" --create-bucket-configuration LocationConstraint=$AWS_REGION
+            fi
+            echo "✅ S3 bucket created successfully"
           fi
 
-          echo "S3_BUCKET=$SAM_S3_BUCKET" >> $GITHUB_ENV
-          echo "✅ S3 bucket from CloudFormation: $SAM_S3_BUCKET"
+          # Apply tags to S3 bucket
+          aws s3api put-bucket-tagging --bucket "$S3_BUCKET" --tagging 'TagSet=[{Key=App,Value=Website},{Key=Env,Value=Prod},{Key=Name,Value=prod-growksh-static-website},{Key=Partner,Value=Growksh}]'
+
+          # Configure website hosting (for SPA routing)
+          aws s3 website s3://$S3_BUCKET --index-document index.html --error-document index.html
+
+          # Allow public read access
+          aws s3api put-public-access-block --bucket "$S3_BUCKET" \
+            --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
+
+          # Set bucket policy to allow public GetObject
+          POLICY=$(printf '{"Version":"2012-10-17","Statement":[{"Sid":"PublicReadGetObject","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::%s/*"}]}' "$S3_BUCKET")
+          aws s3api put-bucket-policy --bucket "$S3_BUCKET" --policy "$POLICY"
+
+          echo "✅ S3 bucket is ready: $S3_BUCKET"
         shell: bash
 
       # ✅ PACKAGE & DEPLOY INFRA (Lambda + API Gateway + DynamoDB) if present
