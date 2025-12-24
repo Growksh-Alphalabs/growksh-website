@@ -27,12 +27,18 @@ Parameters:
 Globals:
   Function:
     Timeout: 10
+    Tags:
+      App: Website
+      Env: Prod
+      Name: prod-growksh-static-website
+      Partner: Growksh
 
 Resources:
   ContactsTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
     Properties:
-      TableName: !Sub "${AWS::StackName}-contacts"
+      TableName: growksh-website-contacts
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -40,6 +46,15 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
 
   ContactFunction:
     Type: AWS::Serverless::Function
@@ -69,6 +84,7 @@ Resources:
 
   ContactApiGateway:
     Type: AWS::Serverless::Api
+    DeletionPolicy: Delete
     Properties:
       StageName: Prod
       TracingEnabled: true
@@ -94,8 +110,9 @@ Resources:
   # DynamoDB table for storing OTPs and verification tokens
   AuthOtpTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
     Properties:
-      TableName: !Sub "${AWS::StackName}-auth-otp"
+      TableName: growksh-website-auth-otp
       AttributeDefinitions:
         - AttributeName: email
           AttributeType: S
@@ -106,12 +123,22 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl
         Enabled: true
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
 
   # Cognito User Pool for authentication
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
+    DeletionPolicy: Delete
     Properties:
-      UserPoolName: !Sub "${AWS::StackName}-user-pool"
+      UserPoolName: growksh-website-user-pool
       UsernameAttributes:
         - email
       AutoVerifiedAttributes:
@@ -144,8 +171,9 @@ Resources:
   # Cognito User Pool Client
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
+    DeletionPolicy: Delete
     Properties:
-      ClientName: !Sub "${AWS::StackName}-client"
+      ClientName: growksh-website-client
       UserPoolId: !Ref CognitoUserPool
       ExplicitAuthFlows:
         - ALLOW_CUSTOM_AUTH
@@ -252,7 +280,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-pre-sign-up"
+      FunctionName: growksh-website-pre-sign-up
       Handler: pre-sign-up.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -263,7 +291,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-custom-message"
+      FunctionName: growksh-website-custom-message
       Handler: custom-message.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -279,7 +307,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-create-auth-challenge"
+      FunctionName: growksh-website-create-auth-challenge
       Handler: create-auth-challenge.handler
       Runtime: nodejs18.x
       Role: !GetAtt AuthLambdaExecutionRole.Arn
@@ -296,7 +324,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-define-auth-challenge"
+      FunctionName: growksh-website-define-auth-challenge
       Handler: define-auth-challenge.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -307,7 +335,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-verify-auth-challenge"
+      FunctionName: growksh-website-verify-auth-challenge
       Handler: verify-auth-challenge.handler
       Runtime: nodejs18.x
       Role: !GetAtt AuthLambdaExecutionRole.Arn
@@ -322,7 +350,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-post-confirmation"
+      FunctionName: growksh-website-post-confirmation
       Handler: post-confirmation.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -338,6 +366,7 @@ Resources:
   # Auth API Gateway for signup and verification endpoints
   AuthApiGateway:
     Type: AWS::Serverless::Api
+    DeletionPolicy: Delete
     Properties:
       StageName: Prod
       TracingEnabled: true
@@ -366,7 +395,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-signup"
+      FunctionName: growksh-website-signup
       Handler: signup.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -397,7 +426,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-verify-email"
+      FunctionName: growksh-website-verify-email
       Handler: verify-email.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
