@@ -1,0 +1,136 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/cloudformation/**'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - '.github/workflows/deploy-prod.yaml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate CloudFormation templates
+        run: |
+          pip install cfn-lint
+          cfn-lint infra/cloudformation/*.yaml -t
+          echo "✅ All CloudFormation templates are valid"
+
+  approval:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: ⏸️ Waiting for manual approval
+        run: echo "⏸️ Production deployment pending manual approval"
+
+  deploy:
+    needs: [validate, approval]
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy CloudFormation stacks (prod)
+        run: |
+          chmod +x infra/scripts/deploy-stacks.sh
+          ./infra/scripts/deploy-stacks.sh prod
+        env:
+          AWS_REGION: us-east-1
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload frontend to S3
+        run: |
+          aws s3 sync dist/ s3://growksh-website-assets-prod/ --delete --cache-control "public, max-age=86400"
+          echo "✅ Frontend uploaded to prod S3 bucket"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-prod --query 'Stacks[0].Outputs[?OutputKey==`CdnDistributionId`].OutputValue' --output text)
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          echo "✅ CloudFront cache invalidated"
+
+      - name: Get deployment info
+        id: deploy-info
+        run: |
+          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-prod --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' --output text)
+          API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name growksh-website-api-prod --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text)
+          echo "cloudfront_domain=$CLOUDFRONT_DOMAIN" >> $GITHUB_OUTPUT
+          echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: release-${{ github.run_number }}
+          release_name: Production Release ${{ github.run_number }}
+          body: |
+            ## Production Deployment
+            
+            **Commit**: ${{ github.sha }}
+            **Branch**: ${{ github.ref }}
+            **Run**: ${{ github.run_id }}
+            
+            ### URLs
+            - **Frontend**: https://${{ steps.deploy-info.outputs.cloudfront_domain }}
+            - **API**: ${{ steps.deploy-info.outputs.api_endpoint }}
+            
+            ### Stacks Deployed
+            - growksh-website-iam-prod
+            - growksh-website-database-prod
+            - growksh-website-cognito-prod
+            - growksh-website-storage-cdn-prod
+            - growksh-website-api-prod
+            - growksh-website-cognito-lambdas-prod
+            - growksh-website-api-lambdas-prod
+          draft: false
+          prerelease: false
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Production deployment successful"
+          echo "- Commit: ${{ github.sha }}"
+          echo "- Release: release-${{ github.run_number }}"
+          echo "- Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Production deployment failed"
+          echo "- Commit: ${{ github.sha }}"
+          exit 1

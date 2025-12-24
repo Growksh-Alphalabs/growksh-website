@@ -1,0 +1,95 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'infra/cloudformation/**'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - '.github/workflows/deploy-develop.yaml'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate CloudFormation templates
+        run: |
+          pip install cfn-lint
+          cfn-lint infra/cloudformation/*.yaml -t
+          echo "✅ All CloudFormation templates are valid"
+
+      - name: Deploy CloudFormation stacks (dev)
+        run: |
+          chmod +x infra/scripts/deploy-stacks.sh
+          ./infra/scripts/deploy-stacks.sh dev
+        env:
+          AWS_REGION: us-east-1
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload frontend to S3
+        run: |
+          aws s3 sync dist/ s3://growksh-website-assets-dev/ --delete --cache-control "public, max-age=3600"
+          echo "✅ Frontend uploaded to dev S3 bucket"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-dev --query 'Stacks[0].Outputs[?OutputKey==`CdnDistributionId`].OutputValue' --output text)
+          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          echo "✅ CloudFront cache invalidated"
+
+      - name: Get deployment URLs
+        run: |
+          echo "## ✅ Deployment Complete (Development)"
+          echo ""
+          echo "### URLs"
+          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-dev --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' --output text)
+          echo "- Frontend: https://$CLOUDFRONT_DOMAIN"
+          echo ""
+          echo "### API Endpoints"
+          API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name growksh-website-api-dev --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text)
+          echo "- API: $API_ENDPOINT"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Development deployment successful"
+          echo "- Branch: ${{ github.ref }}"
+          echo "- Commit: ${{ github.sha }}"
+          echo "- Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+      - name: Notify deployment failure
+        if: failure()
+        run: |
+          echo "❌ Development deployment failed"
+          echo "- Branch: ${{ github.ref }}"
+          echo "- Commit: ${{ github.sha }}"
+          exit 1
