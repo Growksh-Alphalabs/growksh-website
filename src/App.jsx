@@ -2,6 +2,7 @@ import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/common/Layout'
 import ScrollToTop from './components/common/ScrollToTop'
+import ProtectedRoute from './components/common/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import Home from './pages/Home'
 import About from './pages/About'
@@ -13,6 +14,8 @@ import Contact from './pages/Contact'
 import Login from './components/Auth/Login'
 import Signup from './components/Auth/Signup'
 import VerifyEmail from './components/Auth/VerifyEmail'
+import AdminLogin from './components/Auth/AdminLogin'
+import AdminDashboard from './pages/AdminDashboard'
 
 export default function App() {
   return (
@@ -38,6 +41,17 @@ export default function App() {
 
               <Route path="/auth/verify-email" element={<VerifyEmail />} />
             </Route>
+
+            {/* Admin Routes - NOT in Layout (no navbar for admin panel) */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute requireAdmin={true} fallbackRoute="/admin/login">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </ScrollToTop>
       </AuthProvider>

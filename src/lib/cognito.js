@@ -236,6 +236,73 @@ export async function verifyOTP({ email, otp, session }) {
 }
 
 /**
+ * Admin login with email and password (USER_PASSWORD_AUTH flow)
+ * @param {string} email - Admin email
+ * @param {string} password - Admin password
+ * @returns {Promise<Object>} Authentication result with tokens
+ */
+export async function adminLogin(email, password) {
+  if (USE_FAKE || runtimeFakeOverride) {
+    // Fake admin login
+    const fakeEmail = 'admin@growksh.com';
+    if (email === fakeEmail && password === 'admin123') {
+      const fakeToken = 'fake-id-token-' + Date.now();
+      localStorage.setItem('idToken', fakeToken);
+      localStorage.setItem('accessToken', fakeToken);
+      localStorage.setItem('refreshToken', fakeToken);
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('isAdmin', 'true');
+      return {
+        success: true,
+        AuthenticationResult: {
+          IdToken: fakeToken,
+          AccessToken: fakeToken,
+          RefreshToken: fakeToken,
+        },
+      };
+    }
+    throw new Error('Invalid admin credentials');
+  }
+
+  if (!USER_POOL_ID || !CLIENT_ID) {
+    throw new Error(missingMsg);
+  }
+
+  try {
+    const cmd = new InitiateAuthCommand({
+      ClientId: CLIENT_ID,
+      AuthFlow: 'USER_PASSWORD_AUTH',
+      AuthParameters: {
+        USERNAME: email,
+        PASSWORD: password,
+      },
+    });
+
+    const res = await cognitoIdpClient.send(cmd);
+
+    if (res.AuthenticationResult) {
+      return {
+        success: true,
+        AuthenticationResult: res.AuthenticationResult,
+      };
+    }
+
+    throw new Error('Failed to authenticate admin user');
+  } catch (err) {
+    if (err.name === 'UserNotConfirmedException') {
+      throw new Error('User account not confirmed');
+    }
+    if (err.name === 'NotAuthorizedException') {
+      throw new Error('Invalid email or password');
+    }
+    if (err.name === 'UserNotFoundException') {
+      throw new Error('Admin user not found');
+    }
+    throw err;
+  }
+}
+
+/**
  * Get current authenticated user
  * @returns {Promise<Object|null>} User object or null if not authenticated
  */

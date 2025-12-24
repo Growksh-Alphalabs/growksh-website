@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { initiateAuth, verifyOTP, checkUserExists } from '../../lib/cognito'
+import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
 export default function Login() {
   const navigate = useNavigate()
+  const { checkAuth } = useAuth()
   const [stage, setStage] = useState('email') // email | otp | success
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
@@ -98,12 +100,15 @@ export default function Login() {
           localStorage.setItem('refreshToken', RefreshToken)
         }
         localStorage.setItem('userEmail', email)
+        
+        // Re-check auth state immediately to update navbar
+        await checkAuth()
       }
 
-      // Redirect after 2 seconds
+      // Redirect after 1 second (auth state is already updated)
       setTimeout(() => {
         navigate('/')
-      }, 2000)
+      }, 1000)
     } catch (error) {
       console.error('OTP verification error:', error)
       setErrorMessage(error.message || 'Invalid OTP. Please try again.')
