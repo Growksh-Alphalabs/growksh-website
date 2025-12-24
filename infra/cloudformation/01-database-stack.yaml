@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB tables for Growksh website
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prod, ephemeral]
+    Description: Environment name
+
+Resources:
+  AuthOtpTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    Properties:
+      TableName: !Sub 'growksh-auth-otp-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: growksh-website
+
+  ContactsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    Properties:
+      TableName: !Sub 'growksh-contacts-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Application
+          Value: growksh-website
+
+Outputs:
+  AuthOtpTableName:
+    Description: Name of Auth OTP DynamoDB table
+    Value: !Ref AuthOtpTable
+    Export:
+      Name: !Sub 'growksh-${Environment}-auth-otp-table'
+
+  AuthOtpTableArn:
+    Description: ARN of Auth OTP DynamoDB table
+    Value: !GetAtt AuthOtpTable.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-auth-otp-table-arn'
+
+  ContactsTableName:
+    Description: Name of Contacts DynamoDB table
+    Value: !Ref ContactsTable
+    Export:
+      Name: !Sub 'growksh-${Environment}-contacts-table'
+
+  ContactsTableArn:
+    Description: ARN of Contacts DynamoDB table
+    Value: !GetAtt ContactsTable.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-contacts-table-arn'
