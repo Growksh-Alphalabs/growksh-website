@@ -11,59 +11,97 @@ const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Check if user is already authenticated on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        setIsLoading(true)
-        const currentUser = await cognitoLib.getCurrentUser()
-        if (currentUser) {
-          try {
-            const attributes = await cognitoLib.getUserAttributes()
-            // If session is stale, getUserAttributes() may return null.
-            if (!attributes) {
-              setUser(null)
-              setIsAuthenticated(false)
-              return
-            }
+  // Helper function to check if user is admin from token
+  const extractAdminStatusFromToken = (token) => {
+    if (!token) return false
+    try {
+      // JWT payload is between first and second dot
+      const parts = token.split('.')
+      if (parts.length !== 3) return false
+      
+      const payload = JSON.parse(atob(parts[1]))
+      // Check cognito:groups array for 'admin' group
+      const groups = payload['cognito:groups'] || []
+      return groups.includes('admin')
+    } catch (e) {
+      console.error('Error extracting admin status:', e)
+      return false
+    }
+  }
 
-            setUser({
-              ...currentUser,
-              ...attributes,
-            })
-            setIsAuthenticated(true)
-          } catch (attrErr) {
-            const msg = (attrErr && attrErr.message) || ''
-            if (msg.toLowerCase().includes('not authenticated')) {
-              try { await cognitoLib.signOut() } catch (e) {}
-              setUser(null)
-              setIsAuthenticated(false)
-              return
-            }
-            throw attrErr
+  // Check if user is already authenticated on mount and when tokens change
+  const checkAuth = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const currentUser = await cognitoLib.getCurrentUser()
+      if (currentUser) {
+        try {
+          const attributes = await cognitoLib.getUserAttributes()
+          // If session is stale, getUserAttributes() may return null.
+          if (!attributes) {
+            setUser(null)
+            setIsAuthenticated(false)
+            setIsAdmin(false)
+            return
           }
-        } else {
-          // Check for fake auth tokens
-          const token = localStorage.getItem('idToken')
-          const email = localStorage.getItem('userEmail')
-          if (token && token !== 'undefined' && email) {
-            setUser({ email, isAuthenticated: true })
-            setIsAuthenticated(true)
+
+          setUser({
+            ...currentUser,
+            ...attributes,
+          })
+          setIsAuthenticated(true)
+          
+          // Extract admin status from ID token
+          const idToken = localStorage.getItem('idToken')
+          const adminStatus = extractAdminStatusFromToken(idToken)
+          setIsAdmin(adminStatus)
+        } catch (attrErr) {
+          const msg = (attrErr && attrErr.message) || ''
+          if (msg.toLowerCase().includes('not authenticated')) {
+            try { await cognitoLib.signOut() } catch (e) {}
+            setUser(null)
+            setIsAuthenticated(false)
+            setIsAdmin(false)
+            return
           }
+          throw attrErr
         }
-      } catch (err) {
-        console.error('Error checking auth:', err)
-        setError(err.message)
-      } finally {
-        setIsLoading(false)
+      } else {
+        // Check for fake auth tokens
+        const token = localStorage.getItem('idToken')
+        const email = localStorage.getItem('userEmail')
+        if (token && token !== 'undefined' && email) {
+          setUser({ email, isAuthenticated: true })
+          setIsAuthenticated(true)
+          setIsAdmin(false) // Fake auth users are not admins
+        }
+      }
+    } catch (err) {
+      console.error('Error checking auth:', err)
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Run on mount and listen for storage changes
+  useEffect(() => {
+    checkAuth()
+
+    // Listen for localStorage changes (e.g., from other tabs or after login)
+    const handleStorageChange = (e) => {
+      if (e.key === 'idToken' || e.key === 'userEmail') {
+        checkAuth()
       }
     }
 
-    checkAuth()
-  }, [])
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [checkAuth])
 
   // Signup handler
   const handleSignup = useCallback(async (userData) => {
@@ -129,6 +167,7 @@ export function AuthProvider({ children }) {
       await cognitoLib.signOut()
       setUser(null)
       setIsAuthenticated(false)
+      setIsAdmin(false)
     } catch (err) {
       const errorMsg = err.message || 'Logout failed'
       setError(errorMsg)
@@ -164,6 +203,7 @@ export function AuthProvider({ children }) {
     // State
     user,
     isAuthenticated,
+    isAdmin,
     isLoading,
     error,
 
@@ -174,6 +214,8 @@ export function AuthProvider({ children }) {
     logout: handleLogout,
     getIdToken,
     refreshToken,
+    checkAuth,
+    extractAdminStatusFromToken,
 
     // Clear error
     clearError: () => setError(null),
