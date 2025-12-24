@@ -3,6 +3,12 @@ Transform: AWS::Serverless-2016-10-31
 Description: SAM template for Passwordless Email OTP Authentication
 
 Parameters:
+  StaticSiteBucketName:
+    Type: String
+    Description: "S3 bucket name for static site assets (private; served via CloudFront)"
+    Default: "growksh-website-static-assets"
+    AllowedPattern: "^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
+    ConstraintDescription: "Must be a valid S3 bucket name (3-63 chars, lowercase letters, numbers, dots, hyphens)."
   SESSourceEmail:
     Type: String
     Description: "Verified SES source email address for sending OTPs"
@@ -27,12 +33,118 @@ Parameters:
 Globals:
   Function:
     Timeout: 10
+    Tags:
+      App: Website
+      Env: Prod
+      Name: prod-growksh-static-website
+      Partner: Growksh
 
 Resources:
+  StaticSiteBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref StaticSiteBucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
+
+  StaticSiteOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: growksh-website-static-site-oac
+        Description: "OAC for CloudFront to access private S3 static site bucket"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  StaticSiteCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: "Growksh Website"
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100
+        HttpVersion: http2
+        Origins:
+          - Id: StaticSiteS3Origin
+            DomainName: !GetAtt StaticSiteBucket.RegionalDomainName
+            S3OriginConfig: {}
+            OriginAccessControlId: !Ref StaticSiteOriginAccessControl
+        DefaultCacheBehavior:
+          TargetOriginId: StaticSiteS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: none
+
+  StaticSiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StaticSiteBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action:
+              - s3:GetObject
+            Resource: !Sub "${StaticSiteBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${StaticSiteCloudFrontDistribution}"
+
   ContactsTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
     Properties:
-      TableName: !Sub "${AWS::StackName}-contacts"
+      TableName: growksh-website-contacts
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
@@ -40,10 +152,20 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
 
   ContactFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: growksh-website-contact
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/contact/
@@ -59,18 +181,19 @@ Resources:
           Properties:
             Path: /contact
             Method: post
-            RestApiId: !Ref ContactApiGateway
+            RestApiId: !Ref UnifiedApiGateway
         ContactOptionsEvent:
           Type: Api
           Properties:
             Path: /contact
             Method: options
-            RestApiId: !Ref ContactApiGateway
+            RestApiId: !Ref UnifiedApiGateway
 
-  ContactApiGateway:
+  # Unified API Gateway for all endpoints (contact, auth, etc.)
+  UnifiedApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: Prod
+      StageName: prod
       TracingEnabled: true
       Cors:
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
@@ -94,8 +217,9 @@ Resources:
   # DynamoDB table for storing OTPs and verification tokens
   AuthOtpTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
     Properties:
-      TableName: !Sub "${AWS::StackName}-auth-otp"
+      TableName: growksh-website-auth-otp
       AttributeDefinitions:
         - AttributeName: email
           AttributeType: S
@@ -106,12 +230,21 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: ttl
         Enabled: true
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
 
   # Cognito User Pool for authentication
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      UserPoolName: !Sub "${AWS::StackName}-user-pool"
+      UserPoolName: growksh-website-user-pool
       UsernameAttributes:
         - email
       AutoVerifiedAttributes:
@@ -145,7 +278,7 @@ Resources:
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: !Sub "${AWS::StackName}-client"
+      ClientName: growksh-website-client
       UserPoolId: !Ref CognitoUserPool
       ExplicitAuthFlows:
         - ALLOW_CUSTOM_AUTH
@@ -252,7 +385,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-pre-sign-up"
+      FunctionName: growksh-website-pre-sign-up
       Handler: pre-sign-up.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -263,7 +396,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-custom-message"
+      FunctionName: growksh-website-custom-message
       Handler: custom-message.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -279,7 +412,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-create-auth-challenge"
+      FunctionName: growksh-website-create-auth-challenge
       Handler: create-auth-challenge.handler
       Runtime: nodejs18.x
       Role: !GetAtt AuthLambdaExecutionRole.Arn
@@ -296,7 +429,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-define-auth-challenge"
+      FunctionName: growksh-website-define-auth-challenge
       Handler: define-auth-challenge.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -307,7 +440,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-verify-auth-challenge"
+      FunctionName: growksh-website-verify-auth-challenge
       Handler: verify-auth-challenge.handler
       Runtime: nodejs18.x
       Role: !GetAtt AuthLambdaExecutionRole.Arn
@@ -322,7 +455,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-post-confirmation"
+      FunctionName: growksh-website-post-confirmation
       Handler: post-confirmation.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -336,29 +469,7 @@ Resources:
       SourceArn: !GetAtt CognitoUserPool.Arn
 
   # Auth API Gateway for signup and verification endpoints
-  AuthApiGateway:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Prod
-      TracingEnabled: true
-      Cors:
-        AllowMethods: "'OPTIONS,POST,GET'"
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-        AllowOrigin: "'https://d2eipj1xhqte5b.cloudfront.net'"
-        MaxAge: 600
-      GatewayResponses:
-        DEFAULT_4XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
-        DEFAULT_5XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+  # Note: Consolidated into UnifiedApiGateway above
 
   # Signup Lambda Function
   SignupFunction:
@@ -366,7 +477,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-signup"
+      FunctionName: growksh-website-signup
       Handler: signup.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -383,13 +494,13 @@ Resources:
           Properties:
             Path: /auth/signup
             Method: post
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref UnifiedApiGateway
         SignupOptionsEvent:
           Type: Api
           Properties:
             Path: /auth/signup
             Method: options
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref UnifiedApiGateway
 
   # Email verification endpoint
   VerifyEmailFunction:
@@ -397,7 +508,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-verify-email"
+      FunctionName: growksh-website-verify-email
       Handler: verify-email.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/auth/
@@ -417,22 +528,74 @@ Resources:
           Properties:
             Path: /auth/verify-email
             Method: get
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref UnifiedApiGateway
         VerifyEmailOptionsEvent:
           Type: Api
           Properties:
             Path: /auth/verify-email
             Method: options
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref UnifiedApiGateway
+
+  # Check Admin Lambda Function - Validate admin user before sending OTP
+  CheckAdminFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName: growksh-website-check-admin
+      Handler: check-admin.handler
+      Runtime: nodejs18.x
+      CodeUri: ../aws-lambda/auth/
+      Role: !GetAtt AuthLambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPool
+      Events:
+        CheckAdminPostEvent:
+          Type: Api
+          Properties:
+            Path: /auth/check-admin
+            Method: post
+            RestApiId: !Ref UnifiedApiGateway
+        CheckAdminOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /auth/check-admin
+            Method: options
+            RestApiId: !Ref UnifiedApiGateway
 
 
 Outputs:
-  ContactApiEndpoint:
-    Description: "API Gateway endpoint for contact form"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  ContactApiId:
-    Description: "API Gateway RestApiId for contact form"
-    Value: !Ref ContactApiGateway
+  StaticSiteBucketName:
+    Description: "S3 bucket name for static site assets (private; CloudFront origin)"
+    Value: !Ref StaticSiteBucket
+  CloudFrontDistributionId:
+    Description: "CloudFront distribution ID for the static site"
+    Value: !Ref StaticSiteCloudFrontDistribution
+  CloudFrontDomainName:
+    Description: "CloudFront domain name for the static site"
+    Value: !GetAtt StaticSiteCloudFrontDistribution.DomainName
+  CloudFrontUrl:
+    Description: "CloudFront URL for the static site"
+    Value: !Sub "https://${StaticSiteCloudFrontDistribution.DomainName}"
+  UnifiedApiEndpoint:
+    Description: "Unified API Gateway endpoint for all services (contact, auth, etc.)"
+    Value: !Sub "https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+  UnifiedApiId:
+    Description: "API Gateway RestApiId for all endpoints"
+    Value: !Ref UnifiedApiGateway
+  ContactEndpoint:
+    Description: "Contact form endpoint"
+    Value: !Sub "https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/contact"
+  SignupEndpoint:
+    Description: "Signup endpoint"
+    Value: !Sub "https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth/signup"
+  VerifyEmailEndpoint:
+    Description: "Email verification endpoint"
+    Value: !Sub "https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth/verify-email"
+  CheckAdminEndpoint:
+    Description: "Check admin status endpoint"
+    Value: !Sub "https://${UnifiedApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth/check-admin"
   ContactsTableName:
     Description: "DynamoDB table name for contacts"
     Value: !Ref ContactsTable
@@ -446,18 +609,6 @@ Outputs:
     Value: !Ref CognitoUserPoolClient
     Export:
       Name: !Sub "${AWS::StackName}-CognitoClientId"
-  AuthApiEndpoint:
-    Description: "Auth API Gateway endpoint"
-    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  AuthApiId:
-    Description: "API Gateway RestApiId for auth endpoints"
-    Value: !Ref AuthApiGateway
-  SignupEndpoint:
-    Description: "Signup endpoint"
-    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/signup"
-  VerifyEmailEndpoint:
-    Description: "Email verification endpoint"
-    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
   AuthOtpTableName:
     Description: "DynamoDB table name for OTPs"
     Value: !Ref AuthOtpTable

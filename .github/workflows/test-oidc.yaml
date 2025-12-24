@@ -1,0 +1,29 @@
+name: Test OIDC Setup
+
+on:
+  workflow_dispatch
+
+permissions:
+  id-token: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Assume AWS role via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::720427058396:role/GrowkshDeveloperRole
+          aws-region: us-east-1
+
+      - name: Get AWS Account ID
+        run: |
+          echo "AWS Account ID: $(aws sts get-caller-identity --query Account --output text)"
+          echo "Caller Identity:"
+          aws sts get-caller-identity
+
+      - name: List S3 buckets
+        run: aws s3 ls | grep growksh || echo "No growksh buckets yet"

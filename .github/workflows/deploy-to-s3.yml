@@ -70,19 +70,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: ✅ Install SAM CLI
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install aws-sam-cli
+        shell: bash
+
       - name: Determine deploy targets and environment
         id: resolve
         run: |
           echo "Event: $EVENT_NAME"
           if [ "$EVENT_NAME" = "push" ]; then
             echo "DEPLOY_ENV=dev" >> $GITHUB_ENV
-            # prefer repository variable S3_BUCKET if available, else compute sanitized default
+            # prefer repository variable S3_BUCKET if available, else use growksh-website bucket
             if [ -n "$VARS_S3_BUCKET" ]; then
               echo "S3_BUCKET=$VARS_S3_BUCKET" >> $GITHUB_ENV
             else
-              BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
-              SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
-              echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+              echo "S3_BUCKET=growksh-website-static-assets" >> $GITHUB_ENV
             fi
             if [ -n "$VARS_CLOUDFRONT" ]; then
               echo "CLOUDFRONT_DISTRIBUTION_ID=$VARS_CLOUDFRONT" >> $GITHUB_ENV
@@ -96,9 +100,7 @@ jobs:
             elif [ -n "$VARS_S3_BUCKET" ]; then
               echo "S3_BUCKET=$VARS_S3_BUCKET" >> $GITHUB_ENV
             else
-              BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
-              SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
-              echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
+              echo "S3_BUCKET=growksh-website-static-assets" >> $GITHUB_ENV
             fi
             if [ -n "$INPUT_CLOUDFRONT" ]; then
               echo "CLOUDFRONT_DISTRIBUTION_ID=$INPUT_CLOUDFRONT" >> $GITHUB_ENV
@@ -109,56 +111,15 @@ jobs:
           echo "Resolved S3_BUCKET=$S3_BUCKET"
         shell: bash
 
-      # ✅ CREATE S3 BUCKET
-      - name: ✅ Create S3 Bucket
-        run: |
-          # Use resolved S3_BUCKET if available, otherwise compute a sanitized default
-          if [ -n "$S3_BUCKET" ]; then
-            SANITIZED="$S3_BUCKET"
-          else
-            BUCKET_NAME=react-${{ github.repository_owner }}-${{ github.event.repository.name }}-deploy
-            SANITIZED=$(echo "$BUCKET_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9.-]//g')
-          fi
-
-          LEN=${#SANITIZED}
-          if [ "$LEN" -lt 3 ] || [ "$LEN" -gt 63 ]; then exit 1; fi
-
-          echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
-
-          # Check if bucket already exists
-          if aws s3api head-bucket --bucket "$SANITIZED" 2>/dev/null; then
-            echo "Bucket already exists: $SANITIZED"
-          else
-            echo "Creating bucket: $SANITIZED"
-            if [ "$AWS_REGION" = "us-east-1" ]; then
-              aws s3api create-bucket --bucket "$SANITIZED"
-            else
-              aws s3api create-bucket --bucket "$SANITIZED" --create-bucket-configuration LocationConstraint=$AWS_REGION
-            fi
-          fi
-
-          # Configure website hosting
-          aws s3 website s3://$SANITIZED --index-document index.html --error-document index.html
-
-          # Allow public read access
-          aws s3api put-public-access-block --bucket "$SANITIZED" \
-            --public-access-block-configuration BlockPublicAcls=false,IgnorePublicAcls=false,BlockPublicPolicy=false,RestrictPublicBuckets=false
-
-          # Set bucket policy to allow public GetObject
-          POLICY=$(printf '{"Version":"2012-10-17","Statement":[{"Sid":"PublicReadGetObject","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::%s/*"}]}' "$SANITIZED")
-          aws s3api put-bucket-policy --bucket "$SANITIZED" --policy "$POLICY"
-
-          # Verify bucket is publicly accessible
-          echo "Verifying bucket is accessible..."
-          sleep 2
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://$SANITIZED.s3-website.$AWS_REGION.amazonaws.com/")
-          echo "Bucket website endpoint HTTP status: $HTTP_CODE"
-
-      # ✅ PACKAGE & DEPLOY INFRA (Lambda + API Gateway + DynamoDB) if present
-      - name: ✅ Package & deploy infra (CloudFormation)
+      # ✅ DEPLOY INFRA (SAM) - includes S3 bucket + CloudFront distribution
+      - name: ✅ Build & deploy infra (SAM)
+        env:
+          VERIFY_SECRET: ${{ secrets.VERIFY_SECRET || '' }}
+          SES_SOURCE_EMAIL: ${{ secrets.SES_SOURCE_EMAIL || '' }}
+          VERIFY_BASE_URL: ${{ secrets.VERIFY_BASE_URL || '' }}
         run: |
           if [ -f infra/sam-template.yaml ]; then
-            echo "Infra template found — installing Lambda dependencies and packaging"
+            echo "Infra template found — installing Lambda dependencies and deploying via SAM"
 
             # Install Lambda dependencies for all functions that declare package.json
             for d in aws-lambda/*; do
@@ -173,19 +134,7 @@ jobs:
               fi
             done
 
-            # Ensure we have a bucket to upload packaged artifacts
-            if [ -z "$S3_BUCKET" ]; then
-              echo "S3_BUCKET not set — using $SANITIZED"
-              echo "S3_BUCKET=$SANITIZED" >> $GITHUB_ENV
-            fi
-
-            # Package the SAM/CloudFormation template (uploads artifacts to S3)
-            aws cloudformation package \
-              --template-file infra/sam-template.yaml \
-              --s3-bucket "$S3_BUCKET" \
-              --output-template-file infra/packaged.yaml
-
-            STACK_NAME="${{ github.repository_owner }}-${{ github.event.repository.name }}-contact"
+            STACK_NAME="growksh-website"
 
             # If stack is in ROLLBACK_COMPLETE, delete it first
             STACK_STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "")
@@ -197,45 +146,59 @@ jobs:
               sleep 5
             fi
 
-            # Deploy the packaged template (creates/updates stack)
-            if ! aws cloudformation deploy \
-              --template-file infra/packaged.yaml \
-              --stack-name "$STACK_NAME" \
-              --capabilities CAPABILITY_IAM; then
-              echo "::error::CloudFormation stack deployment failed. Fetching stack events..."
-              aws cloudformation describe-stack-events \
-                --stack-name "$STACK_NAME" \
-                --query "StackEvents[?ResourceStatus=='CREATE_FAILED' || ResourceStatus=='UPDATE_FAILED'].{Timestamp:Timestamp,LogicalId:LogicalResourceId,Reason:ResourceStatusReason}" \
-                --output table
-              exit 1
+            sam validate --template-file infra/sam-template.yaml
+            sam build --template-file infra/sam-template.yaml
+
+            PARAM_OVERRIDES="StaticSiteBucketName=$S3_BUCKET DebugLogVerify=1 DebugLogOTP=0"
+            if [ -n "$VERIFY_SECRET" ]; then
+              PARAM_OVERRIDES="$PARAM_OVERRIDES VerifySecret=$VERIFY_SECRET"
             fi
+            if [ -n "$SES_SOURCE_EMAIL" ]; then
+              PARAM_OVERRIDES="$PARAM_OVERRIDES SESSourceEmail=$SES_SOURCE_EMAIL"
+            fi
+            if [ -n "$VERIFY_BASE_URL" ]; then
+              PARAM_OVERRIDES="$PARAM_OVERRIDES VerifyBaseUrl=$VERIFY_BASE_URL"
+            fi
+
+            sam deploy \
+              --template-file .aws-sam/build/template.yaml \
+              --stack-name "$STACK_NAME" \
+              --resolve-s3 \
+              --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
+              --no-confirm-changeset \
+              --no-fail-on-empty-changeset \
+              --parameter-overrides $PARAM_OVERRIDES
 
             # Read outputs to wire into the frontend build
-            CONTACT_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactApiEndpoint'].OutputValue" --output text)
-            AUTH_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='AuthApiEndpoint'].OutputValue" --output text)
+            API_BASE=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='UnifiedApiEndpoint'].OutputValue" --output text)
             TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactsTableName'].OutputValue" --output text)
+            USERPOOL_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolId'].OutputValue" --output text)
+            CLIENT_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolClientId'].OutputValue" --output text)
+            SITE_BUCKET=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='StaticSiteBucketName'].OutputValue" --output text)
+            CF_DIST_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
+            CF_DOMAIN=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDomainName'].OutputValue" --output text)
 
-            # Contact form expects the full /contact URL
-            if [ -n "$CONTACT_API_ENDPOINT" ] && [ "$CONTACT_API_ENDPOINT" != "None" ]; then
-              echo "VITE_CONTACT_API_URL=${CONTACT_API_ENDPOINT%/}/contact" >> $GITHUB_ENV
-            fi
-
-            # Auth signup code expects the API base and appends /auth/signup
-            if [ -n "$AUTH_API_ENDPOINT" ] && [ "$AUTH_API_ENDPOINT" != "None" ]; then
-              echo "VITE_API_URL=${AUTH_API_ENDPOINT%/}" >> $GITHUB_ENV
+            if [ -n "$API_BASE" ] && [ "$API_BASE" != "None" ]; then
+              echo "VITE_API_URL=${API_BASE%/}" >> $GITHUB_ENV
+              echo "VITE_CONTACT_API_URL=${API_BASE%/}/contact" >> $GITHUB_ENV
             fi
             if [ -n "$TABLE_NAME" ] && [ "$TABLE_NAME" != "None" ]; then
               echo "CONTACTS_TABLE=$TABLE_NAME" >> $GITHUB_ENV
             fi
-            # Read Cognito outputs (if present) and export for frontend build
-            USERPOOL_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolId'].OutputValue" --output text)
-            CLIENT_ID=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='CognitoUserPoolClientId'].OutputValue" --output text)
-
             if [ -n "$USERPOOL_ID" ] && [ "$USERPOOL_ID" != "None" ]; then
               echo "VITE_COGNITO_USER_POOL_ID=$USERPOOL_ID" >> $GITHUB_ENV
             fi
             if [ -n "$CLIENT_ID" ] && [ "$CLIENT_ID" != "None" ]; then
               echo "VITE_COGNITO_CLIENT_ID=$CLIENT_ID" >> $GITHUB_ENV
+            fi
+            if [ -n "$SITE_BUCKET" ] && [ "$SITE_BUCKET" != "None" ]; then
+              echo "S3_BUCKET=$SITE_BUCKET" >> $GITHUB_ENV
+            fi
+            if [ -n "$CF_DIST_ID" ] && [ "$CF_DIST_ID" != "None" ]; then
+              echo "CLOUDFRONT_DISTRIBUTION_ID=$CF_DIST_ID" >> $GITHUB_ENV
+            fi
+            if [ -n "$CF_DOMAIN" ] && [ "$CF_DOMAIN" != "None" ]; then
+              echo "CLOUDFRONT_DOMAIN_NAME=$CF_DOMAIN" >> $GITHUB_ENV
             fi
           else
             echo "No infra/sam-template.yaml — skipping infra deploy"
@@ -256,38 +219,6 @@ jobs:
             echo "VITE_COGNITO_CLIENT_ID=$VITE_COGNITO_CLIENT_ID" >> .env
           fi
           npm run build
-
-      - name: ✅ Create or reuse CloudFront distribution
-        run: |
-          echo "Creating or reusing CloudFront for S3 bucket: $S3_BUCKET"
-
-          if [ -n "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-            echo "Using provided CloudFront distribution ID from secrets"
-            echo "CLOUDFRONT_DISTRIBUTION_ID=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" >> $GITHUB_ENV
-          else
-            echo "No CLOUDFRONT_DISTRIBUTION_ID secret provided — searching for existing distribution"
-            EXISTING_DIST=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com'].Id" --output text | head -1)
-            
-            if [ -n "$EXISTING_DIST" ] && [ "$EXISTING_DIST" != "None" ] && [ -z "$(echo "$EXISTING_DIST" | grep -E '^[A-Z0-9]+$')" ]; then
-              echo "No valid existing distribution found"
-              EXISTING_DIST=""
-            fi
-
-            if [ -n "$EXISTING_DIST" ]; then
-              echo "Found existing CloudFront distribution: $EXISTING_DIST"
-              echo "CLOUDFRONT_DISTRIBUTION_ID=$EXISTING_DIST" >> $GITHUB_ENV
-            else
-              echo "Creating new CloudFront distribution"
-              ORIGIN="$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
-              CALLER_REF="react-deploy-$(date +%s)"
-              DIST_CONFIG=$(printf '{"CallerReference":"%s","Comment":"CI Distribution","Enabled":true,"Origins":{"Quantity":1,"Items":[{"Id":"S3WebsiteOrigin","DomainName":"%s","CustomOriginConfig":{"HTTPPort":80,"HTTPSPort":443,"OriginProtocolPolicy":"http-only"}}]},"DefaultCacheBehavior":{"TargetOriginId":"S3WebsiteOrigin","ViewerProtocolPolicy":"redirect-to-https","AllowedMethods":{"Quantity":2,"Items":["GET","HEAD"]},"ForwardedValues":{"QueryString":false,"Cookies":{"Forward":"none"}},"MinTTL":0,"DefaultTTL":86400,"MaxTTL":31536000},"CustomErrorResponses":{"Quantity":1,"Items":[{"ErrorCode":404,"ResponsePagePath":"/index.html","ResponseCode":"200"}]}}' "$CALLER_REF" "$ORIGIN")
-              DIST_ID=$(aws cloudfront create-distribution --distribution-config "$DIST_CONFIG" --query "Distribution.Id" --output text)
-              echo "Created CloudFront distribution: $DIST_ID"
-              echo "CLOUDFRONT_DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
-            fi
-          fi
-
-          echo "Final CLOUDFRONT_DISTRIBUTION_ID=$(cat $GITHUB_ENV | grep CLOUDFRONT_DISTRIBUTION_ID | cut -d= -f2)"
 
       # ✅ DEPLOY REACT BUILD
       - name: ✅ Deploy to S3 & Invalidate Cache
@@ -313,7 +244,7 @@ jobs:
       - name: ✅ Attach Domain (Optional)
         if: ${{ env.DOMAIN_NAME != '' && env.HOSTED_ZONE_ID != '' }}
         run: |
-          CF_DOMAIN=$(aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --query "Distribution.DomainName" --output text)
+          CF_DOMAIN=${CLOUDFRONT_DOMAIN_NAME:-$(aws cloudfront get-distribution --id $CLOUDFRONT_DISTRIBUTION_ID --query "Distribution.DomainName" --output text)}
 
           cat <<EOF > dns.json
           {
@@ -338,6 +269,9 @@ jobs:
 
       - name: ✅ Final Output
         run: |
-          echo "✅ S3 Website: http://$S3_BUCKET.s3-website.$AWS_REGION.amazonaws.com"
+          echo "✅ S3 Bucket: $S3_BUCKET"
           echo "✅ CloudFront ID: $CLOUDFRONT_DISTRIBUTION_ID"
+          if [ -n "$CLOUDFRONT_DOMAIN_NAME" ]; then
+            echo "✅ CloudFront URL: https://$CLOUDFRONT_DOMAIN_NAME"
+          fi
           echo "✅ Domain: $DOMAIN_NAME"
