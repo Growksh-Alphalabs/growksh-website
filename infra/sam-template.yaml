@@ -59,6 +59,7 @@ Resources:
   ContactFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: growksh-website-contact
       Handler: index.handler
       Runtime: nodejs18.x
       CodeUri: ../aws-lambda/contact/
@@ -74,19 +75,45 @@ Resources:
           Properties:
             Path: /contact
             Method: post
-            RestApiId: !Ref ContactApiGateway
+            RestApiId: !Ref GrowkshWebsiteApiGateway
         ContactOptionsEvent:
           Type: Api
           Properties:
             Path: /contact
             Method: options
-            RestApiId: !Ref ContactApiGateway
+            RestApiId: !Ref GrowkshWebsiteApiGateway
 
   ContactApiGateway:
     Type: AWS::Serverless::Api
     DeletionPolicy: Delete
     Properties:
-      StageName: Prod
+      StageName: prod
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+        AllowOrigin: "'*'"
+        MaxAge: 600
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+
+  # Unified API Gateway for both contact and auth endpoints
+  GrowkshWebsiteApiGateway:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: Delete
+    Properties:
+      StageName: prod
       TracingEnabled: true
       Cors:
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
@@ -363,32 +390,6 @@ Resources:
       Action: lambda:InvokeFunction
       SourceArn: !GetAtt CognitoUserPool.Arn
 
-  # Auth API Gateway for signup and verification endpoints
-  AuthApiGateway:
-    Type: AWS::Serverless::Api
-    DeletionPolicy: Delete
-    Properties:
-      StageName: Prod
-      TracingEnabled: true
-      Cors:
-        AllowMethods: "'OPTIONS,POST,GET'"
-        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-        AllowOrigin: "'https://d2eipj1xhqte5b.cloudfront.net'"
-        MaxAge: 600
-      GatewayResponses:
-        DEFAULT_4XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
-        DEFAULT_5XX:
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
-              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
-              Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
-
   # Signup Lambda Function
   SignupFunction:
     Type: AWS::Serverless::Function
@@ -412,13 +413,13 @@ Resources:
           Properties:
             Path: /auth/signup
             Method: post
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref GrowkshWebsiteApiGateway
         SignupOptionsEvent:
           Type: Api
           Properties:
             Path: /auth/signup
             Method: options
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref GrowkshWebsiteApiGateway
 
   # Email verification endpoint
   VerifyEmailFunction:
@@ -446,25 +447,40 @@ Resources:
           Properties:
             Path: /auth/verify-email
             Method: get
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref GrowkshWebsiteApiGateway
         VerifyEmailOptionsEvent:
           Type: Api
           Properties:
             Path: /auth/verify-email
             Method: options
-            RestApiId: !Ref AuthApiGateway
+            RestApiId: !Ref GrowkshWebsiteApiGateway
 
 
 Outputs:
-  ContactApiEndpoint:
-    Description: "API Gateway endpoint for contact form"
-    Value: !Sub "https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  ContactApiId:
-    Description: "API Gateway RestApiId for contact form"
-    Value: !Ref ContactApiGateway
+  GrowkshWebsiteApiEndpoint:
+    Description: "Unified API Gateway endpoint for all services"
+    Value: !Sub "https://${GrowkshWebsiteApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+  GrowkshWebsiteApiId:
+    Description: "API Gateway RestApiId for all endpoints"
+    Value: !Ref GrowkshWebsiteApiGateway
+  ContactEndpoint:
+    Description: "Contact form endpoint"
+    Value: !Sub "https://${GrowkshWebsiteApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/contact"
+  SignupEndpoint:
+    Description: "Signup endpoint"
+    Value: !Sub "https://${GrowkshWebsiteApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth/signup"
+  VerifyEmailEndpoint:
+    Description: "Email verification endpoint"
+    Value: !Sub "https://${GrowkshWebsiteApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth/verify-email"
+  CheckAdminEndpoint:
+    Description: "Check admin status endpoint"
+    Value: !Sub "https://${GrowkshWebsiteApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod/auth/check-admin"
   ContactsTableName:
     Description: "DynamoDB table name for contacts"
     Value: !Ref ContactsTable
+  AuthOtpTableName:
+    Description: "DynamoDB table name for OTPs"
+    Value: !Ref AuthOtpTable
   CognitoUserPoolId:
     Description: "Cognito User Pool ID"
     Value: !Ref CognitoUserPool
@@ -475,18 +491,87 @@ Outputs:
     Value: !Ref CognitoUserPoolClient
     Export:
       Name: !Sub "${AWS::StackName}-CognitoClientId"
-  AuthApiEndpoint:
-    Description: "Auth API Gateway endpoint"
-    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
-  AuthApiId:
-    Description: "API Gateway RestApiId for auth endpoints"
-    Value: !Ref AuthApiGateway
-  SignupEndpoint:
-    Description: "Signup endpoint"
-    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/signup"
-  VerifyEmailEndpoint:
-    Description: "Email verification endpoint"
-    Value: !Sub "https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email"
-  AuthOtpTableName:
-    Description: "DynamoDB table name for OTPs"
-    Value: !Ref AuthOtpTable
+
+  # Lambda Functions Outputs
+  PreSignUpFunctionArn:
+    Description: "Pre Sign-up Lambda Function ARN"
+    Value: !GetAtt PreSignUpFunction.Arn
+  PreSignUpFunctionName:
+    Description: "Pre Sign-up Lambda Function Name"
+    Value: !Ref PreSignUpFunction
+
+  CustomMessageFunctionArn:
+    Description: "Custom Message Lambda Function ARN"
+    Value: !GetAtt CustomMessageFunction.Arn
+  CustomMessageFunctionName:
+    Description: "Custom Message Lambda Function Name"
+    Value: !Ref CustomMessageFunction
+
+  DefineAuthChallengeFunctionArn:
+    Description: "Define Auth Challenge Lambda Function ARN"
+    Value: !GetAtt DefineAuthChallengeFunction.Arn
+  DefineAuthChallengeFunctionName:
+    Description: "Define Auth Challenge Lambda Function Name"
+    Value: !Ref DefineAuthChallengeFunction
+
+  CreateAuthChallengeFunctionArn:
+    Description: "Create Auth Challenge Lambda Function ARN"
+    Value: !GetAtt CreateAuthChallengeFunction.Arn
+  CreateAuthChallengeFunctionName:
+    Description: "Create Auth Challenge Lambda Function Name"
+    Value: !Ref CreateAuthChallengeFunction
+
+  VerifyAuthChallengeFunctionArn:
+    Description: "Verify Auth Challenge Lambda Function ARN"
+    Value: !GetAtt VerifyAuthChallengeFunction.Arn
+  VerifyAuthChallengeFunctionName:
+    Description: "Verify Auth Challenge Lambda Function Name"
+    Value: !Ref VerifyAuthChallengeFunction
+
+  PostConfirmationFunctionArn:
+    Description: "Post Confirmation Lambda Function ARN"
+    Value: !GetAtt PostConfirmationFunction.Arn
+  PostConfirmationFunctionName:
+    Description: "Post Confirmation Lambda Function Name"
+    Value: !Ref PostConfirmationFunction
+
+  SignupFunctionArn:
+    Description: "Signup Lambda Function ARN"
+    Value: !GetAtt SignupFunction.Arn
+  SignupFunctionName:
+    Description: "Signup Lambda Function Name"
+    Value: !Ref SignupFunction
+
+  VerifyEmailFunctionArn:
+    Description: "Verify Email Lambda Function ARN"
+    Value: !GetAtt VerifyEmailFunction.Arn
+  VerifyEmailFunctionName:
+    Description: "Verify Email Lambda Function Name"
+    Value: !Ref VerifyEmailFunction
+
+  CheckAdminFunctionArn:
+    Description: "Check Admin Lambda Function ARN"
+    Value: !GetAtt CheckAdminFunction.Arn
+  CheckAdminFunctionName:
+    Description: "Check Admin Lambda Function Name"
+    Value: !Ref CheckAdminFunction
+
+  ContactFunctionArn:
+    Description: "Contact Lambda Function ARN"
+    Value: !GetAtt ContactFunction.Arn
+  ContactFunctionName:
+    Description: "Contact Lambda Function Name"
+    Value: !Ref ContactFunction
+
+  # IAM Role Output
+  AuthLambdaExecutionRoleArn:
+    Description: "Auth Lambda Execution Role ARN"
+    Value: !GetAtt AuthLambdaExecutionRole.Arn
+  AuthLambdaExecutionRoleName:
+    Description: "Auth Lambda Execution Role Name"
+    Value: !Ref AuthLambdaExecutionRole
+
+  # Cognito Additional Outputs
+  CognitoUserPoolArn:
+    Description: "Cognito User Pool ARN"
+    Value: !GetAtt CognitoUserPool.Arn
