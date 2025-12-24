@@ -23,6 +23,10 @@ Parameters:
     Type: String
     Description: "HMAC secret for signing verification tokens"
     Default: "change-me-replace-with-a-long-secret"
+  S3BucketName:
+    Type: String
+    Description: "S3 bucket name for static website assets"
+    Default: "growksh-website-static-assets"
 
 Globals:
   Function:
@@ -34,6 +38,44 @@ Globals:
       Partner: Growksh
 
 Resources:
+  # S3 Bucket for static website assets
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref S3BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
+
+  # S3 Bucket Policy for public read access
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub '${WebsiteBucket.Arn}/*'
+
   ContactsTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Delete
@@ -497,3 +539,12 @@ Outputs:
   AuthOtpTableName:
     Description: "DynamoDB table name for OTPs"
     Value: !Ref AuthOtpTable
+  S3BucketName:
+    Description: "S3 bucket name for static website assets"
+    Value: !Ref WebsiteBucket
+  S3BucketWebsiteUrl:
+    Description: "S3 bucket website endpoint"
+    Value: !Sub 'http://${WebsiteBucket}.s3-website.${AWS::Region}.amazonaws.com'
+  S3BucketArn:
+    Description: "S3 bucket ARN"
+    Value: !GetAtt WebsiteBucket.Arn
