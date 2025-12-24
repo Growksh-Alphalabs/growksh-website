@@ -182,7 +182,6 @@ Resources:
   # Cognito User Pool for authentication
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
-    DeletionPolicy: Delete
     Properties:
       UserPoolName: growksh-website-user-pool
       UsernameAttributes:
@@ -217,7 +216,6 @@ Resources:
   # Cognito User Pool Client
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
-    DeletionPolicy: Delete
     Properties:
       ClientName: growksh-website-client
       UserPoolId: !Ref CognitoUserPool
