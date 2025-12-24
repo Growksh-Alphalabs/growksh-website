@@ -14,7 +14,7 @@ if [ -z "$ENVIRONMENT" ]; then
   exit 1
 fi
 
-REGION=${AWS_REGION:-us-east-1}
+REGION=${AWS_REGION:-ap-south-1}
 TEMPLATE_DIR="infra/cloudformation"
 PARAM_DIR="infra/cloudformation/parameters"
 

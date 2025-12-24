@@ -14,7 +14,7 @@ if [ -z "$ENVIRONMENT_PREFIX" ]; then
   exit 1
 fi
 
-REGION=${AWS_REGION:-us-east-1}
+REGION=${AWS_REGION:-ap-south-1}
 
 echo "🧹 Starting cleanup for environment prefix: $ENVIRONMENT_PREFIX"
 echo "📍 Region: $REGION"

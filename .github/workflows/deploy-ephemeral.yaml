@@ -60,7 +60,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ap-south-1
 
       - name: Install dependencies
         run: npm ci
@@ -76,7 +76,7 @@ jobs:
           chmod +x infra/scripts/deploy-stacks.sh
           ./infra/scripts/deploy-stacks.sh ${{ needs.prepare.outputs.environment_name }}
         env:
-          AWS_REGION: us-east-1
+          AWS_REGION: ap-south-1
 
       - name: Build frontend
         run: npm run build
@@ -160,14 +160,14 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: us-east-1
+          aws-region: ap-south-1
 
       - name: Cleanup ephemeral environment
         run: |
           chmod +x infra/scripts/cleanup-stacks.sh
           ./infra/scripts/cleanup-stacks.sh ${{ needs.prepare.outputs.environment_name }}
         env:
-          AWS_REGION: us-east-1
+          AWS_REGION: ap-south-1
         continue-on-error: true
 
       - name: Notify cleanup success
