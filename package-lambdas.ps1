@@ -66,16 +66,9 @@ function Package-Lambda {
     try {
         New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
         
-        # Copy all files from source directory
-        Get-ChildItem -Path $SourceDir -File | ForEach-Object {
+        # Copy source files (aws-sdk is built-in to Lambda)
+        Get-ChildItem -Path $SourceDir -File | Where-Object { $_.Name -match '\.js$' -or $_.Name -eq 'package.json' } | ForEach-Object {
             Copy-Item -Path $_.FullName -Destination (Join-Path $TempDir $_.Name) -Force
-        }
-        
-        # Install dependencies if package.json exists
-        $PackageJsonPath = Join-Path $TempDir "package.json"
-        if (Test-Path $PackageJsonPath) {
-            Write-Host "Installing npm dependencies..." -ForegroundColor Gray
-            $NpmResult = & npm install --prefix $TempDir --production 2>&1
         }
         
         if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }

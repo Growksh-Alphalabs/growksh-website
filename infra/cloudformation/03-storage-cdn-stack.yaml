@@ -22,8 +22,8 @@ Parameters:
 Resources:
   AssetsBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Ref BucketName
       PublicAccessBlockConfiguration:
@@ -45,6 +45,34 @@ Resources:
           Value: Growksh
         - Key: Env
           Value: !Ref Environment
+
+  LambdaCodeBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: Lambda code storage
 
   OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
@@ -73,27 +101,6 @@ Resources:
               StringEquals:
                 AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}'
 
-  # AWS WAF Web ACL - Required for Free plan and other flat-rate pricing
-  CloudFrontWebACL:
-    Type: AWS::WAFv2::WebACL
-    Properties:
-      Name: !Sub 'growksh-website-${Environment}-waf'
-      Scope: CLOUDFRONT
-      DefaultAction:
-        Allow: {}
-      Rules: []
-      VisibilityConfig:
-        SampledRequestsEnabled: false
-        CloudWatchMetricsEnabled: false
-        MetricName: !Sub 'growksh-website-${Environment}-waf'
-      Tags:
-        - Key: App
-          Value: Website
-        - Key: Partner
-          Value: Growksh
-        - Key: Env
-          Value: !Ref Environment
-
   CdnDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -110,7 +117,6 @@ Resources:
         DefaultRootObject: index.html
         PriceClass: PriceClass_All
         HttpVersion: http2and3
-        WebACLId: !GetAtt CloudFrontWebACL.Arn
         Aliases: !If 
           - HasDomainNames
           - !Ref DomainNames
@@ -192,8 +198,14 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-oac-id'
 
-  WebACLArn:
-    Description: AWS WAF Web ACL ARN (required for Free plan)
-    Value: !GetAtt CloudFrontWebACL.Arn
+  LambdaCodeBucketName:
+    Description: S3 bucket for Lambda function code
+    Value: !Ref LambdaCodeBucket
     Export:
-      Name: !Sub 'growksh-website-${Environment}-waf-arn'
+      Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket'
+
+  LambdaCodeBucketArn:
+    Description: S3 Lambda code bucket ARN
+    Value: !GetAtt LambdaCodeBucket.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket-arn'
