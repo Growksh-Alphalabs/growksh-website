@@ -211,11 +211,18 @@ jobs:
             fi
 
             # Read outputs to wire into the frontend build
-            API_URL=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactApiEndpoint'].OutputValue" --output text)
+            CONTACT_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactApiEndpoint'].OutputValue" --output text)
+            AUTH_API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='AuthApiEndpoint'].OutputValue" --output text)
             TABLE_NAME=$(aws cloudformation describe-stacks --stack-name "$STACK_NAME" --query "Stacks[0].Outputs[?OutputKey=='ContactsTableName'].OutputValue" --output text)
 
-            if [ -n "$API_URL" ] && [ "$API_URL" != "None" ]; then
-              echo "VITE_CONTACT_API_URL=$API_URL" >> $GITHUB_ENV
+            # Contact form expects the full /contact URL
+            if [ -n "$CONTACT_API_ENDPOINT" ] && [ "$CONTACT_API_ENDPOINT" != "None" ]; then
+              echo "VITE_CONTACT_API_URL=${CONTACT_API_ENDPOINT%/}/contact" >> $GITHUB_ENV
+            fi
+
+            # Auth signup code expects the API base and appends /auth/signup
+            if [ -n "$AUTH_API_ENDPOINT" ] && [ "$AUTH_API_ENDPOINT" != "None" ]; then
+              echo "VITE_API_URL=${AUTH_API_ENDPOINT%/}" >> $GITHUB_ENV
             fi
             if [ -n "$TABLE_NAME" ] && [ "$TABLE_NAME" != "None" ]; then
               echo "CONTACTS_TABLE=$TABLE_NAME" >> $GITHUB_ENV
@@ -240,11 +247,8 @@ jobs:
           npm ci
           # export Vite env used by the frontend: VITE_API_URL is read by the code
           # Write Vite env file consumed by the frontend build
-          if [ -n "$VITE_CONTACT_API_URL" ]; then
-            echo "VITE_API_URL=$VITE_CONTACT_API_URL" > .env
-          else
-            echo "VITE_API_URL=" > .env
-          fi
+          echo "VITE_API_URL=${VITE_API_URL:-}" > .env
+          echo "VITE_CONTACT_API_URL=${VITE_CONTACT_API_URL:-}" >> .env
           if [ -n "$VITE_COGNITO_USER_POOL_ID" ]; then
             echo "VITE_COGNITO_USER_POOL_ID=$VITE_COGNITO_USER_POOL_ID" >> .env
           fi

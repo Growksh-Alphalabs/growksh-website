@@ -1,40 +1,9 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from 'react-oidc-context'
-import OidcTrigger from './components/Auth/OidcTrigger'
-import Layout from './components/common/Layout'
-import Home from './pages/Home'
-import About from './pages/About'
-import Wealthcraft from './pages/Wealthcraft/Wealthcraft'
-import Alphalabs from './pages/Alphalabs/Alphalabs'
-import Ventures from './pages/Ventures/Ventures'
-import Insights from './pages/Insights/Insights'
-import Contact from './pages/Contact'
+import App from './App'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AuthProvider
-      authority={import.meta.env.VITE_COGNITO_AUTHORITY}
-      client_id={import.meta.env.VITE_COGNITO_CLIENT_ID}
-      redirect_uri={import.meta.env.VITE_COGNITO_REDIRECT_URI}
-      response_type={import.meta.env.VITE_COGNITO_RESPONSE_TYPE || 'code'}
-      scope={import.meta.env.VITE_COGNITO_SCOPES || 'openid profile email'}
-    >
-      <OidcTrigger />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home/>} />
-            <Route path="/about" element={<About/>} />
-            <Route path="/wealthcraft" element={<Wealthcraft/>} />
-            <Route path="/alphalabs" element={<Alphalabs/>} />
-            <Route path="/ventures" element={<Ventures/>} />
-            <Route path="/insights" element={<Insights/>} />
-            <Route path="/contact" element={<Contact/>} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </AuthProvider>
+    <App />
   </React.StrictMode>
 )

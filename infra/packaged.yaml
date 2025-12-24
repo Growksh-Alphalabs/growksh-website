@@ -1,0 +1,495 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM template for Passwordless Email OTP Authentication
+Parameters:
+  SESSourceEmail:
+    Type: String
+    Description: Verified SES source email address for sending OTPs
+    Default: noreply@growksh.com
+  VerifyBaseUrl:
+    Type: String
+    Description: Frontend URL where users will verify their email
+    Default: https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email
+  DebugLogVerify:
+    Type: String
+    Description: Enable debug logging of verification URLs (set to '1' to enable)
+    Default: '1'
+  DebugLogOTP:
+    Type: String
+    Description: Enable debug logging of OTPs in CreateAuthChallenge (set to '1' to
+      enable)
+    Default: '0'
+  VerifySecret:
+    Type: String
+    Description: HMAC secret for signing verification tokens
+    Default: change-me-replace-with-a-long-secret
+Globals:
+  Function:
+    Timeout: 10
+Resources:
+  ContactsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-contacts
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  ContactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs18.x
+      CodeUri: s3://dev-growksh-website/9e863a89740e641e3b3c8110badf685d
+      Environment:
+        Variables:
+          CONTACTS_TABLE:
+            Ref: ContactsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ContactsTable
+      Events:
+        ContactPostEvent:
+          Type: Api
+          Properties:
+            Path: /contact
+            Method: post
+            RestApiId:
+              Ref: ContactApiGateway
+        ContactOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /contact
+            Method: options
+            RestApiId:
+              Ref: ContactApiGateway
+  ContactApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+        AllowOrigin: "'*'"
+        MaxAge: 600
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              Access-Control-Allow-Methods: "'GET,POST,PUT,DELETE,OPTIONS'"
+  AuthOtpTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-auth-otp
+      AttributeDefinitions:
+      - AttributeName: email
+        AttributeType: S
+      KeySchema:
+      - AttributeName: email
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName:
+        Fn::Sub: ${AWS::StackName}-user-pool
+      UsernameAttributes:
+      - email
+      AutoVerifiedAttributes:
+      - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: false
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+      Schema:
+      - Name: email
+        AttributeDataType: String
+        Mutable: true
+        Required: true
+      - Name: name
+        AttributeDataType: String
+        Mutable: true
+      - Name: phone_number
+        AttributeDataType: String
+        Mutable: true
+      LambdaConfig:
+        PreSignUp:
+          Fn::GetAtt:
+          - PreSignUpFunction
+          - Arn
+        CustomMessage:
+          Fn::GetAtt:
+          - CustomMessageFunction
+          - Arn
+        CreateAuthChallenge:
+          Fn::GetAtt:
+          - CreateAuthChallengeFunction
+          - Arn
+        VerifyAuthChallengeResponse:
+          Fn::GetAtt:
+          - VerifyAuthChallengeFunction
+          - Arn
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName:
+        Fn::Sub: ${AWS::StackName}-client
+      UserPoolId:
+        Ref: CognitoUserPool
+      ExplicitAuthFlows:
+      - ALLOW_CUSTOM_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+      AllowedOAuthFlows: []
+      ReadAttributes:
+      - email
+      - name
+      - phone_number
+  AuthLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName: DynamoDBAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            Resource:
+              Fn::GetAtt:
+              - AuthOtpTable
+              - Arn
+      - PolicyName: CognitoAdminAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminSetUserPassword
+            - cognito-idp:AdminUpdateUserAttributes
+            Resource: '*'
+      - PolicyName: SESAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ses:SendEmail
+            - ses:SendRawEmail
+            Resource: '*'
+  PreSignUpLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: PreSignUpFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn:
+        Fn::GetAtt:
+        - CognitoUserPool
+        - Arn
+  CustomMessageLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: CustomMessageFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn:
+        Fn::GetAtt:
+        - CognitoUserPool
+        - Arn
+  CreateAuthChallengeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: CreateAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn:
+        Fn::GetAtt:
+        - CognitoUserPool
+        - Arn
+  VerifyAuthChallengeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: VerifyAuthChallengeFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn:
+        Fn::GetAtt:
+        - CognitoUserPool
+        - Arn
+  PreSignUpFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-pre-sign-up
+      Handler: pre-sign-up.handler
+      Runtime: nodejs18.x
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+  CustomMessageFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-custom-message
+      Handler: custom-message.handler
+      Runtime: nodejs18.x
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+      Environment:
+        Variables:
+          DEBUG_LOG:
+            Ref: DebugLogVerify
+          VERIFY_SECRET:
+            Ref: VerifySecret
+          VERIFY_BASE_URL:
+            Ref: VerifyBaseUrl
+  CreateAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-create-auth-challenge
+      Handler: create-auth-challenge.handler
+      Runtime: nodejs18.x
+      Role:
+        Fn::GetAtt:
+        - AuthLambdaExecutionRole
+        - Arn
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+      Environment:
+        Variables:
+          OTP_TABLE:
+            Ref: AuthOtpTable
+          SES_SOURCE_EMAIL:
+            Ref: SESSourceEmail
+          DEBUG_LOG:
+            Ref: DebugLogOTP
+  VerifyAuthChallengeFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-verify-auth-challenge
+      Handler: verify-auth-challenge.handler
+      Runtime: nodejs18.x
+      Role:
+        Fn::GetAtt:
+        - AuthLambdaExecutionRole
+        - Arn
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+      Environment:
+        Variables:
+          OTP_TABLE:
+            Ref: AuthOtpTable
+  PostConfirmationFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-post-confirmation
+      Handler: post-confirmation.handler
+      Runtime: nodejs18.x
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+  PostConfirmationLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: PostConfirmationFunction
+      Principal: cognito-idp.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn:
+        Fn::GetAtt:
+        - CognitoUserPool
+        - Arn
+  AuthApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      TracingEnabled: true
+      Cors:
+        AllowMethods: "'OPTIONS,POST,GET'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+        AllowOrigin: "'https://d2eipj1xhqte5b.cloudfront.net'"
+        MaxAge: 600
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'https://d2eipj1xhqte5b.cloudfront.net'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'"
+              Access-Control-Allow-Methods: "'OPTIONS,GET,POST'"
+  SignupFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-signup
+      Handler: signup.handler
+      Runtime: nodejs18.x
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+      Role:
+        Fn::GetAtt:
+        - AuthLambdaExecutionRole
+        - Arn
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID:
+            Ref: CognitoUserPool
+          SES_SOURCE_EMAIL:
+            Ref: SESSourceEmail
+          VERIFY_SECRET:
+            Ref: VerifySecret
+          VERIFY_BASE_URL:
+            Ref: VerifyBaseUrl
+      Events:
+        SignupPostEvent:
+          Type: Api
+          Properties:
+            Path: /auth/signup
+            Method: post
+            RestApiId:
+              Ref: AuthApiGateway
+        SignupOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /auth/signup
+            Method: options
+            RestApiId:
+              Ref: AuthApiGateway
+  VerifyEmailFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-verify-email
+      Handler: verify-email.handler
+      Runtime: nodejs18.x
+      CodeUri: s3://dev-growksh-website/549e2a1e9365f5fb45971797729cee15
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - cognito-idp:AdminUpdateUserAttributes
+          Resource:
+            Fn::GetAtt:
+            - CognitoUserPool
+            - Arn
+      Environment:
+        Variables:
+          VERIFY_SECRET:
+            Ref: VerifySecret
+          COGNITO_USER_POOL_ID:
+            Ref: CognitoUserPool
+      Events:
+        VerifyEmailGetEvent:
+          Type: Api
+          Properties:
+            Path: /auth/verify-email
+            Method: get
+            RestApiId:
+              Ref: AuthApiGateway
+        VerifyEmailOptionsEvent:
+          Type: Api
+          Properties:
+            Path: /auth/verify-email
+            Method: options
+            RestApiId:
+              Ref: AuthApiGateway
+Outputs:
+  ContactApiEndpoint:
+    Description: API Gateway endpoint for contact form
+    Value:
+      Fn::Sub: https://${ContactApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/
+  ContactApiId:
+    Description: API Gateway RestApiId for contact form
+    Value:
+      Ref: ContactApiGateway
+  ContactsTableName:
+    Description: DynamoDB table name for contacts
+    Value:
+      Ref: ContactsTable
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value:
+      Ref: CognitoUserPool
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-CognitoUserPoolId
+  CognitoUserPoolClientId:
+    Description: Cognito User Pool Client ID
+    Value:
+      Ref: CognitoUserPoolClient
+    Export:
+      Name:
+        Fn::Sub: ${AWS::StackName}-CognitoClientId
+  AuthApiEndpoint:
+    Description: Auth API Gateway endpoint
+    Value:
+      Fn::Sub: https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/
+  AuthApiId:
+    Description: API Gateway RestApiId for auth endpoints
+    Value:
+      Ref: AuthApiGateway
+  SignupEndpoint:
+    Description: Signup endpoint
+    Value:
+      Fn::Sub: https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/signup
+  VerifyEmailEndpoint:
+    Description: Email verification endpoint
+    Value:
+      Fn::Sub: https://${AuthApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/auth/verify-email
+  AuthOtpTableName:
+    Description: DynamoDB table name for OTPs
+    Value:
+      Ref: AuthOtpTable
