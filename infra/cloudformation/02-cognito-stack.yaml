@@ -35,15 +35,14 @@ Resources:
         - Name: phone_number
           AttributeDataType: String
           Mutable: true
-      Tags:
-        App: Website
-        Partner: Growksh
-        Env: !Ref Environment
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
 
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:
-      ClientName: !Sub 'growksh-website-client-\$\{Environment\}'
+      ClientName: !Sub 'growksh-website-client-${Environment}'
       UserPoolId: !Ref UserPool
       ExplicitAuthFlows:
         - ALLOW_CUSTOM_AUTH
@@ -72,4 +71,4 @@ Outputs:
     Description: Cognito User Pool Client ID
     Value: !Ref UserPoolClient
     Export:
-      Name: !Sub 'growksh-website-client-\$\{Environment\}-id'
+      Name: !Sub 'growksh-website-client-${Environment}-id'
