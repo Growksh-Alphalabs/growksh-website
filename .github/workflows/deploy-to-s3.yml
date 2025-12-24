@@ -122,11 +122,7 @@ jobs:
             echo "✅ S3 bucket already exists: $S3_BUCKET"
           else
             echo "Creating new S3 bucket: $S3_BUCKET"
-            if [ "$AWS_REGION" = "ap-south-1" ]; then
-              aws s3api create-bucket --bucket "$S3_BUCKET"
-            else
-              aws s3api create-bucket --bucket "$S3_BUCKET" --create-bucket-configuration LocationConstraint=$AWS_REGION
-            fi
+            aws s3api create-bucket --bucket "$S3_BUCKET" --create-bucket-configuration LocationConstraint=$AWS_REGION
             echo "✅ S3 bucket created successfully"
           fi
 
