@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: SAM template for Passwordless Email OTP Authentication
+Description: Growksh Website infrastructure - Passwordless Email OTP Authentication, Unified API Gateway, DynamoDB, Cognito User Pool, Lambda functions, and IAM roles
 
 Parameters:
   SESSourceEmail:
@@ -23,6 +23,18 @@ Parameters:
     Type: String
     Description: "HMAC secret for signing verification tokens"
     Default: "change-me-replace-with-a-long-secret"
+  S3BucketName:
+    Type: String
+    Description: "S3 bucket name for static website hosting"
+    Default: "growksh-website-static-assets"
+  CloudFrontCertificateArn:
+    Type: String
+    Description: "ACM Certificate ARN for CloudFront HTTPS"
+    Default: "arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
+  DomainNames:
+    Type: CommaDelimitedList
+    Description: "Alternate domain names for CloudFront distribution"
+    Default: "growksh.com,www.growksh.com"
 
 Globals:
   Function:
@@ -55,6 +67,47 @@ Resources:
           Value: prod-growksh-static-website
         - Key: Partner
           Value: Growksh
+
+  # S3 Bucket for static website hosting
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Ref S3BucketName
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Env
+          Value: Prod
+        - Key: Name
+          Value: prod-growksh-static-website
+        - Key: Partner
+          Value: Growksh
+
+  # S3 Bucket Policy - Allow CloudFront to access
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WebsiteBucket
+      PolicyText:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: 's3:GetObject'
+            Resource: !Sub '${WebsiteBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
 
   ContactFunction:
     Type: AWS::Serverless::Function
@@ -455,6 +508,81 @@ Resources:
             Method: options
             RestApiId: !Ref GrowkshWebsiteApiGateway
 
+  # CloudFront OAI for S3 access
+  CloudFrontOAI:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: 'OAI for Growksh Website S3 bucket'
+
+  # CloudFront Distribution
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    DeletionPolicy: Delete
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        HttpVersion: http2and3
+        Comment: 'Growksh Website CloudFront Distribution - Production'
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt WebsiteBucket.RegionalDomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOAI}'
+        DefaultCacheBehavior:
+          Compress: true
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
+        CacheBehaviors:
+          - PathPattern: '/auth/*'
+            Compress: true
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+            CachedMethods:
+              - GET
+              - HEAD
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: none
+            MinTTL: 0
+            DefaultTTL: 3600
+            MaxTTL: 86400
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CloudFrontCertificateArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        AlternatedomainNames: !Ref DomainNames
+        Tags:
+          - Key: App
+            Value: Website
+          - Key: Env
+            Value: Prod
+          - Key: Name
+            Value: prod-growksh-static-website
+          - Key: Partner
+            Value: Growksh
+
 
 Outputs:
   GrowkshWebsiteApiEndpoint:
@@ -575,3 +703,28 @@ Outputs:
   CognitoUserPoolArn:
     Description: "Cognito User Pool ARN"
     Value: !GetAtt CognitoUserPool.Arn
+
+  # S3 Bucket Outputs
+  WebsiteBucketName:
+    Description: "S3 bucket name for website hosting"
+    Value: !Ref WebsiteBucket
+  WebsiteBucketArn:
+    Description: "S3 bucket ARN"
+    Value: !GetAtt WebsiteBucket.Arn
+  WebsiteUrl:
+    Description: "S3 website endpoint"
+    Value: !GetAtt WebsiteBucket.WebsiteURL
+
+  # CloudFront Outputs
+  CloudFrontDistributionId:
+    Description: "CloudFront Distribution ID"
+    Value: !Ref CloudFrontDistribution
+  CloudFrontDistributionDomainName:
+    Description: "CloudFront Distribution Domain Name"
+    Value: !GetAtt CloudFrontDistribution.DomainName
+  CloudFrontUrl:
+    Description: "CloudFront distribution URL"
+    Value: !Sub "https://${CloudFrontDistribution.DomainName}"
+  CloudFrontOAIId:
+    Description: "CloudFront Origin Access Identity"
+    Value: !Ref CloudFrontOAI
