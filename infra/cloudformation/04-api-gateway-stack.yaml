@@ -62,13 +62,9 @@ Resources:
       HttpMethod: POST
       AuthorizationType: NONE
       Integration:
-        Type: MOCK
-        IntegrationResponses:
-          - StatusCode: 200
-      MethodResponses:
-        - StatusCode: 200
-      RequestModels:
-        application/json: Empty
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-contact-${Environment}/invocations'
 
   ContactOptionsMethod:
     Type: AWS::ApiGateway::Method
@@ -117,13 +113,9 @@ Resources:
       HttpMethod: POST
       AuthorizationType: NONE
       Integration:
-        Type: MOCK
-        IntegrationResponses:
-          - StatusCode: 200
-      MethodResponses:
-        - StatusCode: 200
-      RequestModels:
-        application/json: Empty
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-signup-${Environment}/invocations'
 
   VerifyEmailResource:
     Type: AWS::ApiGateway::Resource
@@ -140,11 +132,9 @@ Resources:
       HttpMethod: GET
       AuthorizationType: NONE
       Integration:
-        Type: MOCK
-        IntegrationResponses:
-          - StatusCode: 200
-      MethodResponses:
-        - StatusCode: 200
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-verify-email-${Environment}/invocations'
 
   CheckAdminResource:
     Type: AWS::ApiGateway::Resource
@@ -161,13 +151,9 @@ Resources:
       HttpMethod: POST
       AuthorizationType: NONE
       Integration:
-        Type: MOCK
-        IntegrationResponses:
-          - StatusCode: 200
-      MethodResponses:
-        - StatusCode: 200
-      RequestModels:
-        application/json: Empty
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-check-admin-${Environment}/invocations'
 
 Outputs:
   ApiEndpoint:
