@@ -92,7 +92,7 @@ Resources:
         - Key: Partner
           Value: Growksh
 
-  # S3 Bucket Policy - Allow CloudFront OAI to access
+  # S3 Bucket Policy - Allow CloudFront to access
   WebsiteBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -102,9 +102,12 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOAI}'
+              Service: cloudfront.amazonaws.com
             Action: 's3:GetObject'
             Resource: !Sub '${WebsiteBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
 
   ContactFunction:
     Type: AWS::Serverless::Function
@@ -599,7 +602,7 @@ Resources:
           AcmCertificateArn: !Ref CloudFrontCertificateArn
           SslSupportMethod: sni-only
           MinimumProtocolVersion: TLSv1.2_2021
-        AlternativeDomainNames: !Ref DomainNames
+        AlternatedomainNames: !Ref DomainNames
         Tags:
           - Key: App
             Value: Website
