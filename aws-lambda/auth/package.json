@@ -1,0 +1,24 @@
+{
+  "name": "growksh-auth-lambda",
+  "version": "1.0.0",
+  "description": "Lambda functions for Growksh passwordless authentication",
+  "main": "signup.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cognito",
+    "auth",
+    "passwordless",
+    "otp"
+  ],
+  "author": "Growksh",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.500.0",
+    "@aws-sdk/client-dynamodb": "^3.500.0",
+    "@aws-sdk/lib-dynamodb": "^3.500.0",
+    "@aws-sdk/client-ses": "^3.500.0",
+    "@aws-sdk/util-dynamodb": "^3.500.0"
+  }
+}
