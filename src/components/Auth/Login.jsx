@@ -52,8 +52,21 @@ export default function Login() {
       setMessage(`OTP sent to ${email}. Please check your email.`)
     } catch (error) {
       console.error('Auth error:', error)
+      
+      // Check if user is not registered
+      const errorMsg = error.message || ''
+      if (
+        errorMsg.includes('CreateAuthChallenge failed') ||
+        errorMsg.includes('UserNotFound') ||
+        errorMsg.includes('User does not exist')
+      ) {
+        // Redirect to signup with email pre-filled
+        navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
+        return
+      }
+      
       setErrorMessage(
-        error.message ||
+        errorMsg ||
           'Failed to initiate login. Please check your email and try again.'
       )
     } finally {
