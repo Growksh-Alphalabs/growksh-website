@@ -24,7 +24,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: index.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-contact-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-contact-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'contact/contact-${Environment}.zip'
@@ -55,7 +55,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: signup.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/signup-${Environment}.zip'
@@ -88,7 +88,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: verify-email.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/verify-email-${Environment}.zip'
@@ -119,7 +119,7 @@ Resources:
       Runtime: nodejs18.x
       Handler: check-admin.handler
       Role: !ImportValue
-        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-arn'
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
         S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
         S3Key: !Sub 'auth/check-admin-${Environment}.zip'
@@ -152,19 +152,19 @@ Outputs:
   ContactFunctionArn:
     Value: !GetAtt ContactFunction.Arn
     Export:
-      Name: !Sub 'growksh-website-${Environment}-contact-function-arn'
+      Name: !Sub 'growksh-website-${Environment}-contact-lambda-arn'
 
   SignupFunctionArn:
     Value: !GetAtt SignupFunction.Arn
     Export:
-      Name: !Sub 'growksh-website-${Environment}-signup-function-arn'
+      Name: !Sub 'growksh-website-${Environment}-signup-lambda-arn'
 
   VerifyEmailFunctionArn:
     Value: !GetAtt VerifyEmailFunction.Arn
     Export:
-      Name: !Sub 'growksh-website-${Environment}-verify-email-function-arn'
+      Name: !Sub 'growksh-website-${Environment}-verify-email-lambda-arn'
 
   CheckAdminFunctionArn:
     Value: !GetAtt CheckAdminFunction.Arn
     Export:
-      Name: !Sub 'growksh-website-${Environment}-check-admin-function-arn'
+      Name: !Sub 'growksh-website-${Environment}-check-admin-lambda-arn'
