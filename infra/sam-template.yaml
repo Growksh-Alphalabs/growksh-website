@@ -190,8 +190,6 @@ Resources:
                   - cognito-idp:AdminCreateUser
                   - cognito-idp:AdminSetUserPassword
                   - cognito-idp:AdminUpdateUserAttributes
-                  - cognito-idp:AdminGetUser
-                  - cognito-idp:AdminListGroupsForUser
                 Resource: '*'
         - PolicyName: SESAccess
           PolicyDocument:
@@ -424,34 +422,6 @@ Resources:
           Type: Api
           Properties:
             Path: /auth/verify-email
-            Method: options
-            RestApiId: !Ref AuthApiGateway
-
-  # Check Admin endpoint - Verify user is in admin group
-  CheckAdminFunction:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      FunctionName: !Sub "${AWS::StackName}-check-admin"
-      Handler: check-admin.handler
-      Runtime: nodejs18.x
-      CodeUri: ../aws-lambda/auth/
-      Role: !GetAtt AuthLambdaExecutionRole.Arn
-      Environment:
-        Variables:
-          USER_POOL_ID: !Ref CognitoUserPool
-      Events:
-        CheckAdminPostEvent:
-          Type: Api
-          Properties:
-            Path: /auth/check-admin
-            Method: post
-            RestApiId: !Ref AuthApiGateway
-        CheckAdminOptionsEvent:
-          Type: Api
-          Properties:
-            Path: /auth/check-admin
             Method: options
             RestApiId: !Ref AuthApiGateway
 
