@@ -3,7 +3,7 @@
 ## Overview
 
 A secure admin panel has been implemented with the following features:
-- **Separate admin login** at `/admin/login` (password-based)
+- **Passwordless admin login** at `/admin/login` (OTP-based, same as regular users)
 - **Protected admin routes** that check for admin status
 - **Cognito Groups** integration for admin role management
 - **Admin Dashboard** at `/admin/dashboard`
@@ -71,8 +71,9 @@ Redirect to /admin/dashboard
 ## Components Created
 
 ### 1. AdminLogin.jsx (`src/components/Auth/AdminLogin.jsx`)
-- Email + Password form
-- Calls `adminLogin(email, password)` from cognito.js
+- Email + OTP form (OTP-based like regular users)
+- Uses `initiateAuth(email)` from cognito.js
+- Uses `verifyOTP(email, otp, session)` from cognito.js
 - Stores tokens and triggers auth state check
 - Redirects to `/admin/dashboard` on success
 
@@ -88,7 +89,7 @@ Redirect to /admin/dashboard
 - Shows "Access Denied" if not authorized
 - Shows loading while auth state is being checked
 
-## Functions Added
+## Functions Used
 
 ### AuthContext.jsx
 ```javascript
@@ -104,12 +105,10 @@ extractAdminStatusFromToken(token)
 
 ### cognito.js
 ```javascript
-// New function
-adminLogin(email, password)
-  - Uses USER_PASSWORD_AUTH flow
-  - Takes email + password
-  - Returns AuthenticationResult with tokens
-  - Handles error cases (UserNotFound, NotAuthorized, etc.)
+// Reuses existing functions (no new functions needed)
+initiateAuth(email) - Request OTP for admin user
+verifyOTP(email, otp, session) - Verify OTP from admin user
+// Admin status is checked after login via extractAdminStatusFromToken()
 ```
 
 ## Setup Instructions
@@ -134,32 +133,15 @@ aws cognito-idp admin-add-user-to-group \
   --group-name admin
 ```
 
-### Step 3: Create Admin User (if needed)
+### Step 3: No Password Setup Needed!
+
+Admin users use OTP-based login (same as regular users). No password setup required.
+
+### Step 4: Deploy
 
 ```bash
-# Create user
-aws cognito-idp admin-create-user \
-  --user-pool-id <YOUR_USER_POOL_ID> \
-  --username admin@growksh.com \
-  --user-attributes Name="value",Name=email,Value=admin@growksh.com \
-  --message-action SUPPRESS
-
-# Set permanent password
-aws cognito-idp admin-set-user-password \
-  --user-pool-id <YOUR_USER_POOL_ID> \
-  --username admin@growksh.com \
-  --password "AdminPassword123!" \
-  --permanent
-```
-
-### Step 4: Enable USER_PASSWORD_AUTH Flow
-
-Update SAM template or Cognito console:
-```yaml
-UserPoolClient:
-  ExplicitAuthFlows:
-    - ALLOW_USER_PASSWORD_AUTH
-    - ALLOW_REFRESH_TOKEN_AUTH
+npm run build
+# Deploy to CloudFront/S3
 ```
 
 ## Admin Access Control

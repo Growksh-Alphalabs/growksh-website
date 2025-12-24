@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { adminLogin } from '../../lib/cognito'
+import { initiateAuth, verifyOTP } from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
 export default function AdminLogin() {
   const navigate = useNavigate()
-  const { checkAuth, isAuthenticated } = useAuth()
+  const { checkAuth, isAuthenticated, isAdmin } = useAuth()
+  const [stage, setStage] = useState('email') // email | otp | success
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
+  const [session, setSession] = useState('')
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [searchParams] = useSearchParams()
 
-  // If already authenticated, redirect to admin dashboard
+  // If already authenticated as admin, redirect to dashboard
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isAdmin) {
       navigate('/admin/dashboard')
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, isAdmin, navigate])
 
-  const handleSubmit = async (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setErrorMessage('')
@@ -34,21 +36,57 @@ export default function AdminLogin() {
         return
       }
 
-      if (!password.trim()) {
-        setErrorMessage('Password is required')
-        setLoading(false)
-        return
-      }
-
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         setErrorMessage('Please enter a valid email address')
         setLoading(false)
         return
       }
 
-      console.log('Admin login attempt for:', email)
-      const result = await adminLogin(email, password)
-      console.log('Admin login result:', result)
+      console.log('Initiating admin auth for:', email)
+      const result = await initiateAuth(email)
+      console.log('Auth initiated:', result)
+
+      setSession(result.session)
+      setStage('otp')
+      setMessage(`OTP sent to ${email}. Please check your email.`)
+    } catch (error) {
+      console.error('Auth error:', error)
+      setErrorMessage(
+        error.message ||
+          'Failed to initiate login. Please check your email and try again.'
+      )
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleOTPSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setErrorMessage('')
+    setMessage('')
+
+    try {
+      if (!otp.trim()) {
+        setErrorMessage('OTP is required')
+        setLoading(false)
+        return
+      }
+
+      if (otp.length !== 6) {
+        setErrorMessage('OTP must be 6 digits')
+        setLoading(false)
+        return
+      }
+
+      console.log('Verifying OTP for:', email)
+      const result = await verifyOTP({
+        email,
+        otp,
+        session,
+      })
+
+      console.log('OTP verified, result:', result)
 
       if (result.AuthenticationResult) {
         const { IdToken, AccessToken, RefreshToken } = result.AuthenticationResult
@@ -62,19 +100,17 @@ export default function AdminLogin() {
         // Re-check auth state to update context (including admin status)
         await checkAuth()
 
-        setMessage('Admin login successful!')
-        
+        setStage('success')
+        setMessage('Logged in successfully!')
+
         // Redirect after 1 second (auth state is already updated)
         setTimeout(() => {
           navigate('/admin/dashboard')
         }, 1000)
       }
     } catch (error) {
-      console.error('Admin login error:', error)
-      setErrorMessage(
-        error.message ||
-          'Failed to login. Please check your credentials and try again.'
-      )
+      console.error('OTP verification error:', error)
+      setErrorMessage(error.message || 'Invalid OTP. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -92,7 +128,7 @@ export default function AdminLogin() {
           />
           <h2 className="text-2xl font-semibold text-gray-700">Admin Login</h2>
           <p className="text-gray-600 mt-2">
-            Sign in to admin dashboard
+            Passwordless verification for admin access
           </p>
         </div>
 
@@ -144,46 +180,81 @@ export default function AdminLogin() {
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={loading}
-            />
-          </div>
+        {/* Email Stage */}
+        {stage === 'email' && (
+          <form onSubmit={handleEmailSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={loading}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <button
+              type="submit"
               disabled={loading}
-            />
-          </div>
+              className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              {loading ? 'Sending OTP...' : 'Send OTP'}
+            </button>
+          </form>
+        )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
+        {/* OTP Stage */}
+        {stage === 'otp' && (
+          <form onSubmit={handleOTPSubmit} className="space-y-4">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                Enter the 6-digit OTP sent to <strong>{email}</strong>
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+                One-Time Password
+              </label>
+              <input
+                id="otp"
+                type="text"
+                maxLength="6"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="000000"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-2xl tracking-widest font-mono"
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            >
+              {loading ? 'Verifying OTP...' : 'Verify OTP'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setStage('email')
+                setOtp('')
+                setSession('')
+                setMessage('')
+              }}
+              className="w-full py-2 px-4 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
+            >
+              Back
+            </button>
+          </form>
+        )}
 
         {/* Back to Home Link */}
         <div className="mt-6 text-center">
