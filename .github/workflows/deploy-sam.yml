@@ -59,24 +59,29 @@ jobs:
       - name: Deploy SAM with parameters
         env:
           STACK_NAME: growksh-website
-          VERIFY_SECRET: ${{ secrets.VERIFY_SECRET }}
-          SES_SOURCE_EMAIL: ${{ secrets.SES_SOURCE_EMAIL || 'noreply@growksh.com' }}
-          VERIFY_BASE_URL: ${{ secrets.VERIFY_BASE_URL || 'https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email' }}
+          VERIFY_SECRET: ${{ secrets.VERIFY_SECRET || '' }}
+          SES_SOURCE_EMAIL: ${{ secrets.SES_SOURCE_EMAIL || '' }}
+          VERIFY_BASE_URL: ${{ secrets.VERIFY_BASE_URL || '' }}
           STATIC_SITE_BUCKET: ${{ vars.S3_BUCKET || 'growksh-website-static-assets' }}
         run: |
+          PARAM_OVERRIDES="StaticSiteBucketName=${STATIC_SITE_BUCKET} DebugLogVerify=1 DebugLogOTP=0"
+          if [ -n "$VERIFY_SECRET" ]; then
+            PARAM_OVERRIDES="$PARAM_OVERRIDES VerifySecret=$VERIFY_SECRET"
+          fi
+          if [ -n "$SES_SOURCE_EMAIL" ]; then
+            PARAM_OVERRIDES="$PARAM_OVERRIDES SESSourceEmail=$SES_SOURCE_EMAIL"
+          fi
+          if [ -n "$VERIFY_BASE_URL" ]; then
+            PARAM_OVERRIDES="$PARAM_OVERRIDES VerifyBaseUrl=$VERIFY_BASE_URL"
+          fi
+
           sam deploy \
             --template-file .aws-sam/build/template.yaml \
             --stack-name $STACK_NAME \
             --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
-            --parameter-overrides \
-              StaticSiteBucketName="${STATIC_SITE_BUCKET}" \
-              VerifySecret="${VERIFY_SECRET}" \
-              SESSourceEmail="${SES_SOURCE_EMAIL}" \
-              VerifyBaseUrl="${VERIFY_BASE_URL}" \
-              DebugLogVerify="1" \
-              DebugLogOTP="0"
+            --parameter-overrides $PARAM_OVERRIDES
 
       - name: Retrieve Stack Outputs
         id: stack_outputs
