@@ -62,6 +62,8 @@ jobs:
           VERIFY_SECRET: ${{ secrets.VERIFY_SECRET }}
           SES_SOURCE_EMAIL: ${{ secrets.SES_SOURCE_EMAIL || 'noreply@growksh.com' }}
           VERIFY_BASE_URL: ${{ secrets.VERIFY_BASE_URL || 'https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email' }}
+          S3_BUCKET: ${{ vars.S3_BUCKET || 'growksh-website' }}
+          CLOUDFRONT_DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID || '' }}
         run: |
           sam deploy \
             --template-file .aws-sam/build/template.yaml \
@@ -73,6 +75,8 @@ jobs:
               VerifySecret="${VERIFY_SECRET}" \
               SESSourceEmail="${SES_SOURCE_EMAIL}" \
               VerifyBaseUrl="${VERIFY_BASE_URL}" \
+              S3BucketName="${S3_BUCKET}" \
+              CloudFrontDistributionId="${CLOUDFRONT_DISTRIBUTION_ID}" \
               DebugLogVerify="1" \
               DebugLogOTP="0"
 
@@ -83,6 +87,18 @@ jobs:
             --stack-name ${{ env.STACK_NAME }} \
             --query 'Stacks[0].Outputs' \
             --output table
+
+      - name: Extract and Save CloudFront Distribution ID
+        run: |
+          CLOUDFRONT_ID=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.STACK_NAME }} \
+            --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDistributionId`].OutputValue' \
+            --output text)
+          
+          if [ -n "$CLOUDFRONT_ID" ]; then
+            echo "CloudFront Distribution ID: $CLOUDFRONT_ID"
+            echo "CLOUDFRONT_DISTRIBUTION_ID=$CLOUDFRONT_ID" >> $GITHUB_ENV
+          fi
 
       - name: Output Stack Information
         run: |
