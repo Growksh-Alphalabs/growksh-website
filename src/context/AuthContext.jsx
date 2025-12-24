@@ -77,7 +77,9 @@ export function AuthProvider({ children }) {
         if (token && token !== 'undefined' && email) {
           setUser({ email, isAuthenticated: true })
           setIsAuthenticated(true)
-          setIsAdmin(false) // Fake auth users are not admins
+          // Extract admin status from the stored ID token
+          const adminStatus = extractAdminStatusFromToken(token)
+          setIsAdmin(adminStatus)
         }
       }
     } catch (err) {
