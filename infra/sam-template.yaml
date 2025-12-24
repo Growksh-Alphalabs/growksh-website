@@ -41,9 +41,11 @@ Resources:
   # S3 Bucket for static website assets
   WebsiteBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
+    DeletionPolicy: Retain
     Properties:
       BucketName: !Ref S3BucketName
+      VersioningConfiguration:
+        Status: Suspended
       PublicAccessBlockConfiguration:
         BlockPublicAcls: false
         BlockPublicPolicy: false
@@ -65,6 +67,7 @@ Resources:
   # S3 Bucket Policy for public read access
   WebsiteBucketPolicy:
     Type: AWS::S3::BucketPolicy
+    DependsOn: WebsiteBucket
     Properties:
       Bucket: !Ref WebsiteBucket
       PolicyText:
