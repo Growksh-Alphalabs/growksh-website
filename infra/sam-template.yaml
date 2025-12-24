@@ -131,7 +131,6 @@ Resources:
   # Unified API Gateway for all endpoints (contact, auth, etc.)
   UnifiedApiGateway:
     Type: AWS::Serverless::Api
-    DeletionPolicy: Delete
     Properties:
       StageName: prod
       TracingEnabled: true
