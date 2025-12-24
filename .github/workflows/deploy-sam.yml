@@ -58,10 +58,11 @@ jobs:
 
       - name: Deploy SAM with parameters
         env:
-          STACK_NAME: growksh-infra
+          STACK_NAME: growksh-website
           VERIFY_SECRET: ${{ secrets.VERIFY_SECRET }}
           SES_SOURCE_EMAIL: ${{ secrets.SES_SOURCE_EMAIL || 'noreply@growksh.com' }}
           VERIFY_BASE_URL: ${{ secrets.VERIFY_BASE_URL || 'https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email' }}
+          STATIC_SITE_BUCKET: ${{ vars.S3_BUCKET || 'growksh-website-static-assets' }}
         run: |
           sam deploy \
             --template-file .aws-sam/build/template.yaml \
@@ -70,6 +71,7 @@ jobs:
             --no-confirm-changeset \
             --no-fail-on-empty-changeset \
             --parameter-overrides \
+              StaticSiteBucketName="${STATIC_SITE_BUCKET}" \
               VerifySecret="${VERIFY_SECRET}" \
               SESSourceEmail="${SES_SOURCE_EMAIL}" \
               VerifyBaseUrl="${VERIFY_BASE_URL}" \
