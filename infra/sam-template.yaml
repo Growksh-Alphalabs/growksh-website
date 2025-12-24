@@ -549,7 +549,7 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: true
-        HttpVersion: http2
+        HttpVersion: http2and3
         Comment: 'Growksh Website CloudFront Distribution - Production'
         PriceClass: PriceClass_100
         DefaultRootObject: index.html
@@ -569,7 +569,13 @@ Resources:
             - HEAD
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: redirect-to-https
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          MinTTL: 0
+          DefaultTTL: 3600
+          MaxTTL: 86400
         CacheBehaviors:
           - PathPattern: '/auth/*'
             Compress: true
@@ -582,7 +588,13 @@ Resources:
               - HEAD
             TargetOriginId: S3Origin
             ViewerProtocolPolicy: redirect-to-https
-            CachePolicyId: 4135ea3d-c35d-46eb-81d7-reescrypted2019-02-26T20:39:04.224Z
+            ForwardedValues:
+              QueryString: true
+              Cookies:
+                Forward: none
+            MinTTL: 0
+            DefaultTTL: 3600
+            MaxTTL: 86400
         ViewerCertificate:
           AcmCertificateArn: !Ref CloudFrontCertificateArn
           SslSupportMethod: sni-only
