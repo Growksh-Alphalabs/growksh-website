@@ -23,14 +23,6 @@ Parameters:
     Type: String
     Description: "HMAC secret for signing verification tokens"
     Default: "change-me-replace-with-a-long-secret"
-  S3BucketName:
-    Type: String
-    Description: "S3 bucket name for static website hosting"
-    Default: "growksh-website-static-assets"
-  CloudFrontDistributionId:
-    Type: String
-    Description: "CloudFront distribution ID (optional - will be looked up from S3 bucket if not provided)"
-    Default: ""
 
 Globals:
   Function:
@@ -54,28 +46,6 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       BillingMode: PAY_PER_REQUEST
-      Tags:
-        - Key: App
-          Value: Website
-        - Key: Env
-          Value: Prod
-        - Key: Name
-          Value: prod-growksh-static-website
-        - Key: Partner
-          Value: Growksh
-
-  # S3 Bucket for static website hosting
-  WebsiteBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref S3BucketName
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
       Tags:
         - Key: App
           Value: Website
@@ -512,68 +482,6 @@ Resources:
             Method: options
             RestApiId: !Ref AuthApiGateway
 
-  # CloudFront Origin Access Identity (OAI) for S3
-  CloudFrontOAI:
-    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties:
-      CloudFrontOriginAccessIdentityConfig:
-        Comment: 'OAI for Growksh Website S3 bucket'
-
-  # S3 Bucket Policy - Allow CloudFront OAI to read objects
-  WebsiteBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref WebsiteBucket
-      PolicyText:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${CloudFrontOAI}'
-            Action: 's3:GetObject'
-            Resource: !Sub '${WebsiteBucket.Arn}/*'
-
-  # CloudFront Distribution (Optional - only if CloudFrontDistributionId is empty)
-  CloudFrontDistribution:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        Enabled: true
-        HttpVersion: http2
-        Comment: 'Growksh Website CloudFront Distribution'
-        PriceClass: PriceClass_100
-        DefaultRootObject: index.html
-        Origins:
-          - Id: S3Origin
-            DomainName: !GetAtt WebsiteBucket.RegionalDomainName
-            S3OriginConfig:
-              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOAI}'
-        DefaultCacheBehavior:
-          AllowedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
-          CachedMethods:
-            - GET
-            - HEAD
-          Compress: true
-          TargetOriginId: S3Origin
-          ViewerProtocolPolicy: redirect-to-https
-          ForwardedValues:
-            QueryString: false
-            Cookies:
-              Forward: none
-          TrustedSigners: []
-      Tags:
-        - Key: App
-          Value: Website
-        - Key: Env
-          Value: Prod
-        - Key: Name
-          Value: prod-growksh-static-website
-        - Key: Partner
-          Value: Growksh
-
 
 Outputs:
   ContactApiEndpoint:
@@ -610,22 +518,3 @@ Outputs:
   AuthOtpTableName:
     Description: "DynamoDB table name for OTPs"
     Value: !Ref AuthOtpTable
-
-  # S3 Outputs
-  WebsiteBucketName:
-    Description: "S3 bucket name for website hosting"
-    Value: !Ref WebsiteBucket
-  WebsiteBucketArn:
-    Description: "S3 bucket ARN"
-    Value: !GetAtt WebsiteBucket.Arn
-
-  # CloudFront Outputs
-  CloudFrontDistributionId:
-    Description: "CloudFront Distribution ID"
-    Value: !Ref CloudFrontDistribution
-  CloudFrontDistributionDomainName:
-    Description: "CloudFront Distribution Domain Name"
-    Value: !GetAtt CloudFrontDistribution.DomainName
-  CloudFrontUrl:
-    Description: "CloudFront distribution HTTPS URL"
-    Value: !Sub "https://${CloudFrontDistribution.DomainName}"
