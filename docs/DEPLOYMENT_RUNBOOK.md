@@ -190,6 +190,73 @@ Stage 1️⃣: IAM Roles
 # - etc.
 ```
 
+### Post-Deployment Configuration
+
+After CloudFormation stacks are deployed, complete these manual steps:
+
+#### 1. Enable CloudFront Free Plan (Production Only)
+
+**Why**: Reduces CloudFront costs from pay-as-you-go to $0/month (includes 50GB free data transfer/month)
+
+**Prerequisites**: AWS WAF Web ACL must be attached (✅ already configured by CloudFormation)
+
+**Steps**:
+1. Go to [CloudFront Console](https://console.aws.amazon.com/cloudfront/)
+2. Select your distribution (`growksh-website-storage-cdn-prod`)
+3. Navigate to **"Plans and pricing"** tab (top menu)
+4. Click **"Manage plan"**
+5. Select **"Free plan"** option
+6. Click **"Confirm"**
+7. Wait 2-3 minutes for the change to apply
+
+**Verification**:
+```bash
+# Verify Free plan is enabled (should show "Free plan ($0/month)")
+aws cloudfront get-distribution \
+  --id <DISTRIBUTION_ID> \
+  --query 'Distribution.DistributionConfig.PriceClass' \
+  --region ap-south-1
+```
+
+#### 2. Configure Custom Domains (If Using Custom Domain)
+
+If you have a custom domain (e.g., `growksh.com`, `www.growksh.com`):
+
+1. Have your ACM Certificate ARN ready (must be in `us-east-1` region)
+2. Update parameter file `infra/cloudformation/parameters/prod-03-storage-cdn.json`:
+   ```json
+   [
+     {
+       "ParameterKey": "Environment",
+       "ParameterValue": "prod"
+     },
+     {
+       "ParameterKey": "BucketName",
+       "ParameterValue": "growksh-website-assets-prod"
+     },
+     {
+       "ParameterKey": "DomainNames",
+       "ParameterValue": "growksh.com,www.growksh.com"
+     },
+     {
+       "ParameterKey": "CertificateArn",
+       "ParameterValue": "arn:aws:acm:us-east-1:720427058396:certificate/xxxxx"
+     }
+   ]
+   ```
+3. Redeploy the storage stack:
+   ```bash
+   aws cloudformation deploy \
+     --template-file infra/cloudformation/03-storage-cdn-stack.yaml \
+     --stack-name growksh-website-storage-cdn-prod \
+     --parameter-overrides file://infra/cloudformation/parameters/prod-03-storage-cdn.json \
+     --capabilities CAPABILITY_NAMED_IAM \
+     --region ap-south-1
+   ```
+4. Update your DNS provider to point your domain to CloudFront:
+   - CNAME: `growksh.com` → `d1234567890abc.cloudfront.net`
+   - CNAME: `www.growksh.com` → `d1234567890abc.cloudfront.net`
+
 ---
 
 ## Automated Deployment (GitHub Actions)
