@@ -80,18 +80,18 @@ export async function signup(userData) {
       throw new Error('API_URL is not configured. Set VITE_API_URL in .env.local');
     }
 
-    // Clean up API base URL - remove trailing slashes and /contact or /Prod
+    // Clean up API base URL - remove trailing slashes and /prod or /contact
     let apiBase = API_URL.trim();
     apiBase = apiBase.replace(/\/+$/, ''); // Remove trailing slashes
-    apiBase = apiBase.replace(/\/(Prod|contact)$/, ''); // Remove /Prod or /contact at end
+    apiBase = apiBase.replace(/\/(prod|contact)$/, ''); // Remove /prod or /contact at end
 
-    // Ensure proper base structure (e.g., https://xxx.execute-api.region.amazonaws.com/Prod)
-    if (!apiBase.includes('/Prod')) {
-      // Add /Prod if not present
+    // Ensure proper base structure (e.g., https://xxx.execute-api.region.amazonaws.com/prod)
+    if (!apiBase.includes('/prod')) {
+      // Add /prod if not present
       if (apiBase.endsWith('/')) {
-        apiBase = apiBase + 'Prod';
+        apiBase = apiBase + 'prod';
       } else {
-        apiBase = apiBase + '/Prod';
+        apiBase = apiBase + '/prod';
       }
     }
 
