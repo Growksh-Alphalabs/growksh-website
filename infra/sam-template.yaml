@@ -559,7 +559,6 @@ Resources:
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontOAI}'
         DefaultCacheBehavior:
-          Compress: true
           AllowedMethods:
             - GET
             - HEAD
@@ -567,22 +566,14 @@ Resources:
           CachedMethods:
             - GET
             - HEAD
+          Compress: true
           TargetOriginId: S3Origin
           ViewerProtocolPolicy: redirect-to-https
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
-        CacheBehaviors:
-          - PathPattern: '/auth/*'
-            Compress: true
-            AllowedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            CachedMethods:
-              - GET
-              - HEAD
-            TargetOriginId: S3Origin
-            ViewerProtocolPolicy: redirect-to-https
-            CachePolicyId: 4135ea3d-c35d-46eb-81d7-reescrypted2019-02-26T20:39:04.224Z
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          TrustedSigners: []
         ViewerCertificate:
           AcmCertificateArn: !Ref CloudFrontCertificateArn
           SslSupportMethod: sni-only
