@@ -7,6 +7,10 @@ Parameters:
     Default: dev
 
     Description: Environment name
+  LambdaCodeBucketName:
+    Type: String
+    Description: S3 bucket name containing Lambda function code
+    Default: growksh-website-lambda-code-720427058396
   SESSourceEmail:
     Type: String
     Description: Verified SES email address
@@ -26,7 +30,7 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-contact-lambda-role-arn'
       Code:
-        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Ref LambdaCodeBucketName
         S3Key: !Sub 'contact/contact-${Environment}.zip'
       Environment:
         Variables:
@@ -57,7 +61,7 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Ref LambdaCodeBucketName
         S3Key: !Sub 'auth/signup-${Environment}.zip'
       Environment:
         Variables:
@@ -90,7 +94,7 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Ref LambdaCodeBucketName
         S3Key: !Sub 'auth/verify-email-${Environment}.zip'
       Environment:
         Variables:
@@ -121,7 +125,7 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
+        S3Bucket: !Ref LambdaCodeBucketName
         S3Key: !Sub 'auth/check-admin-${Environment}.zip'
       Environment:
         Variables:

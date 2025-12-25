@@ -37,6 +37,40 @@ echo "⏱️  Timestamp: $(date)"
 echo "🔐 IAM Role: GrowkshDeveloperRole (with wildcard permissions)"
 echo ""
 
+# For ephemeral environments, create Lambda code bucket and build Lambda functions
+if [[ $IS_EPHEMERAL == "true" ]]; then
+  LAMBDA_BUCKET="growksh-website-lambda-code-$RANDOM_SUFFIX"
+  
+  echo "🔨 Building and uploading Lambda functions..."
+  echo "📦 Lambda bucket: $LAMBDA_BUCKET"
+  echo ""
+  
+  # Create Lambda code bucket if it doesn't exist
+  if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
+    echo "📦 Creating Lambda code bucket: $LAMBDA_BUCKET"
+    aws s3 mb "s3://$LAMBDA_BUCKET" --region "$REGION"
+  fi
+  
+  # Build and upload Lambda functions
+  if [ -f "infra/scripts/build-and-upload-lambdas.sh" ]; then
+    chmod +x infra/scripts/build-and-upload-lambdas.sh
+    ./infra/scripts/build-and-upload-lambdas.sh "$ENVIRONMENT" "$LAMBDA_BUCKET" || {
+      echo "❌ Failed to build/upload Lambda functions" >&2
+      DEPLOYMENT_FAILED=true
+      exit 1
+    }
+  else
+    echo "⚠️  Lambda build script not found, skipping Lambda deployment" >&2
+  fi
+  
+  echo ""
+else
+  # For non-ephemeral environments, use default Lambda bucket
+  LAMBDA_BUCKET="growksh-website-lambda-code-$ENVIRONMENT"
+fi
+
+echo ""
+
 # Function to deploy a stack
 deploy_stack() {
   local stack_name=$1
@@ -51,6 +85,10 @@ deploy_stack() {
     local param_overrides="file://$param_file"
     if [[ $ENVIRONMENT == feature-* ]] && ([[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]]); then
       param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL"
+    fi
+    # Add LambdaCodeBucketName for lambda stacks in ephemeral environments
+    if [[ $ENVIRONMENT == feature-* ]] && ([[ "$stack_name" == *"cognito-lambdas"* ]] || [[ "$stack_name" == *"api-lambdas"* ]]); then
+      param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET"
     fi
     
     aws cloudformation deploy \
@@ -82,12 +120,12 @@ deploy_stack() {
     
     # Add specific parameters for Cognito Lambdas
     if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
-      params="$params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
+      params="$params LambdaCodeBucketName=growksh-website-lambda-code-$RANDOM_SUFFIX SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
     fi
     
     # Add specific parameters for API Lambdas
     if [[ "$stack_name" == *"api-lambdas"* ]]; then
-      params="$params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
+      params="$params LambdaCodeBucketName=growksh-website-lambda-code-$RANDOM_SUFFIX SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
     fi
     
     aws cloudformation deploy \
