@@ -6,7 +6,7 @@ on:
       - 'feature/**'
     paths:
       - '.github/workflows/**'
-      - 'infra/cloudformation/**'
+      - 'infra/**'
       - 'src/**'
       - 'public/**'
       - 'package.json'
