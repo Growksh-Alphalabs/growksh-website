@@ -14,7 +14,12 @@
                 "cloudformation:ListStacks",
                 "cloudformation:ValidateTemplate",
                 "cloudformation:TagResource",
-                "cloudformation:UntagResource"
+                "cloudformation:UntagResource",
+                "cloudformation:CreateChangeSet",
+                "cloudformation:DescribeChangeSet",
+                "cloudformation:ExecuteChangeSet",
+                "cloudformation:DeleteChangeSet",
+                "cloudformation:ListChangeSets"
             ],
             "Resource": "arn:aws:cloudformation:*:720427058396:stack/growksh-*"
         },
@@ -152,6 +157,25 @@
                 "cloudfront:CreateInvalidation",
                 "cloudfront:GetInvalidation",
                 "cloudfront:ListInvalidations"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "WAFv2Operations",
+            "Effect": "Allow",
+            "Action": [
+                "wafv2:CreateWebACL",
+                "wafv2:UpdateWebACL",
+                "wafv2:DeleteWebACL",
+                "wafv2:GetWebACL",
+                "wafv2:GetWebACLForResource",
+                "wafv2:ListWebACLs",
+                "wafv2:AssociateWebACL",
+                "wafv2:DisassociateWebACL",
+                "wafv2:ListResourcesForWebACL",
+                "wafv2:TagResource",
+                "wafv2:UntagResource",
+                "wafv2:ListTagsForResource"
             ],
             "Resource": "*"
         },
