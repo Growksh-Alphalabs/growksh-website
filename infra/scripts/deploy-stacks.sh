@@ -30,6 +30,7 @@ deploy_stack() {
   
   echo "📦 Deploying stack: $stack_name"
   
+  # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
     aws cloudformation deploy \
       --template-file "$template_file" \
@@ -39,10 +40,28 @@ deploy_stack() {
       --region "$REGION" \
       --no-fail-on-empty-changeset
   else
+    # Build dynamic parameters for ephemeral/non-standard environments
+    local params="Environment=$ENVIRONMENT"
+    
+    # Add specific parameters for Storage CDN stack
+    if [[ "$stack_name" == *"storage-cdn"* ]]; then
+      params="$params BucketName=$ENVIRONMENT-assets DomainNames=\"\" CertificateArn=\"\" WAFArn=\"\""
+    fi
+    
+    # Add specific parameters for Cognito Lambdas
+    if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
+      params="$params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$ENVIRONMENT-assets.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
+    fi
+    
+    # Add specific parameters for API Lambdas
+    if [[ "$stack_name" == *"api-lambdas"* ]]; then
+      params="$params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$ENVIRONMENT-assets.s3.amazonaws.com/auth/verify-email"
+    fi
+    
     aws cloudformation deploy \
       --template-file "$template_file" \
       --stack-name "$stack_name" \
-      --parameter-overrides Environment="$ENVIRONMENT" \
+      --parameter-overrides $params \
       --capabilities CAPABILITY_NAMED_IAM \
       --region "$REGION" \
       --no-fail-on-empty-changeset
