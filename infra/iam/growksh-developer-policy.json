@@ -12,7 +12,6 @@
                 "cloudformation:DescribeStackResources",
                 "cloudformation:GetTemplate",
                 "cloudformation:GetTemplateSummary",
-                "cloudformation:ListStacks",
                 "cloudformation:ValidateTemplate",
                 "cloudformation:TagResource",
                 "cloudformation:UntagResource",
@@ -29,7 +28,8 @@
             "Effect": "Allow",
             "Action": [
                 "cloudformation:DescribeStackResource",
-                "cloudformation:DescribeStackEvents"
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:ListStacks"
             ],
             "Resource": "*"
         },
