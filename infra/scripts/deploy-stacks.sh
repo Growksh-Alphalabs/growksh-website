@@ -39,64 +39,42 @@ deploy_stack() {
   
   echo "📦 Deploying stack: $stack_name"
   
-  # Check if stack exists
-  local stack_exists=$(aws cloudformation describe-stacks --stack-name "$stack_name" --region "$REGION" 2>/dev/null | jq '.Stacks | length' 2>/dev/null || echo 0)
-  
-  # Build parameters
-  local deploy_params=""
-  
+  # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
-    deploy_params="--parameter-overrides file://\"$param_file\""
+    aws cloudformation deploy \
+      --template-file "$template_file" \
+      --stack-name "$stack_name" \
+      --parameter-overrides file://"$param_file" \
+      --capabilities CAPABILITY_NAMED_IAM \
+      --region "$REGION" \
+      --no-fail-on-empty-changeset
   else
     # Build dynamic parameters for ephemeral/non-standard environments
-    deploy_params="--parameter-overrides Environment=\"$ENVIRONMENT\""
+    local params="Environment=$ENVIRONMENT"
     
     # Add specific parameters for Storage CDN stack
     # Don't pass empty strings for optional parameters - let CloudFormation use defaults
     if [[ "$stack_name" == *"storage-cdn"* ]]; then
-      deploy_params="$deploy_params BucketName=$BUCKET_NAME"
+      params="$params BucketName=$BUCKET_NAME"
     fi
     
     # Add specific parameters for Cognito Lambdas
     if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
-      deploy_params="$deploy_params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
+      params="$params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
     fi
     
     # Add specific parameters for API Lambdas
     if [[ "$stack_name" == *"api-lambdas"* ]]; then
-      deploy_params="$deploy_params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
+      params="$params SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
     fi
-  fi
-  
-  # For storage CDN, use direct create/update to avoid changeset issues with hooks
-  if [[ "$stack_name" == *"storage-cdn"* ]]; then
-    if [ "$stack_exists" -gt 0 ]; then
-      eval "aws cloudformation update-stack \
-        --template-body file://\"$template_file\" \
-        --stack-name \"$stack_name\" \
-        $deploy_params \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --region \"$REGION\" 2>&1 | grep -v 'No updates are to be performed' || true"
-    else
-      eval "aws cloudformation create-stack \
-        --template-body file://\"$template_file\" \
-        --stack-name \"$stack_name\" \
-        $deploy_params \
-        --capabilities CAPABILITY_NAMED_IAM \
-        --region \"$REGION\""
-    fi
-    # Wait for stack to complete
-    aws cloudformation wait stack-create-complete --stack-name "$stack_name" --region "$REGION" 2>/dev/null || \
-    aws cloudformation wait stack-update-complete --stack-name "$stack_name" --region "$REGION" 2>/dev/null || true
-  else
-    # Use standard deploy for other stacks
-    eval "aws cloudformation deploy \
-      --template-file \"$template_file\" \
-      --stack-name \"$stack_name\" \
-      $deploy_params \
+    
+    aws cloudformation deploy \
+      --template-file "$template_file" \
+      --stack-name "$stack_name" \
+      --parameter-overrides $params \
       --capabilities CAPABILITY_NAMED_IAM \
-      --region \"$REGION\" \
-      --no-fail-on-empty-changeset"
+      --region "$REGION" \
+      --no-fail-on-empty-changeset
   fi
   
   echo "✅ Stack deployed: $stack_name"
