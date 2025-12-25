@@ -100,6 +100,8 @@
                 "s3:PutBucketAcl",
                 "s3:GetBucketPublicAccessBlock",
                 "s3:PutBucketPublicAccessBlock",
+                "s3:PutBucketOwnershipControls",
+                "s3:GetBucketOwnershipControls",
                 "s3:GetBucketEncryption",
                 "s3:PutBucketEncryption",
                 "s3:GetBucketWebsite",
