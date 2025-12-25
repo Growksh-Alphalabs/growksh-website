@@ -57,7 +57,11 @@ deploy_stack() {
       --parameter-overrides $param_overrides \
       --capabilities CAPABILITY_NAMED_IAM \
       --region "$REGION" \
-      --no-fail-on-empty-changeset
+      --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
+      echo "❌ Failed to deploy stack: $stack_name" >&2
+      cat "/tmp/deploy-${stack_name}.log" >&2
+      return 1
+    }
   else
     # Build dynamic parameters for ephemeral/non-standard environments
     local params="Environment=$ENVIRONMENT"
@@ -89,7 +93,11 @@ deploy_stack() {
       --parameter-overrides $params \
       --capabilities CAPABILITY_NAMED_IAM \
       --region "$REGION" \
-      --no-fail-on-empty-changeset
+      --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
+      echo "❌ Failed to deploy stack: $stack_name" >&2
+      cat "/tmp/deploy-${stack_name}.log" >&2
+      return 1
+    }
   fi
   
   echo "✅ Stack deployed: $stack_name"
