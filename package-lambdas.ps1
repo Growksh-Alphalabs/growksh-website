@@ -1,7 +1,7 @@
 #!/usr/bin/env powershell
 # Script to package Lambda functions and upload to S3
 
-$S3Bucket = "growksh-website-lambda-code-720427058396"
+$S3Bucket = "growksh-website-lambda-code-dev"
 $AWSRegion = "ap-south-1"
 $Environment = "dev"
 
