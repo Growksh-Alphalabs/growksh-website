@@ -60,7 +60,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: !Sub 'growksh-website-lambda-code-${AWS::AccountId}'
+      BucketName: !Sub 'growksh-website-lambda-code-${Environment}'
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
