@@ -73,6 +73,7 @@ jobs:
           echo "✅ All CloudFormation templates are valid"
 
       - name: Deploy CloudFormation stacks (ephemeral)
+        id: deploy
         run: |
           chmod +x infra/scripts/deploy-stacks.sh
           ./infra/scripts/deploy-stacks.sh ${{ needs.prepare.outputs.environment_name }}
@@ -84,7 +85,7 @@ jobs:
 
       - name: Upload frontend to S3
         run: |
-          BUCKET_NAME="${{ needs.prepare.outputs.environment_name }}-assets"
+          BUCKET_NAME="${{ steps.deploy.outputs.BUCKET_NAME || needs.prepare.outputs.environment_name }}-assets"
           aws s3 mb s3://$BUCKET_NAME 2>/dev/null || true
           aws s3 sync dist/ s3://$BUCKET_NAME/ --delete --cache-control "public, max-age=3600"
           echo "✅ Frontend uploaded to $BUCKET_NAME"
