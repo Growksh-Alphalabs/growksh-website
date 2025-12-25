@@ -104,6 +104,7 @@
                 "s3:GetBucketOwnershipControls",
                 "s3:GetBucketEncryption",
                 "s3:PutBucketEncryption",
+                "s3:PutEncryptionConfiguration",
                 "s3:GetBucketWebsite",
                 "s3:PutBucketWebsite",
                 "s3:ListBucket",
