@@ -7,6 +7,11 @@ Parameters:
     Default: dev
 
     Description: Environment name
+  IsEphemeral:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Whether this is an ephemeral environment (auto-deletes resources on stack deletion)
 
 Resources:
   UserPool:
