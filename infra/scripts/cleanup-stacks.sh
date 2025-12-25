@@ -37,6 +37,27 @@ for stack in $STACKS; do
 done
 echo ""
 
+# Check if storage-cdn stack is being deleted - if so, empty buckets first
+HAS_STORAGE_CDN=false
+for stack in $STACKS; do
+  if [[ $stack == *"storage-cdn"* ]]; then
+    HAS_STORAGE_CDN=true
+    break
+  fi
+done
+
+if [ "$HAS_STORAGE_CDN" = true ]; then
+  echo "🧹 Pre-cleanup: Emptying S3 buckets for storage-cdn stack..."
+  BUCKETS=$(aws s3 ls --region "$REGION" | grep "$ENVIRONMENT_PREFIX" | awk '{print $3}')
+  if [ -n "$BUCKETS" ]; then
+    for bucket in $BUCKETS; do
+      echo "  Emptying bucket: s3://$bucket"
+      aws s3 rm "s3://$bucket" --recursive --region "$REGION" 2>/dev/null || echo "  (bucket may already be empty or inaccessible)"
+    done
+    echo ""
+  fi
+fi
+
 # Simple delete function - let CloudFormation handle DeletionPolicy
 delete_stack() {
   local stack_name=$1
