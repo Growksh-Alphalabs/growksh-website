@@ -38,6 +38,15 @@ for stack in $STACKS; do
 done
 echo ""
 
+# First, empty all S3 buckets associated with this environment
+echo "🧹 Pre-cleanup: Emptying S3 buckets..."
+# Find and empty assets buckets
+for bucket in $(aws s3 ls --region "$REGION" | grep "$ENVIRONMENT_PREFIX" | awk '{print $3}'); do
+  echo "  Emptying bucket: s3://$bucket"
+  aws s3 rm "s3://$bucket" --recursive --region "$REGION" 2>/dev/null || true
+done
+echo ""
+
 # Delete stacks in reverse dependency order
 # Stack deletion order (reverse of deployment):
 # 1. api-lambdas (depends on api-gateway, cognito, database, iam)

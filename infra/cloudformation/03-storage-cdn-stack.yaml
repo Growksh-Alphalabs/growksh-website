@@ -32,12 +32,15 @@ Conditions:
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
   HasCustomLambdaCodeBucketName: !Not [!Equals [!Ref LambdaCodeBucketName, ""]]
+  IsEphemeral: !Or
+    - !Equals [!Ref Environment, "feature-*"]
+    - !Contains ["feature-", !Ref Environment]
 
 Resources:
   AssetsBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: !If [IsEphemeral, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeral, Delete, Retain]
     Properties:
       BucketName: !Ref BucketName
       PublicAccessBlockConfiguration:
@@ -62,8 +65,8 @@ Resources:
 
   LambdaCodeBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: !If [IsEphemeral, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeral, Delete, Retain]
     Properties:
       BucketName: !If
         - HasCustomLambdaCodeBucketName
