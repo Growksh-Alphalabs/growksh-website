@@ -64,10 +64,6 @@ deploy_stack() {
       cat "/tmp/deploy-${stack_name}.log" >&2
       DEPLOYMENT_FAILED=true
       return 0
-    } 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
-      echo "❌ Failed to deploy stack: $stack_name" >&2
-      cat "/tmp/deploy-${stack_name}.log" >&2
-      return 1
     }
   else
     # Build dynamic parameters for ephemeral/non-standard environments
@@ -196,7 +192,6 @@ aws cloudformation describe-stacks \
   --query "Stacks[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
   --region "$REGION" \
   --output table || echo "⚠️  Could not retrieve stack status"
-  --output table
 
 echo ""
 echo "🎉 Deployment complete for environment: $ENVIRONMENT"
