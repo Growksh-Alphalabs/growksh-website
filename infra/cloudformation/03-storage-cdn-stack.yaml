@@ -10,6 +10,10 @@ Parameters:
   BucketName:
     Type: String
     Description: S3 bucket name (must be globally unique)
+  LambdaCodeBucketName:
+    Type: String
+    Default: ""
+    Description: Lambda code bucket name (optional, defaults to growksh-website-lambda-code-{Environment})
   DomainNames:
     Type: CommaDelimitedList
     Default: ""
@@ -27,6 +31,7 @@ Conditions:
   HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
+  HasCustomLambdaCodeBucketName: !Not [!Equals [!Ref LambdaCodeBucketName, ""]]
 
 Resources:
   AssetsBucket:
@@ -60,7 +65,10 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: !Sub 'growksh-website-lambda-code-${Environment}'
+      BucketName: !If
+        - HasCustomLambdaCodeBucketName
+        - !Ref LambdaCodeBucketName
+        - !Sub 'growksh-website-lambda-code-${Environment}'
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         IgnorePublicAcls: true
