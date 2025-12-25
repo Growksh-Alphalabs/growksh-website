@@ -72,7 +72,7 @@ Resources:
           Statement:
             RateBasedStatement:
               Limit: 1000
-              EvaluationWindowSeconds: 300
+              EvaluationWindowSec: 300
               AggregateKeyType: IP
           VisibilityConfig:
             SampledRequestsEnabled: true

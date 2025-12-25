@@ -21,7 +21,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-contact-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: index.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-contact-lambda-role-arn'
@@ -52,7 +52,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-signup-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: signup.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -85,7 +85,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-verify-email-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: verify-email.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -116,7 +116,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-check-admin-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: define-auth-challenge.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'

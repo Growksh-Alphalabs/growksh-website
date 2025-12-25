@@ -25,7 +25,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-pre-sign-up-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: pre-sign-up.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -44,7 +44,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-custom-message-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: custom-message.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -66,7 +66,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-define-auth-challenge-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: define-auth-challenge.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -85,7 +85,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-create-auth-challenge-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: create-auth-challenge.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -110,7 +110,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-verify-auth-challenge-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: verify-auth-challenge.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
@@ -133,7 +133,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-website-post-confirmation-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: post-confirmation.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
