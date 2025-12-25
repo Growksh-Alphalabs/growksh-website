@@ -55,7 +55,7 @@ deploy_stack() {
     # Add specific parameters for Storage CDN stack
     # Don't pass empty strings for optional parameters - let CloudFormation use defaults
     if [[ "$stack_name" == *"storage-cdn"* ]]; then
-      params="$params BucketName=$BUCKET_NAME"
+      params="$params BucketName=$BUCKET_NAME LambdaCodeBucketName=growksh-website-lambda-code-$RANDOM_SUFFIX"
     fi
     
     # Add specific parameters for Cognito Lambdas
