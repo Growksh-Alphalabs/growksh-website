@@ -5,7 +5,7 @@ Parameters:
   Environment:
     Type: String
     Default: dev
-    AllowedValues: [dev, prod, ephemeral]
+
     Description: Environment name
   SESSourceEmail:
     Type: String
