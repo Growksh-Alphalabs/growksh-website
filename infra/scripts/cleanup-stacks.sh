@@ -19,15 +19,17 @@ echo "🧹 Starting cleanup for environment prefix: $ENVIRONMENT_PREFIX"
 echo "📍 Region: $REGION"
 echo ""
 
-# Get all stacks matching the environment prefix (including failed ones)
+# Get all stacks matching the environment prefix (only failed/rolled-back ones)
+# This ensures we only clean up stacks that actually failed, not successful ones
 STACKS=$(aws cloudformation list-stacks \
-  --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE CREATE_FAILED UPDATE_FAILED \
+  --stack-status-filter CREATE_FAILED UPDATE_FAILED ROLLBACK_COMPLETE DELETE_FAILED \
   --query "StackSummaries[?contains(StackName, '$ENVIRONMENT_PREFIX')].StackName" \
   --output text \
   --region "$REGION")
 
 if [ -z "$STACKS" ]; then
-  echo "ℹ️  No stacks found for environment: $ENVIRONMENT_PREFIX"
+  echo "ℹ️  No failed stacks found for environment: $ENVIRONMENT_PREFIX"
+  echo "✅ Successful stacks will be preserved for retry"
   exit 0
 fi
 
