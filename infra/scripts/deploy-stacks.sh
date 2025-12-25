@@ -18,10 +18,11 @@ REGION=${AWS_REGION:-ap-south-1}
 TEMPLATE_DIR="infra/cloudformation"
 PARAM_DIR="infra/cloudformation/parameters"
 
-# For ephemeral environments, add timestamp to ensure unique bucket names
+# For ephemeral environments, add random suffix to ensure unique bucket names
 if [[ $ENVIRONMENT == feature-* ]]; then
-  TIMESTAMP=$(date +%s)
-  BUCKET_NAME="$ENVIRONMENT-assets-$TIMESTAMP"
+  # Use random 6-character alphanumeric suffix for guaranteed uniqueness
+  RANDOM_SUFFIX=$(openssl rand -hex 3)
+  BUCKET_NAME="$ENVIRONMENT-$RANDOM_SUFFIX"
 else
   BUCKET_NAME="$ENVIRONMENT-assets"
 fi
