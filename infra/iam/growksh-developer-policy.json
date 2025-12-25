@@ -156,6 +156,8 @@
                 "cloudfront:GetDistribution",
                 "cloudfront:GetDistributionConfig",
                 "cloudfront:ListDistributions",
+                "cloudfront:TagResource",
+                "cloudfront:UntagResource",
                 "cloudfront:CreateOriginAccessControl",
                 "cloudfront:UpdateOriginAccessControl",
                 "cloudfront:DeleteOriginAccessControl",
