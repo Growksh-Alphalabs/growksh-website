@@ -112,11 +112,19 @@ deploy_stack \
 
 # Stage 4: Storage & CDN (no dependencies)
 echo "Stage 4️⃣: Storage & CDN"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-storage-cdn.json"
-deploy_stack \
-  "growksh-website-storage-cdn-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/03-storage-cdn-stack.yaml" \
-  "$PARAM_FILE"
+# For ephemeral environments, pass parameters directly instead of using param file
+if [[ $ENVIRONMENT == feature-* ]]; then
+  deploy_stack \
+    "growksh-website-storage-cdn-$ENVIRONMENT" \
+    "$TEMPLATE_DIR/03-storage-cdn-stack.yaml"
+else
+  # For dev/prod, use parameter files
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-storage-cdn.json"
+  deploy_stack \
+    "growksh-website-storage-cdn-$ENVIRONMENT" \
+    "$TEMPLATE_DIR/03-storage-cdn-stack.yaml" \
+    "$PARAM_FILE"
+fi
 
 # Stage 5: API Gateway (no dependencies)
 echo "Stage 5️⃣: API Gateway"
