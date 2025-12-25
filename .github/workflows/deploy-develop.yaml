@@ -5,11 +5,11 @@ on:
     branches:
       - develop
     paths:
+      - '.github/workflows/**'
       - 'infra/cloudformation/**'
       - 'src/**'
       - 'public/**'
       - 'package.json'
-      - '.github/workflows/deploy-develop.yaml'
 
 permissions:
   id-token: write
