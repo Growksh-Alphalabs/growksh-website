@@ -31,6 +31,7 @@ fi
 
 echo "🚀 Starting CloudFormation deployment for environment: $ENVIRONMENT"
 echo "📍 Region: $REGION"
+echo "🔄 Ephemeral environment: $IS_EPHEMERAL"
 echo ""
 
 # Function to deploy a stack
