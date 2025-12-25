@@ -80,7 +80,8 @@
                 "dynamodb:ListTables",
                 "dynamodb:TagResource",
                 "dynamodb:UntagResource",
-                "dynamodb:UpdateTimeToLive"
+                "dynamodb:UpdateTimeToLive",
+                "dynamodb:DescribeTimeToLive"
             ],
             "Resource": "arn:aws:dynamodb:*:720427058396:table/growksh-*"
         },
