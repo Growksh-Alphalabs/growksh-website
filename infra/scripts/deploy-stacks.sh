@@ -18,6 +18,14 @@ REGION=${AWS_REGION:-ap-south-1}
 TEMPLATE_DIR="infra/cloudformation"
 PARAM_DIR="infra/cloudformation/parameters"
 
+# For ephemeral environments, add timestamp to ensure unique bucket names
+if [[ $ENVIRONMENT == feature-* ]]; then
+  TIMESTAMP=$(date +%s)
+  BUCKET_NAME="$ENVIRONMENT-assets-$TIMESTAMP"
+else
+  BUCKET_NAME="$ENVIRONMENT-assets"
+fi
+
 echo "🚀 Starting CloudFormation deployment for environment: $ENVIRONMENT"
 echo "📍 Region: $REGION"
 echo ""
@@ -45,7 +53,7 @@ deploy_stack() {
     
     # Add specific parameters for Storage CDN stack
     if [[ "$stack_name" == *"storage-cdn"* ]]; then
-      params="$params BucketName=$ENVIRONMENT-assets DomainNames=\"\" CertificateArn=\"\" WAFArn=\"\""
+      params="$params BucketName=$BUCKET_NAME DomainNames=\"\" CertificateArn=\"\" WAFArn=\"\""
     fi
     
     # Add specific parameters for Cognito Lambdas
@@ -143,3 +151,6 @@ aws cloudformation describe-stacks \
 
 echo ""
 echo "🎉 Deployment complete for environment: $ENVIRONMENT"
+
+# Output the actual bucket name for workflow use
+echo "BUCKET_NAME=$BUCKET_NAME" >> "$GITHUB_OUTPUT" 2>/dev/null || true
