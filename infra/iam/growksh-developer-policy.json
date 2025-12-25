@@ -194,9 +194,20 @@
             "Sid": "IAMPassRole",
             "Effect": "Allow",
             "Action": [
+                "iam:CreateRole",
+                "iam:UpdateRole",
+                "iam:UpdateRoleDescription",
+                "iam:DeleteRole",
                 "iam:PassRole",
                 "iam:GetRole",
-                "iam:GetRolePolicy"
+                "iam:GetRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:DeleteRolePolicy",
+                "iam:ListRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:TagRole",
+                "iam:UntagRole"
             ],
             "Resource": "arn:aws:iam::720427058396:role/growksh-*"
         },
