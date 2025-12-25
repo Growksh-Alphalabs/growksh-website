@@ -14,6 +14,11 @@ Parameters:
     Type: String
     Default: ""
     Description: Lambda code bucket name (optional, defaults to growksh-website-lambda-code-{Environment})
+  IsEphemeral:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Whether this is an ephemeral environment (auto-deletes resources on stack deletion)
   DomainNames:
     Type: CommaDelimitedList
     Default: ""
@@ -32,15 +37,13 @@ Conditions:
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
   HasCustomLambdaCodeBucketName: !Not [!Equals [!Ref LambdaCodeBucketName, ""]]
-  IsEphemeral: !Or
-    - !Equals [!Ref Environment, "feature-*"]
-    - !Contains ["feature-", !Ref Environment]
+  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
 
 Resources:
   AssetsBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: !If [IsEphemeral, Delete, Retain]
-    UpdateReplacePolicy: !If [IsEphemeral, Delete, Retain]
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
     Properties:
       BucketName: !Ref BucketName
       PublicAccessBlockConfiguration:
@@ -65,8 +68,8 @@ Resources:
 
   LambdaCodeBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: !If [IsEphemeral, Delete, Retain]
-    UpdateReplacePolicy: !If [IsEphemeral, Delete, Retain]
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
     Properties:
       BucketName: !If
         - HasCustomLambdaCodeBucketName

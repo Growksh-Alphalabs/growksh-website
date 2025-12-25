@@ -18,8 +18,10 @@ REGION=${AWS_REGION:-ap-south-1}
 TEMPLATE_DIR="infra/cloudformation"
 PARAM_DIR="infra/cloudformation/parameters"
 
-# For ephemeral environments, add random suffix to ensure unique bucket names
+# Determine if this is an ephemeral environment and set flag
+IS_EPHEMERAL="false"
 if [[ $ENVIRONMENT == feature-* ]]; then
+  IS_EPHEMERAL="true"
   # Use random 6-character alphanumeric suffix for guaranteed uniqueness
   RANDOM_SUFFIX=$(openssl rand -hex 3)
   BUCKET_NAME="$ENVIRONMENT-$RANDOM_SUFFIX"
@@ -41,16 +43,27 @@ deploy_stack() {
   
   # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
+    # When using parameter file, still override IsEphemeral for database/storage stacks if it's ephemeral
+    local param_overrides="file://$param_file"
+    if [[ $ENVIRONMENT == feature-* ]] && ([[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]]); then
+      param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL"
+    fi
+    
     aws cloudformation deploy \
       --template-file "$template_file" \
       --stack-name "$stack_name" \
-      --parameter-overrides file://"$param_file" \
+      --parameter-overrides $param_overrides \
       --capabilities CAPABILITY_NAMED_IAM \
       --region "$REGION" \
       --no-fail-on-empty-changeset
   else
     # Build dynamic parameters for ephemeral/non-standard environments
     local params="Environment=$ENVIRONMENT"
+    
+    # Add IsEphemeral only to stacks that use it (database and storage stacks)
+    if [[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]]; then
+      params="$params IsEphemeral=$IS_EPHEMERAL"
+    fi
     
     # Add specific parameters for Storage CDN stack
     # Don't pass empty strings for optional parameters - let CloudFormation use defaults
