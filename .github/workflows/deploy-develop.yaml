@@ -41,7 +41,7 @@ jobs:
       - name: Validate CloudFormation templates
         run: |
           pip install cfn-lint
-          cfn-lint infra/cloudformation/*.yaml -t
+          cfn-lint -t infra/cloudformation/*.yaml
           echo "✅ All CloudFormation templates are valid"
 
       - name: Deploy CloudFormation stacks (dev)
