@@ -36,7 +36,7 @@ jobs:
           # Extract branch name and create hash
           BRANCH_NAME=$(echo "${{ github.head_ref || github.ref }}" | sed 's/refs\/heads\///' | sed 's/feature\///')
           HASH=$(echo -n "$BRANCH_NAME" | sha256sum | cut -c1-8)
-          ENVIRONMENT_NAME="growksh-website-feature-${HASH}"
+          ENVIRONMENT_NAME="feature-${HASH}"
           
           echo "environment_name=$ENVIRONMENT_NAME" >> $GITHUB_OUTPUT
           echo "hash=$HASH" >> $GITHUB_OUTPUT
