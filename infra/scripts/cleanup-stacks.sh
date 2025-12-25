@@ -65,6 +65,16 @@ delete_stack() {
   local stack_name=$1
   
   echo "🗑️  Deleting stack: $stack_name"
+  
+  # Capture stack events before deletion for debugging
+  echo "📋 Stack events:"
+  aws cloudformation describe-stack-events \
+    --stack-name "$stack_name" \
+    --region "$REGION" \
+    --query 'StackEvents[?contains(ResourceStatusReason, `Error`) || contains(ResourceStatusReason, `Failed`) || ResourceStatus == `CREATE_FAILED` || ResourceStatus == `UPDATE_FAILED`]' \
+    --output table 2>/dev/null || true
+  echo ""
+  
   aws cloudformation delete-stack \
     --stack-name "$stack_name" \
     --region "$REGION" 2>/dev/null || true
