@@ -6,6 +6,7 @@ set -e
 # Example: ./deploy-stacks.sh dev
 
 ENVIRONMENT=$1
+DEPLOYMENT_FAILED=false
 
 if [ -z "$ENVIRONMENT" ]; then
   echo "❌ Error: Environment name is required"
@@ -33,6 +34,7 @@ echo "🚀 Starting CloudFormation deployment for environment: $ENVIRONMENT"
 echo "📍 Region: $REGION"
 echo "🔄 Ephemeral environment: $IS_EPHEMERAL"
 echo "⏱️  Timestamp: $(date)"
+echo "🔐 IAM Role: GrowkshDeveloperRole (with wildcard permissions)"
 echo ""
 
 # Function to deploy a stack
@@ -58,6 +60,11 @@ deploy_stack() {
       --capabilities CAPABILITY_NAMED_IAM \
       --region "$REGION" \
       --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
+      echo "❌ Failed to deploy stack: $stack_name" >&2
+      cat "/tmp/deploy-${stack_name}.log" >&2
+      DEPLOYMENT_FAILED=true
+      return 0
+    } 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
       echo "❌ Failed to deploy stack: $stack_name" >&2
       cat "/tmp/deploy-${stack_name}.log" >&2
       return 1
@@ -96,10 +103,12 @@ deploy_stack() {
       --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
       echo "❌ Failed to deploy stack: $stack_name" >&2
       cat "/tmp/deploy-${stack_name}.log" >&2
-      return 1
+      DEPLOYMENT_FAILED=true
+      return 0
     }
   fi
   
+  # Only print success if deployment actually succeeded
   echo "✅ Stack deployed: $stack_name"
   echo ""
 }
@@ -173,13 +182,20 @@ deploy_stack \
 
 echo ""
 echo "═══════════════════════════════════════════════════"
-echo "✅ All stacks deployed successfully!"
-echo "═══════════════════════════════════════════════════"
+if [ "$DEPLOYMENT_FAILED" = true ]; then
+  echo "❌ Deployment FAILED - some stacks did not deploy"
+  echo "═══════════════════════════════════════════════════"
+  exit 1
+else
+  echo "✅ All stacks deployed successfully!"
+  echo "═══════════════════════════════════════════════════"
+fi
 echo ""
 echo "📊 Stack Status:"
 aws cloudformation describe-stacks \
   --query "Stacks[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
   --region "$REGION" \
+  --output table || echo "⚠️  Could not retrieve stack status"
   --output table
 
 echo ""
