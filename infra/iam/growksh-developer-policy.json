@@ -5,23 +5,12 @@
             "Sid": "CloudFormationOperations",
             "Effect": "Allow",
             "Action": [
-                "cloudformation:CreateStack",
-                "cloudformation:UpdateStack",
-                "cloudformation:DeleteStack",
-                "cloudformation:DescribeStacks",
-                "cloudformation:DescribeStackResources",
-                "cloudformation:GetTemplate",
-                "cloudformation:GetTemplateSummary",
-                "cloudformation:ValidateTemplate",
-                "cloudformation:TagResource",
-                "cloudformation:UntagResource",
-                "cloudformation:CreateChangeSet",
-                "cloudformation:DescribeChangeSet",
-                "cloudformation:ExecuteChangeSet",
-                "cloudformation:DeleteChangeSet",
-                "cloudformation:ListChangeSets"
+                "cloudformation:*"
             ],
-            "Resource": "arn:aws:cloudformation:*:720427058396:stack/growksh-*"
+            "Resource": [
+                "arn:aws:cloudformation:*:720427058396:stack/growksh-*",
+                "arn:aws:cloudformation:*:720427058396:stack/feature-*"
+            ]
         },
         {
             "Sid": "CloudFormationGlobalOperations",
@@ -37,18 +26,7 @@
             "Sid": "LambdaOperations",
             "Effect": "Allow",
             "Action": [
-                "lambda:CreateFunction",
-                "lambda:UpdateFunction",
-                "lambda:UpdateFunctionCode",
-                "lambda:UpdateFunctionConfiguration",
-                "lambda:DeleteFunction",
-                "lambda:GetFunction",
-                "lambda:GetFunctionConfiguration",
-                "lambda:ListFunctions",
-                "lambda:PublishVersion",
-                "lambda:PublishLayerVersion",
-                "lambda:AddPermission",
-                "lambda:RemovePermission"
+                "lambda:*"
             ],
             "Resource": "arn:aws:lambda:*:720427058396:function:growksh-*"
         },
@@ -56,16 +34,7 @@
             "Sid": "APIGatewayOperations",
             "Effect": "Allow",
             "Action": [
-                "apigateway:POST",
-                "apigateway:GET",
-                "apigateway:PUT",
-                "apigateway:DELETE",
-                "apigateway:PATCH",
-                "apigateway:CreateRestApi",
-                "apigateway:DeleteRestApi",
-                "apigateway:UpdateRestApi",
-                "apigateway:GetRestApi",
-                "apigateway:GetRestApis"
+                "apigateway:*"
             ],
             "Resource": "arn:aws:apigateway:*::*"
         },
@@ -73,15 +42,7 @@
             "Sid": "DynamoDBOperations",
             "Effect": "Allow",
             "Action": [
-                "dynamodb:CreateTable",
-                "dynamodb:UpdateTable",
-                "dynamodb:DeleteTable",
-                "dynamodb:DescribeTable",
-                "dynamodb:ListTables",
-                "dynamodb:TagResource",
-                "dynamodb:UntagResource",
-                "dynamodb:UpdateTimeToLive",
-                "dynamodb:DescribeTimeToLive"
+                "dynamodb:*"
             ],
             "Resource": "arn:aws:dynamodb:*:720427058396:table/growksh-*"
         },
@@ -89,33 +50,7 @@
             "Sid": "S3Operations",
             "Effect": "Allow",
             "Action": [
-                "s3:CreateBucket",
-                "s3:DeleteBucket",
-                "s3:GetBucketPolicy",
-                "s3:PutBucketPolicy",
-                "s3:DeleteBucketPolicy",
-                "s3:GetBucketVersioning",
-                "s3:PutBucketVersioning",
-                "s3:GetBucketAcl",
-                "s3:PutBucketAcl",
-                "s3:GetBucketPublicAccessBlock",
-                "s3:PutBucketPublicAccessBlock",
-                "s3:PutBucketOwnershipControls",
-                "s3:GetBucketOwnershipControls",
-                "s3:GetBucketEncryption",
-                "s3:PutBucketEncryption",
-                "s3:PutEncryptionConfiguration",
-                "s3:GetBucketWebsite",
-                "s3:PutBucketWebsite",
-                "s3:ListBucket",
-                "s3:ListAllMyBuckets",
-                "s3:GetObject",
-                "s3:PutObject",
-                "s3:DeleteObject",
-                "s3:GetObjectVersion",
-                "s3:ListBucketVersions",
-                "s3:TagResource",
-                "s3:UntagResource"
+                "s3:*"
             ],
             "Resource": [
                 "arn:aws:s3:::growksh-*",
@@ -128,21 +63,7 @@
             "Sid": "CognitoOperations",
             "Effect": "Allow",
             "Action": [
-                "cognito-idp:CreateUserPool",
-                "cognito-idp:UpdateUserPool",
-                "cognito-idp:DeleteUserPool",
-                "cognito-idp:DescribeUserPool",
-                "cognito-idp:ListUserPools",
-                "cognito-idp:CreateUserPoolClient",
-                "cognito-idp:UpdateUserPoolClient",
-                "cognito-idp:DeleteUserPoolClient",
-                "cognito-idp:DescribeUserPoolClient",
-                "cognito-idp:AdminCreateUser",
-                "cognito-idp:AdminUpdateUserAttributes",
-                "cognito-idp:AdminSetUserPassword",
-                "cognito-idp:AdminDeleteUser",
-                "cognito-idp:TagResource",
-                "cognito-idp:UntagResource"
+                "cognito-idp:*"
             ],
             "Resource": "arn:aws:cognito-idp:*:720427058396:userpool/*"
         },
@@ -150,23 +71,7 @@
             "Sid": "CloudFrontOperations",
             "Effect": "Allow",
             "Action": [
-                "cloudfront:CreateDistribution",
-                "cloudfront:UpdateDistribution",
-                "cloudfront:DeleteDistribution",
-                "cloudfront:GetDistribution",
-                "cloudfront:GetDistributionConfig",
-                "cloudfront:ListDistributions",
-                "cloudfront:TagResource",
-                "cloudfront:UntagResource",
-                "cloudfront:CreateOriginAccessControl",
-                "cloudfront:UpdateOriginAccessControl",
-                "cloudfront:DeleteOriginAccessControl",
-                "cloudfront:GetOriginAccessControl",
-                "cloudfront:GetOriginAccessControlConfig",
-                "cloudfront:ListOriginAccessControls",
-                "cloudfront:CreateInvalidation",
-                "cloudfront:GetInvalidation",
-                "cloudfront:ListInvalidations"
+                "cloudfront:*"
             ],
             "Resource": "*"
         },
@@ -174,18 +79,7 @@
             "Sid": "WAFv2Operations",
             "Effect": "Allow",
             "Action": [
-                "wafv2:CreateWebACL",
-                "wafv2:UpdateWebACL",
-                "wafv2:DeleteWebACL",
-                "wafv2:GetWebACL",
-                "wafv2:GetWebACLForResource",
-                "wafv2:ListWebACLs",
-                "wafv2:AssociateWebACL",
-                "wafv2:DisassociateWebACL",
-                "wafv2:ListResourcesForWebACL",
-                "wafv2:TagResource",
-                "wafv2:UntagResource",
-                "wafv2:ListTagsForResource"
+                "wafv2:*"
             ],
             "Resource": "*"
         },
@@ -193,15 +87,12 @@
             "Sid": "SESOperations",
             "Effect": "Allow",
             "Action": [
-                "ses:SendEmail",
-                "ses:SendRawEmail",
-                "ses:VerifyEmailIdentity",
-                "ses:VerifyDomainIdentity"
+                "ses:*"
             ],
             "Resource": "*"
         },
         {
-            "Sid": "IAMPassRole",
+            "Sid": "IAMOperations",
             "Effect": "Allow",
             "Action": [
                 "iam:CreateRole",
@@ -216,38 +107,28 @@
                 "iam:ListRolePolicies",
                 "iam:AttachRolePolicy",
                 "iam:DetachRolePolicy",
-                "iam:TagRole",
-                "iam:UntagRole"
-            ],
-            "Resource": "arn:aws:iam::720427058396:role/growksh-*"
-        },
-        {
-            "Sid": "IAMReadOnly",
-            "Effect": "Allow",
-            "Action": [
                 "iam:ListRoles",
                 "iam:ListPolicies",
                 "iam:GetPolicy",
                 "iam:GetPolicyVersion",
-                "iam:ListRolePolicies",
-                "iam:ListAttachedRolePolicies"
+                "iam:ListAttachedRolePolicies",
+                "iam:TagRole",
+                "iam:UntagRole"
             ],
-            "Resource": "*"
+            "Resource": [
+                "arn:aws:iam::720427058396:role/growksh-*",
+                "arn:aws:iam::720427058396:role/feature-*",
+                "arn:aws:iam::720427058396:policy/*"
+            ]
         },
         {
             "Sid": "ECROperations",
             "Effect": "Allow",
             "Action": [
                 "ecr:GetAuthorizationToken",
-                "ecr:CreateRepository",
-                "ecr:DescribeRepositories",
-                "ecr:ListImages",
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:BatchGetImage",
-                "ecr:PutImage",
-                "ecr:InitiateLayerUpload",
-                "ecr:UploadLayerPart",
-                "ecr:CompleteLayerUpload"
+                "ecr:*Repository",
+                "ecr:*Image",
+                "ecr:*Layer*"
             ],
             "Resource": "arn:aws:ecr:*:720427058396:repository/growksh-*"
         },
@@ -255,11 +136,7 @@
             "Sid": "LogsOperations",
             "Effect": "Allow",
             "Action": [
-                "logs:CreateLogGroup",
-                "logs:CreateLogStream",
-                "logs:PutLogEvents",
-                "logs:DescribeLogGroups",
-                "logs:DescribeLogStreams"
+                "logs:*"
             ],
             "Resource": "arn:aws:logs:*:720427058396:log-group:/aws/lambda/growksh-*"
         }

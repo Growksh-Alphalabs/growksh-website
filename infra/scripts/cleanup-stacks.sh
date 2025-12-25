@@ -1,16 +1,15 @@
 #!/bin/bash
-set -e
 
 # Cleanup ephemeral CloudFormation stacks
 # Usage: ./cleanup-stacks.sh <environment-prefix>
-# Example: ./cleanup-stacks.sh growksh-website-feature-abc123
+# Example: ./cleanup-stacks.sh feature-6e9da714
 
 ENVIRONMENT_PREFIX=$1
 
 if [ -z "$ENVIRONMENT_PREFIX" ]; then
   echo "❌ Error: Environment prefix is required"
   echo "Usage: $0 <environment-prefix>"
-  echo "Example: $0 growksh-website-feature-abc123"
+  echo "Example: $0 feature-6e9da714"
   exit 1
 fi
 
@@ -20,9 +19,9 @@ echo "🧹 Starting cleanup for environment prefix: $ENVIRONMENT_PREFIX"
 echo "📍 Region: $REGION"
 echo ""
 
-# Get all stacks matching the environment prefix
+# Get all stacks matching the environment prefix (including failed ones)
 STACKS=$(aws cloudformation list-stacks \
-  --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE \
+  --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE CREATE_FAILED UPDATE_FAILED \
   --query "StackSummaries[?contains(StackName, '$ENVIRONMENT_PREFIX')].StackName" \
   --output text \
   --region "$REGION")
@@ -38,42 +37,22 @@ for stack in $STACKS; do
 done
 echo ""
 
-# First, empty all S3 buckets associated with this environment
-echo "🧹 Pre-cleanup: Emptying S3 buckets..."
-# Find and empty assets buckets
-for bucket in $(aws s3 ls --region "$REGION" | grep "$ENVIRONMENT_PREFIX" | awk '{print $3}'); do
-  echo "  Emptying bucket: s3://$bucket"
-  aws s3 rm "s3://$bucket" --recursive --region "$REGION" 2>/dev/null || true
-done
-echo ""
-
-# Delete stacks in reverse dependency order
-# Stack deletion order (reverse of deployment):
-# 1. api-lambdas (depends on api-gateway, cognito, database, iam)
-# 2. cognito-lambdas (depends on cognito, iam)
-# 3. api (no other stacks depend on it)
-# 4. storage-cdn (no other stacks depend on it)
-# 5. cognito (no other stacks depend on it)
-# 6. database (depends on iam)
-# 7. iam (no dependencies)
-
+# Simple delete function - let CloudFormation handle DeletionPolicy
 delete_stack() {
   local stack_name=$1
   
-  if echo "$STACKS" | grep -q "$stack_name"; then
-    echo "🗑️  Deleting stack: $stack_name"
-    aws cloudformation delete-stack \
-      --stack-name "$stack_name" \
-      --region "$REGION"
-    
-    echo "⏳ Waiting for stack deletion..."
-    aws cloudformation wait stack-delete-complete \
-      --stack-name "$stack_name" \
-      --region "$REGION" || true
-    
-    echo "✅ Stack deleted: $stack_name"
-    echo ""
-  fi
+  echo "🗑️  Deleting stack: $stack_name"
+  aws cloudformation delete-stack \
+    --stack-name "$stack_name" \
+    --region "$REGION" 2>/dev/null || true
+  
+  echo "⏳ Waiting for stack deletion..."
+  aws cloudformation wait stack-delete-complete \
+    --stack-name "$stack_name" \
+    --region "$REGION" 2>/dev/null || true
+  
+  echo "✅ Stack deleted: $stack_name"
+  echo ""
 }
 
 # Delete stacks in reverse dependency order
@@ -107,38 +86,23 @@ done
 
 echo "Stage 5️⃣: Delete Cognito"
 for stack in $STACKS; do
-  if [[ $stack == *"cognito"* ]] && [[ $stack != *"cognito-lambdas"* ]]; then
+  if [[ $stack == *"-cognito-"* ]] && [[ $stack != *"cognito-lambdas"* ]]; then
     delete_stack "$stack"
   fi
 done
 
 echo "Stage 6️⃣: Delete Database"
 for stack in $STACKS; do
-  if [[ $stack == *"database"* ]]; then
+  if [[ $stack == *"-database-"* ]]; then
     delete_stack "$stack"
   fi
 done
 
 echo "Stage 7️⃣: Delete IAM"
 for stack in $STACKS; do
-  if [[ $stack == *"iam"* ]]; then
+  if [[ $stack == *"-iam-"* ]]; then
     delete_stack "$stack"
   fi
 done
 
-# Clean up S3 bucket if it exists
-BUCKET_NAME="${ENVIRONMENT_PREFIX}-assets"
-if aws s3 ls "s3://$BUCKET_NAME" 2>&1 | grep -q 'NoSuchBucket'; then
-  echo "ℹ️  S3 bucket does not exist: $BUCKET_NAME"
-else
-  echo "🗑️  Emptying S3 bucket: $BUCKET_NAME"
-  aws s3 rm "s3://$BUCKET_NAME" --recursive || true
-  echo "🗑️  Deleting S3 bucket: $BUCKET_NAME"
-  aws s3 rb "s3://$BUCKET_NAME" || true
-  echo "✅ S3 bucket deleted: $BUCKET_NAME"
-fi
-
-echo ""
-echo "═══════════════════════════════════════════════════"
-echo "✅ Cleanup complete for environment: $ENVIRONMENT_PREFIX"
-echo "═══════════════════════════════════════════════════"
+echo "✅ Cleanup complete!"
