@@ -29,14 +29,16 @@ PARAM_DIR="infra/cloudformation/parameters"
 IS_EPHEMERAL="false"
 if [[ $ENVIRONMENT == feature-* ]]; then
   IS_EPHEMERAL="true"
-  # Use random 6-character suffix for guaranteed uniqueness
-  RANDOM_SUFFIX=$(openssl rand -hex 3)
-  ASSETS_BUCKET_NAME="$ENVIRONMENT-$RANDOM_SUFFIX"
-  LAMBDA_BUCKET_NAME="growksh-website-lambda-code-$RANDOM_SUFFIX"
+  # Use single assets bucket for all ephemeral environments
+  # Versioning in CloudFormation prevents conflicts across deployments
+  ASSETS_BUCKET_NAME="growksh-website-ephemeral-assets"
 else
-  ASSETS_BUCKET_NAME="$ENVIRONMENT-assets"
-  LAMBDA_BUCKET_NAME="growksh-website-lambda-code-$ENVIRONMENT"
+  ASSETS_BUCKET_NAME="growksh-website-$ENVIRONMENT-assets"
 fi
+
+# Reuse single Lambda code bucket across all environments (ephemeral + persistent)
+# Bucket is versioned, so different environments can safely coexist
+LAMBDA_BUCKET_NAME="growksh-website-lambda-code"
 
 echo "🚀 Starting CloudFormation deployment for environment: $ENVIRONMENT"
 echo "📍 Region: $REGION"

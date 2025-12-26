@@ -111,6 +111,25 @@ jobs:
         env:
           AWS_REGION: ap-south-1
 
+      - name: Invalidate CloudFront cache
+        run: |
+          ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
+          
+          # Get CloudFront distribution ID from stack outputs
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`CdnDistributionId`].OutputValue' --output text 2>/dev/null || echo "")
+          
+          if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" == "None" ]; then
+            echo "⚠️  CloudFront distribution ID not found, skipping cache invalidation"
+            exit 0
+          fi
+          
+          echo "🔄 Invalidating CloudFront cache for distribution: $DISTRIBUTION_ID"
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --query 'Invalidation.Id' --output text)
+          echo "📋 Invalidation ID: $INVALIDATION_ID"
+          echo "✅ Cache invalidation initiated (will propagate in ~60 seconds)"
+        env:
+          AWS_REGION: us-east-1  # CloudFront is global, but API calls use us-east-1
+
       - name: Get deployment URLs
         id: deployment-urls
         run: |
