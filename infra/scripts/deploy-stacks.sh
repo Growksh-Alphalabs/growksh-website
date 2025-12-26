@@ -180,27 +180,37 @@ deploy_stack \
 echo "⏳ Verifying Lambda code bucket is accessible..."
 max_attempts=10
 attempt=1
+
+# Create a temporary test file
+TEST_FILE="/tmp/bucket-test-$(date +%s).txt"
+echo "test" > "$TEST_FILE"
+
 while [ $attempt -le $max_attempts ]; do
-  if aws s3 ls "s3://$LAMBDA_BUCKET_NAME" --region "$REGION" 2>/dev/null && \
-     aws s3api head-bucket --bucket "$LAMBDA_BUCKET_NAME" --region "$REGION" 2>/dev/null; then
-    # Also verify we can write to the bucket with a test object
-    if aws s3 cp /dev/null "s3://$LAMBDA_BUCKET_NAME/.test-write-$(date +%s)" \
-       --region "$REGION" 2>/dev/null; then
-      echo "✅ Lambda bucket ready: s3://$LAMBDA_BUCKET_NAME"
-      # Clean up test object
-      aws s3 rm "s3://$LAMBDA_BUCKET_NAME/.test-write-"* --region "$REGION" 2>/dev/null || true
-      break
-    fi
+  # Try all three checks
+  if aws s3 ls "s3://$LAMBDA_BUCKET_NAME" --region "$REGION" >/dev/null 2>&1 && \
+     aws s3api head-bucket --bucket "$LAMBDA_BUCKET_NAME" --region "$REGION" >/dev/null 2>&1 && \
+     aws s3 cp "$TEST_FILE" "s3://$LAMBDA_BUCKET_NAME/.test-write-$$" \
+       --region "$REGION" >/dev/null 2>&1; then
+    echo "✅ Lambda bucket ready: s3://$LAMBDA_BUCKET_NAME"
+    # Clean up test object
+    aws s3 rm "s3://$LAMBDA_BUCKET_NAME/.test-write-$$" --region "$REGION" 2>/dev/null || true
+    rm -f "$TEST_FILE"
+    break
   fi
   
   if [ $attempt -eq $max_attempts ]; then
-    echo "❌ Lambda bucket not ready after $((attempt)) attempts" >&2
+    echo "❌ Lambda bucket not ready after $max_attempts attempts" >&2
+    # Show what failed
+    echo "📋 Debug info:"
+    aws s3 ls "s3://$LAMBDA_BUCKET_NAME" --region "$REGION" 2>&1 | head -5 || true
+    rm -f "$TEST_FILE"
     DEPLOYMENT_FAILED=true
     exit 1
   fi
   
-  sleep $((attempt))
-  echo "⏳ Waiting for bucket (attempt $attempt/$max_attempts)..."
+  sleep_time=$attempt
+  echo "⏳ Attempt $attempt/$max_attempts: Waiting ${sleep_time}s before retry..."
+  sleep $sleep_time
   attempt=$((attempt + 1))
 done
 echo ""
