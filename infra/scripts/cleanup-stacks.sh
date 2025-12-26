@@ -82,11 +82,52 @@ if [ "$HAS_STORAGE_CDN" = true ]; then
   echo ""
 fi
 
-# Simple delete function - let CloudFormation handle DeletionPolicy
+# Simple delete function - empty buckets first, then delete stack
+empty_bucket() {
+  local bucket_name=$1
+
+  if [ -z "$bucket_name" ]; then
+    return 0
+  fi
+
+  # Check if bucket exists
+  if ! aws s3 ls "s3://$bucket_name" --region "$REGION" &>/dev/null; then
+    return 0
+  fi
+
+  echo "  🧹 Emptying bucket: $bucket_name"
+
+  # Empty the bucket (delete all versions and objects)
+  aws s3 rm "s3://$bucket_name" --recursive --region "$REGION" 2>/dev/null || true
+
+  # If versioning is enabled, delete all object versions
+  aws s3api delete-objects \
+    --bucket "$bucket_name" \
+    --delete "$(aws s3api list-object-versions \
+      --bucket "$bucket_name" \
+      --output=json \
+      --region "$REGION" \
+      --query='{Objects: [$.Versions,$.DeleteMarkers] | [] | .[] | map(select(true)) | .[] | {Key:.Key, VersionId:.VersionId}]}')" \
+    --region "$REGION" 2>/dev/null || true
+}
+
 delete_stack() {
   local stack_name=$1
 
   echo "🗑️  Deleting stack: $stack_name"
+
+  # Empty S3 buckets before deletion (so CloudFormation can delete them)
+  if [[ $stack_name == *"storage-cdn"* ]]; then
+    # Extract bucket name from stack (growksh-website-ephemeral-assets-feature-xxx)
+    local bucket_name="${stack_name/growksh-website-storage-cdn-/growksh-website-ephemeral-assets-}"
+    empty_bucket "$bucket_name"
+  fi
+
+  if [[ $stack_name == *"lambda-code-bucket"* ]]; then
+    # Extract bucket name from stack (growksh-website-lambda-code-feature-xxx)
+    local bucket_name="${stack_name/growksh-website-lambda-code-bucket-/growksh-website-lambda-code-}"
+    empty_bucket "$bucket_name"
+  fi
 
   # Capture stack events before deletion for debugging
   echo "📋 Stack events:"

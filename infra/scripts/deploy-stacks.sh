@@ -29,16 +29,14 @@ PARAM_DIR="infra/cloudformation/parameters"
 IS_EPHEMERAL="false"
 if [[ $ENVIRONMENT == feature-* ]]; then
   IS_EPHEMERAL="true"
-  # Use single assets bucket for all ephemeral environments
-  # Versioning in CloudFormation prevents conflicts across deployments
-  ASSETS_BUCKET_NAME="growksh-website-ephemeral-assets"
+  # Ephemeral environments use feature-specific buckets to avoid conflicts
+  ASSETS_BUCKET_NAME="growksh-website-ephemeral-assets-$ENVIRONMENT"
+  LAMBDA_BUCKET_NAME="growksh-website-lambda-code-$ENVIRONMENT"
 else
+  # Persistent environments (dev, prod) use environment-specific buckets
   ASSETS_BUCKET_NAME="growksh-website-$ENVIRONMENT-assets"
+  LAMBDA_BUCKET_NAME="growksh-website-lambda-code-$ENVIRONMENT"
 fi
-
-# Reuse single Lambda code bucket across all environments (ephemeral + persistent)
-# Bucket is versioned, so different environments can safely coexist
-LAMBDA_BUCKET_NAME="growksh-website-lambda-code"
 
 echo "🚀 Starting CloudFormation deployment for environment: $ENVIRONMENT"
 echo "📍 Region: $REGION"

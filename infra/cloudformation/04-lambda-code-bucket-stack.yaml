@@ -8,6 +8,14 @@ Parameters:
   BucketName:
     Type: String
     Description: S3 bucket name for Lambda code
+  IsEphemeral:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Whether this is an ephemeral environment (bucket deleted on stack deletion)
+
+Conditions:
+  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
 
 Resources:
   LambdaCodeBucket:
@@ -37,8 +45,8 @@ Resources:
           Value: !Ref Environment
         - Key: Purpose
           Value: Lambda code storage
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain  # Always retain bucket - it's shared across all environments
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
 
 Outputs:
   LambdaCodeBucketName:
