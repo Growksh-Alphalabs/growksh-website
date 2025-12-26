@@ -1,21 +1,14 @@
 name: Deploy to Ephemeral Environment
 
 on:
-  push:
-    branches:
-      - 'feature/**'
-    paths:
-      - '.github/workflows/**'
-      - 'infra/**'
-      - 'src/**'
-      - 'public/**'
-      - 'package.json'
   pull_request:
     types: [opened, reopened]
     branches:
       - develop
   pull_request_target:
     types: [closed]
+    branches:
+      - develop
 
 permissions:
   id-token: write
@@ -223,3 +216,14 @@ jobs:
           echo "✅ Ephemeral environment cleaned up"
           echo "- Environment: ${{ needs.prepare.outputs.environment_name }}"
           echo "- PR: #${{ github.event.number }}"
+
+  ephemeral-deployment-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request_target'
+    
+    steps:
+      - name: Verify ephemeral deployment success
+        run: |
+          echo "✅ Ephemeral environment deployment successful"
+          echo "This check is required before PR can be merged"
