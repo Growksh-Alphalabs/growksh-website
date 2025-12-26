@@ -78,16 +78,6 @@ jobs:
           cfn-lint -t infra/cloudformation/*.yaml
           echo "✅ All CloudFormation templates are valid"
 
-      - name: Build and upload Lambda functions
-        id: lambda-build
-        run: |
-          chmod +x infra/scripts/build-and-upload-lambdas.sh
-          LAMBDA_BUCKET="growksh-website-lambda-code-${{ needs.prepare.outputs.environment_hash }}"
-          ./infra/scripts/build-and-upload-lambdas.sh ${{ needs.prepare.outputs.environment_name }} $LAMBDA_BUCKET
-          echo "lambda_bucket=$LAMBDA_BUCKET" >> $GITHUB_OUTPUT
-        env:
-          AWS_REGION: ap-south-1
-
       - name: Deploy CloudFormation stacks (ephemeral)
         id: deploy
         run: |
