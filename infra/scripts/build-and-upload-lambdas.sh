@@ -25,15 +25,6 @@ echo "📦 Target bucket: $LAMBDA_BUCKET"
 echo "🏗️  Build directory: $BUILD_DIR"
 echo ""
 
-# Verify bucket exists
-echo "🔍 Verifying Lambda code bucket exists..."
-if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" &>/dev/null; then
-  echo "❌ Lambda code bucket does not exist: s3://$LAMBDA_BUCKET"
-  exit 1
-fi
-echo "✅ Bucket verified: s3://$LAMBDA_BUCKET"
-echo ""
-
 # Clean and create build directory
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
