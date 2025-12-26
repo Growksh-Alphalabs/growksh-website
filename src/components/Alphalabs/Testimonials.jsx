@@ -22,7 +22,7 @@ export default function Testimonials(){
     <section id="testimonials" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
-      
+
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-30">
         <svg
@@ -46,7 +46,7 @@ export default function Testimonials(){
               <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
             </filter>
           </defs>
-          
+
           {/* Large Organic Shapes */}
           <g filter="url(#blur1)">
             <path
@@ -73,7 +73,7 @@ export default function Testimonials(){
               opacity="0.6"
             />
           </g>
-          
+
           {/* Floating Circles */}
           <g>
             <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
@@ -84,11 +84,11 @@ export default function Testimonials(){
           </g>
         </svg>
       </div>
-      
+
       {/* Gradient Overlays for Depth */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
+
       {/* Animated Particles */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         {[...Array(10)].map((_, i) => (
@@ -126,14 +126,14 @@ export default function Testimonials(){
             <article key={i} className="group relative bg-white/80 backdrop-blur-sm rounded-3xl p-6 md:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
               {/* Green Corner Accent */}
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-[#ffde21]/10 to-[#ffde21]/10 rounded-bl-3xl rounded-tr-3xl" />
-              
+
               {/* Quote Icon */}
               <div className="absolute -top-3 -left-3 w-8 h-8 bg-[#00674F] rounded-full flex items-center justify-center shadow-lg">
                 <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                 </svg>
               </div>
-              
+
               <div className="flex items-start gap-4 md:gap-6">
                 <div className="flex-shrink-0">
                   {t.avatar ? (
@@ -152,7 +152,7 @@ export default function Testimonials(){
                 <div className="flex-1">
                   {/* <div className="text-sm text-[#00674F] font-medium mb-1">{t.role}</div> */}
                   <p className="mt-3 text-slate-700 leading-relaxed text-sm md:text-base">"{t.quote}"</p>
-                  
+
                   {/* Name Badge */}
                   <div className="mt-6">
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#00674F]/5 text-sm font-medium text-[#00674F] border border-[#00674F]/10 group-hover:bg-[#00674F]/10 group-hover:border-[#00674F]/20 transition-all duration-300">
@@ -164,7 +164,7 @@ export default function Testimonials(){
                   </div>
                 </div>
               </div>
-              
+
               {/* Hover Effect Line */}
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#00674F] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </article>

@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
       // JWT payload is between first and second dot
       const parts = token.split('.')
       if (parts.length !== 3) return false
-      
+
       const payload = JSON.parse(atob(parts[1]))
       // Check cognito:groups array for 'admin' group
       const groups = payload['cognito:groups'] || []
@@ -54,7 +54,7 @@ export function AuthProvider({ children }) {
             ...attributes,
           })
           setIsAuthenticated(true)
-          
+
           // Extract admin status from ID token
           const idToken = localStorage.getItem('idToken')
           const adminStatus = extractAdminStatusFromToken(idToken)

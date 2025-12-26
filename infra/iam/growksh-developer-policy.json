@@ -1,0 +1,145 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CloudFormationOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:*"
+            ],
+            "Resource": [
+                "arn:aws:cloudformation:*:720427058396:stack/growksh-*",
+                "arn:aws:cloudformation:*:720427058396:stack/feature-*"
+            ]
+        },
+        {
+            "Sid": "CloudFormationGlobalOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DescribeStackResource",
+                "cloudformation:DescribeStackEvents",
+                "cloudformation:DescribeStacks",
+                "cloudformation:ListStacks"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "LambdaOperations",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:*"
+            ],
+            "Resource": "arn:aws:lambda:*:720427058396:function:growksh-*"
+        },
+        {
+            "Sid": "APIGatewayOperations",
+            "Effect": "Allow",
+            "Action": [
+                "apigateway:*"
+            ],
+            "Resource": "arn:aws:apigateway:*::*"
+        },
+        {
+            "Sid": "DynamoDBOperations",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:*"
+            ],
+            "Resource": "arn:aws:dynamodb:*:720427058396:table/growksh-*"
+        },
+        {
+            "Sid": "S3Operations",
+            "Effect": "Allow",
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::growksh-*",
+                "arn:aws:s3:::growksh-*/*",
+                "arn:aws:s3:::feature-*",
+                "arn:aws:s3:::feature-*/*"
+            ]
+        },
+        {
+            "Sid": "CognitoOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cognito-idp:*"
+            ],
+            "Resource": "arn:aws:cognito-idp:*:720427058396:userpool/*"
+        },
+        {
+            "Sid": "CloudFrontOperations",
+            "Effect": "Allow",
+            "Action": [
+                "cloudfront:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "WAFv2Operations",
+            "Effect": "Allow",
+            "Action": [
+                "wafv2:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SESOperations",
+            "Effect": "Allow",
+            "Action": [
+                "ses:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "IAMOperations",
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:UpdateRole",
+                "iam:UpdateRoleDescription",
+                "iam:DeleteRole",
+                "iam:PassRole",
+                "iam:GetRole",
+                "iam:GetRolePolicy",
+                "iam:PutRolePolicy",
+                "iam:DeleteRolePolicy",
+                "iam:ListRolePolicies",
+                "iam:AttachRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:ListRoles",
+                "iam:ListPolicies",
+                "iam:GetPolicy",
+                "iam:GetPolicyVersion",
+                "iam:ListAttachedRolePolicies",
+                "iam:TagRole",
+                "iam:UntagRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::720427058396:role/growksh-*",
+                "arn:aws:iam::720427058396:role/feature-*",
+                "arn:aws:iam::720427058396:policy/*"
+            ]
+        },
+        {
+            "Sid": "ECROperations",
+            "Effect": "Allow",
+            "Action": [
+                "ecr:GetAuthorizationToken",
+                "ecr:*Repository",
+                "ecr:*Image",
+                "ecr:*Layer*"
+            ],
+            "Resource": "arn:aws:ecr:*:720427058396:repository/growksh-*"
+        },
+        {
+            "Sid": "LogsOperations",
+            "Effect": "Allow",
+            "Action": [
+                "logs:*"
+            ],
+            "Resource": "arn:aws:logs:*:720427058396:log-group:/aws/lambda/growksh-*"
+        }
+    ]
+}

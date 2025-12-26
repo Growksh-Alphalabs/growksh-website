@@ -14,15 +14,15 @@ export default function ServicesPricing() {
       .animate-slide-down {
         animation: slideDown 0.3s ease-out forwards;
       }
-      
+
       .animate-fade-in {
         animation: fadeIn 0.5s ease-out forwards;
       }
-      
+
       .animate-slide-up {
         animation: slideUp 0.5s ease-out forwards;
       }
-      
+
       @keyframes slideDown {
         from {
           opacity: 0;
@@ -33,7 +33,7 @@ export default function ServicesPricing() {
           transform: translateY(0);
         }
       }
-      
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -42,7 +42,7 @@ export default function ServicesPricing() {
           opacity: 1;
         }
       }
-      
+
       @keyframes slideUp {
         from {
           opacity: 0;
@@ -53,7 +53,7 @@ export default function ServicesPricing() {
           transform: translateY(0);
         }
       }
-      
+
       /* Reduced motion support */
       @media (prefers-reduced-motion: reduce) {
         .animate-slide-down,

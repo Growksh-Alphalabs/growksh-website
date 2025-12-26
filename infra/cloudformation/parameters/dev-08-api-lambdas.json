@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+    },
+    {
+        "ParameterKey": "SESSourceEmail",
+        "ParameterValue": "noreply@growksh.com"
+    },
+    {
+        "ParameterKey": "VerifyBaseUrl",
+        "ParameterValue": "https://dev.growksh.com/auth/verify-email"
+    }
+]

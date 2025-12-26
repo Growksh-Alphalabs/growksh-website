@@ -12,10 +12,10 @@ export default function Compliance() {
             </p>
           </div>
 
-      
+
         </div>
 
-      
+
       </div>
     </footer>
   )

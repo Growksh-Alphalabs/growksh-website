@@ -83,26 +83,26 @@ async function sendVerificationEmail({ email, name }) {
 exports.handler = async (event) => {
   try {
     console.log('Signup event:', JSON.stringify(event, null, 2));
-    
+
     if (event.httpMethod === 'OPTIONS') {
       return response(200, { message: 'OK' });
     }
-    
+
     if (event.httpMethod !== 'POST') {
       return response(405, { error: 'Method not allowed' });
     }
-    
+
     const cognitoClient = getCognito();
     const body = JSON.parse(event.body || '{}');
     const { email, name, phone_number } = body;
-    
+
     if (!email || !name) {
       return response(400, { error: 'Email and name are required' });
     }
-    
+
     // Generate a temporary password
     const tempPassword = 'TempPass' + Math.random().toString(36).substring(7) + '!';
-    
+
     // Create user in Cognito
     const phone = typeof phone_number === 'string' ? phone_number.trim() : '';
     const hasValidPhone = phone ? isE164(phone) : false;
@@ -118,9 +118,9 @@ exports.handler = async (event) => {
       ],
       MessageAction: 'SUPPRESS'
     };
-    
+
     await cognitoClient.send(new AdminCreateUserCommand(createParams));
-    
+
     // Set permanent password for passwordless flow
     const setPassParams = {
       UserPoolId: process.env.COGNITO_USER_POOL_ID,
@@ -128,7 +128,7 @@ exports.handler = async (event) => {
       Password: tempPassword,
       Permanent: false
     };
-    
+
     await cognitoClient.send(new AdminSetUserPasswordCommand(setPassParams));
 
     let verificationEmailSent = false;
@@ -138,7 +138,7 @@ exports.handler = async (event) => {
     } catch (e) {
       console.error('Failed to send verification email:', e);
     }
-    
+
     return response(201, {
       message: 'User created successfully',
       email,
@@ -153,11 +153,11 @@ exports.handler = async (event) => {
         error: 'Invalid phone number format. Use E.164 format like +919876543210, or leave phone blank.'
       });
     }
-    
+
     if (error.name === 'UsernameExistsException') {
       return response(409, { error: 'User already exists' });
     }
-    
+
     return response(500, { error: error.message || 'Internal server error' });
   }
 };

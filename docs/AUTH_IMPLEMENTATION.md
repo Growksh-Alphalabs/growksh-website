@@ -449,7 +449,7 @@ const newSession = await refreshTokens()
 **Solution**: Set `VITE_COGNITO_USER_POOL_ID` and `VITE_COGNITO_CLIENT_ID` in `.env.local`
 
 ### Issue: OTP not received
-**Solution**: 
+**Solution**:
 - Check SES sandbox restrictions (might need to verify recipient emails)
 - Verify `SES_SOURCE_EMAIL` in CloudFormation parameters
 - Check Lambda logs in CloudWatch
@@ -468,9 +468,9 @@ const newSession = await refreshTokens()
 For more control, use the AWS SDK implementation in `src/lib/cognitoPasswordless.js`:
 
 ```javascript
-import { 
-  initiatePasswordless, 
-  answerCustomChallenge 
+import {
+  initiatePasswordless,
+  answerCustomChallenge
 } from './lib/cognitoPasswordless'
 
 // Initiate

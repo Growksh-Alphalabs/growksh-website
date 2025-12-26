@@ -1,0 +1,223 @@
+name: Deploy to Ephemeral Environment
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      environment_name: ${{ steps.env-name.outputs.environment_name }}
+      environment_hash: ${{ steps.env-name.outputs.hash }}
+
+    steps:
+      - name: Generate environment name
+        id: env-name
+        run: |
+          # Extract branch name and create hash
+          BRANCH_NAME=$(echo "${{ github.head_ref || github.ref }}" | sed 's/refs\/heads\///' | sed 's/feature\///')
+          HASH=$(echo -n "$BRANCH_NAME" | sha256sum | cut -c1-8)
+          ENVIRONMENT_NAME="feature-${HASH}"
+
+          echo "environment_name=$ENVIRONMENT_NAME" >> $GITHUB_OUTPUT
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+          echo "Environment: $ENVIRONMENT_NAME"
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-latest
+    if: github.event.action != 'closed'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup build environment
+        run: |
+          # Install necessary tools
+          sudo apt-get update
+          sudo apt-get install -y zip
+
+      - name: Validate CloudFormation templates
+        run: |
+          pip install cfn-lint
+          cfn-lint -t infra/cloudformation/*.yaml
+          echo "✅ All CloudFormation templates are valid"
+
+      - name: Deploy CloudFormation stacks (ephemeral)
+        id: deploy
+        run: |
+          chmod +x infra/scripts/deploy-stacks.sh
+          ./infra/scripts/deploy-stacks.sh ${{ needs.prepare.outputs.environment_name }}
+        env:
+          AWS_REGION: ap-south-1
+
+      - name: Cleanup on deployment failure
+        if: failure() && steps.deploy.outcome == 'failure'
+        run: |
+          echo "⚠️ Deployment failed. Cleaning up ephemeral resources..."
+          chmod +x infra/scripts/cleanup-stacks.sh
+          ./infra/scripts/cleanup-stacks.sh ${{ needs.prepare.outputs.environment_name }} || echo "Cleanup encountered errors but continuing..."
+        env:
+          AWS_REGION: ap-south-1
+        continue-on-error: true
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Upload frontend to S3
+        run: |
+          ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME }}"
+          if [ -z "$ASSETS_BUCKET_NAME" ]; then
+            # Fallback if deploy output not available
+            ASSETS_BUCKET_NAME="${{ needs.prepare.outputs.environment_name }}"
+          fi
+          aws s3 sync dist/ s3://$ASSETS_BUCKET_NAME/ --delete --cache-control "public, max-age=3600"
+          echo "✅ Frontend uploaded to $ASSETS_BUCKET_NAME"
+        env:
+          AWS_REGION: ap-south-1
+
+      - name: Invalidate CloudFront cache
+        run: |
+          ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
+
+          # Get CloudFront distribution ID from stack outputs
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`CdnDistributionId`].OutputValue' --output text 2>/dev/null || echo "")
+
+          if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" == "None" ]; then
+            echo "⚠️  CloudFront distribution ID not found, skipping cache invalidation"
+            exit 0
+          fi
+
+          echo "🔄 Invalidating CloudFront cache for distribution: $DISTRIBUTION_ID"
+          INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --query 'Invalidation.Id' --output text)
+          echo "📋 Invalidation ID: $INVALIDATION_ID"
+          echo "✅ Cache invalidation initiated (will propagate in ~60 seconds)"
+        env:
+          AWS_REGION: us-east-1  # CloudFront is global, but API calls use us-east-1
+
+      - name: Get deployment URLs
+        id: deployment-urls
+        run: |
+          ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
+
+          # Get CloudFront domain from stack outputs
+          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' --output text 2>/dev/null || echo "")
+
+          if [ -z "$CLOUDFRONT_DOMAIN" ] || [ "$CLOUDFRONT_DOMAIN" == "None" ]; then
+            # Fallback: use assets bucket from deploy output
+            ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME }}"
+            if [ -z "$ASSETS_BUCKET_NAME" ]; then
+              ASSETS_BUCKET_NAME="${ENVIRONMENT}"
+            fi
+            FRONTEND_URL="https://${ASSETS_BUCKET_NAME}.s3.amazonaws.com"
+          else
+            FRONTEND_URL="https://${CLOUDFRONT_DOMAIN}"
+          fi
+
+          API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name ${ENVIRONMENT}-api --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text 2>/dev/null || echo "N/A")
+
+          echo "frontend_url=$FRONTEND_URL" >> $GITHUB_OUTPUT
+          echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with deployment URLs
+        if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const environment = '${{ needs.prepare.outputs.environment_name }}';
+            const frontendUrl = '${{ steps.deployment-urls.outputs.frontend_url }}';
+            const apiEndpoint = '${{ steps.deployment-urls.outputs.api_endpoint }}';
+
+            const comment = `## 🚀 Ephemeral Environment Deployed
+
+            **Environment**: \`${environment}\`
+
+            ### URLs
+            - **Frontend**: [${frontendUrl}](${frontendUrl})
+            - **API**: ${apiEndpoint}
+
+            ### Stack Details
+            - All resources tagged with:
+              - App: Website
+              - Partner: Growksh
+              - Env: ${environment}
+
+            ⚠️ This environment will be automatically cleaned up when the PR is closed.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Notify deployment success
+        run: |
+          echo "✅ Ephemeral deployment successful"
+          echo "- Environment: ${{ needs.prepare.outputs.environment_name }}"
+          echo "- Branch: ${{ github.head_ref || github.ref }}"
+          echo "- Commit: ${{ github.sha }}"
+
+  cleanup:
+    needs: prepare
+    runs-on: ubuntu-latest
+    if: github.event.action == 'closed'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Cleanup ephemeral environment
+        run: |
+          chmod +x infra/scripts/cleanup-stacks.sh
+          ./infra/scripts/cleanup-stacks.sh ${{ needs.prepare.outputs.environment_name }}
+        env:
+          AWS_REGION: ap-south-1
+          CLEANUP_SUCCESSFUL_STACKS: "true"
+        continue-on-error: true
+
+      - name: Notify cleanup success
+        run: |
+          echo "✅ Ephemeral environment cleaned up"
+          echo "- Environment: ${{ needs.prepare.outputs.environment_name }}"
+          echo "- PR: #${{ github.event.number }}"
+
+  ephemeral-deployment-check:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request_target'
+
+    steps:
+      - name: Verify ephemeral deployment success
+        run: |
+          echo "✅ Ephemeral environment deployment successful"
+          echo "This check is required before PR can be merged"

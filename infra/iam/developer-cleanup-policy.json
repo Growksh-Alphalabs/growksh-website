@@ -1,0 +1,49 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "CloudFormationDelete",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:DeleteStack",
+                "cloudformation:CancelUpdateStack"
+            ],
+            "Resource": "arn:aws:cloudformation:*:720427058396:stack/growksh-*"
+        },
+        {
+            "Sid": "LambdaDelete",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:DeleteFunction",
+                "lambda:DeleteAlias"
+            ],
+            "Resource": "arn:aws:lambda:*:720427058396:function:growksh-*"
+        },
+        {
+            "Sid": "DynamoDBDelete",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:DeleteTable",
+                "dynamodb:DeleteItem"
+            ],
+            "Resource": "arn:aws:dynamodb:*:720427058396:table/growksh-*"
+        },
+        {
+            "Sid": "S3Delete",
+            "Effect": "Allow",
+            "Action": [
+                "s3:DeleteObject",
+                "s3:DeleteObjectVersion"
+            ],
+            "Resource": "arn:aws:s3:::growksh-*/*"
+        },
+        {
+            "Sid": "APIGatewayDelete",
+            "Effect": "Allow",
+            "Action": [
+                "apigateway:DELETE"
+            ],
+            "Resource": "arn:aws:apigateway:*::/*"
+        }
+    ]
+}

@@ -203,7 +203,7 @@ export default function ContactSection() {
                   </div>
                 </li>
 
-            
+
                 <li className="flex items-start gap-3">
                   <FaMapMarkerAlt className="w-5 h-5 text-white mt-1" aria-hidden="true" />
                   <div>
@@ -213,7 +213,7 @@ export default function ContactSection() {
                 </li>
               </ul>
 
-          
+
             </aside>
           </div>
         </div>

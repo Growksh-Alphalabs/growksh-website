@@ -20,7 +20,7 @@ export default function Story() {
 
             <p className="mt-4 text-lg text-slate-600">We’ve helped hundreds of professionals, families, and NRIs gain clarity, control, and calmness with their finances — proving that financial wellness is truly life wellness.</p>
 
-         
+
           </div>
 
           <div className="order-1 lg:order-2">

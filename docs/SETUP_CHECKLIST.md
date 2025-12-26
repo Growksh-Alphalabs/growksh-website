@@ -2,11 +2,23 @@
 
 ## Pre-Deployment Setup
 
+### Development Environment
+- [ ] Node.js v18+ installed
+- [ ] Python 3.8+ installed (for deployment scripts)
+- [ ] Git installed and configured
+- [ ] AWS CLI installed (`aws --version`)
+
+### Pre-Commit Hooks (Code Quality)
+- [ ] Install pre-commit: `pip install pre-commit`
+- [ ] Set up hooks: `pre-commit install`
+- [ ] Verify: `python -m pre_commit run --all-files`
+- [ ] See [Pre-Commit Setup Guide](PRE_COMMIT_SETUP.md) for details
+
 ### AWS Account Configuration
 - [ ] AWS Account created and configured
 - [ ] IAM user/role with Cognito, Lambda, DynamoDB, SES, API Gateway permissions
 - [ ] AWS CLI installed and configured
-- [ ] Region set to ap-south-1
+- [ ] Region set to ap-south-1 (default for this project)
 
 ### SES (Simple Email Service) Setup
 - [ ] Email domain or address verified in SES console
@@ -16,6 +28,7 @@
 
 ### GitHub Configuration
 - [ ] GitHub Actions enabled in repository
+- [ ] GitHub OIDC Provider configured (for AWS role assumption)
 - [ ] Set GitHub Secrets:
   - `AWS_ROLE_TO_ASSUME` (for OIDC) OR
   - `AWS_ACCESS_KEY_ID` + `AWS_SECRET_ACCESS_KEY` + `AWS_SESSION_TOKEN`

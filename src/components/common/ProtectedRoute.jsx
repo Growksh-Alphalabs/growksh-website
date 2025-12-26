@@ -6,8 +6,8 @@ import { useAuth } from '../../context/AuthContext'
  * ProtectedRoute component
  * Only renders children if user is authenticated and is admin (if requireAdmin is true)
  */
-export default function ProtectedRoute({ 
-  children, 
+export default function ProtectedRoute({
+  children,
   requireAdmin = false,
   fallbackRoute = '/auth/login'
 }) {

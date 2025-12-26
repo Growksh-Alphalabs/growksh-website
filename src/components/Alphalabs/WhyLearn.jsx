@@ -32,7 +32,7 @@ export default function WhyLearn() {
     <section id="why-learn" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
-      
+
       {/* Green Cloud Blur Background */}
       <div className="absolute inset-0 -z-20 opacity-40">
         <svg
@@ -62,11 +62,11 @@ export default function WhyLearn() {
           </g>
         </svg>
       </div>
-      
+
       {/* Gradient Overlays for Depth */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
+
       {/* Animated Particles */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         {[...Array(15)].map((_, i) => (
@@ -90,7 +90,7 @@ export default function WhyLearn() {
             <div className="w-2 h-2 bg-[#00674F] rounded-full animate-pulse" />
             <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">WHY LEARN WITH US </span>
           </div>
-          
+
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
             What Makes{' '}
             <span className="relative inline-block">
@@ -101,9 +101,9 @@ export default function WhyLearn() {
             </span>
             {' '}Different
           </h2>
-          
+
           <p className="text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed">
-            We're not just another finance course. We're a learning ecosystem designed to transform how you think, 
+            We're not just another finance course. We're a learning ecosystem designed to transform how you think,
             act, and grow with money through four core pillars.
           </p>
         </div>
@@ -111,13 +111,13 @@ export default function WhyLearn() {
         {/* Features Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (
-            <div 
+            <div
               key={index}
               className="group relative bg-white/80 backdrop-blur-sm rounded-2xl p-6 border-2 border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-xl"
             >
               {/* Corner Accent */}
               <div className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${feature.color} rounded-bl-2xl rounded-tr-2xl opacity-30 group-hover:opacity-50 transition-opacity duration-300`} />
-              
+
               {/* Icon Container */}
               <div className="relative mb-6">
                 <div className="w-16 h-16 rounded-2xl bg-white/90 backdrop-blur-sm border-2 border-[#ffde21]/60 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
@@ -127,7 +127,7 @@ export default function WhyLearn() {
                   <span className="text-xs font-bold text-[#00674F]">{index + 1}</span>
                 </div>
               </div>
-              
+
               {/* Content */}
               <div>
                 <h3 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function WhyLearn() {
                   {feature.description}
                 </p>
               </div>
-              
+
               {/* Hover Effect Line (use width transition instead of scaleX) */}
               <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#00674F] to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 w-0 group-hover:w-full origin-center" />
             </div>

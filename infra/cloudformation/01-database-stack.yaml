@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB tables for Growksh website
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+
+    Description: Environment name
+  IsEphemeral:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Whether this is an ephemeral environment (auto-deletes resources on stack deletion)
+
+Conditions:
+  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
+
+Resources:
+  AuthOtpTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
+    Properties:
+      TableName: !Sub 'growksh-website-otp-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  ContactsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
+    Properties:
+      TableName: !Sub 'growksh-website-contact-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+Outputs:
+  AuthOtpTableName:
+    Description: Name of Auth OTP DynamoDB table
+    Value: !Ref AuthOtpTable
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-auth-otp-table'
+
+  AuthOtpTableArn:
+    Description: ARN of Auth OTP DynamoDB table
+    Value: !GetAtt AuthOtpTable.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-auth-otp-table-arn'
+
+  ContactsTableName:
+    Description: Name of Contacts DynamoDB table
+    Value: !Ref ContactsTable
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-contacts-table'
+
+  ContactsTableArn:
+    Description: ARN of Contacts DynamoDB table
+    Value: !GetAtt ContactsTable.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-contacts-table-arn'

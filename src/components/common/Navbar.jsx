@@ -421,7 +421,7 @@ export default function Navbar() {
                       </button>
                     </div>
 
-                    <div id="submenu-alphalabs" className={`${mobileAlphaOpen ? 'block' : 'hidden'} mt-1 space-y-1`} role="region" aria-label="Alphalabs submenu"> 
+                    <div id="submenu-alphalabs" className={`${mobileAlphaOpen ? 'block' : 'hidden'} mt-1 space-y-1`} role="region" aria-label="Alphalabs submenu">
                       {alphalabsMenu.map(item => (
                         <button
                           key={item.to}
@@ -448,7 +448,7 @@ export default function Navbar() {
                       </button>
                     </div>
 
-                    <div id="submenu-wealth" className={`${mobileWealthOpen ? 'block' : 'hidden'} mt-1 space-y-1`} role="region" aria-label="Wealthcraft submenu"> 
+                    <div id="submenu-wealth" className={`${mobileWealthOpen ? 'block' : 'hidden'} mt-1 space-y-1`} role="region" aria-label="Wealthcraft submenu">
                       {wealthMenu.map(item => (
                         <button
                           key={item.to}

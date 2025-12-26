@@ -43,14 +43,14 @@ export default function WhoWeServe() {
     useEffect(() => {
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
         setTouchMode(isTouchDevice)
-        
+
         const checkMobile = () => {
             setMobileView(window.innerWidth < 768)
         }
-        
+
         checkMobile()
         window.addEventListener('resize', checkMobile)
-        
+
         return () => window.removeEventListener('resize', checkMobile)
     }, [])
 
@@ -86,7 +86,7 @@ export default function WhoWeServe() {
                     <h2 className="text-4xl md:text-6xl font-extrabold text-slate-900 mb-4">
                         Who We Work With
                     </h2>
-                   
+
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
@@ -121,15 +121,15 @@ export default function WhoWeServe() {
                                         />
                                         {/* Gradient overlay */}
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-                                        
-                                       
+
+
 
                                         {/* Hover glow effect */}
                                         <div className={`absolute inset-0 bg-[#ffde21]/10 transition-opacity duration-500 ${
                                             isFlipped(c.key) ? 'opacity-0' : 'group-hover:opacity-100'
                                         }`} />
                                     </div>
-                                    
+
                                     <div className="p-4 flex-1 flex flex-col justify-center">
                                         <h3 className="text-lg font-semibold text-slate-900 mb-1 text-center group-hover:text-[#ffde21] transition-colors duration-300">
                                             {c.title}
@@ -137,7 +137,7 @@ export default function WhoWeServe() {
                                         <p className="text-sm text-slate-600 text-center">
                                             {touchMode || mobileView ? '' : ''}
                                         </p>
-                                        
+
                                         {/* Animated arrow */}
                                         <div className="flex justify-center mt-4">
                                             <div className="relative w-12 h-2 bg-[#ffde21]/10 rounded-full overflow-hidden">
@@ -182,15 +182,15 @@ export default function WhoWeServe() {
                                                 {touchMode || mobileView ? '' : ''}
                                             </div>
                                         </div>
-                                        
+
                                         {/* Back content */}
                                         <div className="flex-1">
                                             <h3 className="text-lg font-semibold text-slate-900 mb-3 animate-slide-up">{c.title}</h3>
-                                            
+
                                             <div className="space-y-4">
                                                 {c.lines.map((line, idx) => (
-                                                    <div 
-                                                        key={idx} 
+                                                    <div
+                                                        key={idx}
                                                         className="flex gap-3 animate-slide-up"
                                                         style={{ animationDelay: `${idx * 0.1}s` }}
                                                     >
@@ -204,7 +204,7 @@ export default function WhoWeServe() {
                                                 ))}
                                             </div>
                                         </div>
-                                    
+
                                     </div>
                                 </div>
                             </div>
@@ -217,33 +217,33 @@ export default function WhoWeServe() {
                 .perspective-1000 {
                     perspective: 1000px;
                 }
-                
+
                 .preserve-3d {
                     transform-style: preserve-3d;
                 }
-                
+
                 .backface-hidden {
                     backface-visibility: hidden;
                     -webkit-backface-visibility: hidden;
                 }
-                
+
                 .rotate-y-180 {
                     transform: rotateY(180deg);
                 }
-                
+
                 .flip-card-front {
                     transform: rotateY(0deg);
                 }
-                
+
                 .flip-card-back {
                     transform: rotateY(180deg);
                 }
-                
+
                 .flip-card-inner {
                     transform-style: preserve-3d;
                     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
                 }
-                
+
                 /* Enhanced hover effects - use translate for lift to avoid rasterizing text */
                 .flip-card-inner {
                     will-change: transform;
@@ -268,7 +268,7 @@ export default function WhoWeServe() {
                     -moz-osx-font-smoothing: grayscale;
                     text-rendering: optimizeLegibility;
                 }
-                
+
                 /* Animations */
                 @keyframes slide-up {
                     from {
@@ -280,7 +280,7 @@ export default function WhoWeServe() {
                         transform: translateY(0);
                     }
                 }
-                
+
                 @keyframes pulse-slow {
                     0%, 100% {
                         transform: translateY(0);
@@ -289,37 +289,37 @@ export default function WhoWeServe() {
                         transform: translateY(-2px);
                     }
                 }
-                
+
                 .animate-slide-up {
                     animation: slide-up 0.5s ease-out forwards;
                     opacity: 0;
                 }
-                
+
                 .animate-pulse-slow {
                     animation: pulse-slow 3s ease-in-out infinite;
                 }
-                
+
                 /* Mobile optimizations */
                 @media (max-width: 768px) {
                     .flip-card {
                         height: 220px;
                         margin-bottom: 0.75rem;
                     }
-                    
+
                     .flip-card-inner {
                         transition-duration: 0.4s;
                     }
-                    
+
                     /* Disable hover effects on mobile */
                     .flip-card:hover .flip-card-inner:not(.rotate-y-180) {
                         transform: none;
                     }
-                    
+
                     .flip-card:hover .flip-card-inner.rotate-y-180 {
                         transform: rotateY(180deg);
                     }
                 }
-                
+
                 /* Reduced motion */
                 @media (prefers-reduced-motion: reduce) {
                     .flip-card-inner,
@@ -334,22 +334,22 @@ export default function WhoWeServe() {
                         transform: none !important;
                     }
                 }
-                
+
                 /* Custom scrollbar */
                 .flip-card-back::-webkit-scrollbar {
                     width: 4px;
                 }
-                
+
                 .flip-card-back::-webkit-scrollbar-track {
                     background: rgba(255, 222, 33, 0.05);
                     border-radius: 10px;
                 }
-                
+
                 .flip-card-back::-webkit-scrollbar-thumb {
                     background: rgba(255, 222, 33, 0.2);
                     border-radius: 10px;
                 }
-                
+
                 .flip-card-back::-webkit-scrollbar-thumb:hover {
                     background: rgba(255, 222, 33, 0.3);
                 }

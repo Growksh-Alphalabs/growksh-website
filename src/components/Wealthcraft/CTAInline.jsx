@@ -8,7 +8,7 @@ export default function CTASection() {
             <section className="relative py-16 md:py-20 overflow-hidden">
                 {/* Abstract Yellow Background */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
-                
+
                 {/* Main Abstract Pattern */}
                 <div className="absolute inset-0 -z-20 overflow-hidden opacity-40">
                     <svg
@@ -32,7 +32,7 @@ export default function CTASection() {
                                 <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
                             </filter>
                         </defs>
-                        
+
                         {/* Large Organic Shapes */}
                         <g filter="url(#blur1)">
                             <path
@@ -59,7 +59,7 @@ export default function CTASection() {
                                 opacity="0.6"
                             />
                         </g>
-                        
+
                         {/* Floating Circles */}
                         <g>
                             <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
@@ -70,11 +70,11 @@ export default function CTASection() {
                         </g>
                     </svg>
                 </div>
-                
+
                 {/* Gradient Overlays for Depth */}
                 <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
                 <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-                
+
                 {/* Animated Particles */}
                 <div className="absolute inset-0 overflow-hidden -z-10">
                     {[...Array(20)].map((_, i) => (
@@ -244,7 +244,7 @@ export default function CTASection() {
         `}</style>
             </section>
 
-          
+
         </div>
     )
 }

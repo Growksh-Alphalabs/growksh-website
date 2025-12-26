@@ -1,0 +1,179 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 bucket for static site assets
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name
+  BucketName:
+    Type: String
+    Description: S3 bucket name (must be globally unique)
+  DomainNames:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Alternative domain names (CNAMEs) for CloudFront (e.g., growksh.com, www.growksh.com)
+  CertificateArn:
+    Type: String
+    Default: ""
+    Description: ACM Certificate ARN for custom domains (must be in us-east-1 region)
+  WAFArn:
+    Type: String
+    Default: ""
+    Description: WAF Web ACL ARN for CloudFront protection (must be in us-east-1 region)
+
+Conditions:
+  HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
+  HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
+  HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
+
+Resources:
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  OriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub 'growksh-website-${Environment}-oac'
+        Description: OAC for CloudFront to access private S3 bucket
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  AssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetsBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowCloudFrontReadOnly
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub '${AssetsBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CdnDistribution}'
+
+  CdnDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub 'Growksh website ${Environment}'
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_All
+        HttpVersion: http2and3
+        Aliases: !If
+          - HasDomainNames
+          - !Ref DomainNames
+          - !Ref AWS::NoValue
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt AssetsBucket.RegionalDomainName
+            OriginAccessControlId: !Ref OriginAccessControl
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods:
+            - GET
+            - HEAD
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+          - ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+            ErrorCachingMinTTL: 0
+        WebACLId: !If
+          - HasWAF
+          - !Ref WAFArn
+          - !Ref AWS::NoValue
+        ViewerCertificate: !If
+          - HasCertificate
+          - AcmCertificateArn: !Ref CertificateArn
+            SslSupportMethod: sni-only
+            MinimumProtocolVersion: TLSv1.2_2021
+          - CloudFrontDefaultCertificate: true
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: none
+
+Outputs:
+  BucketName:
+    Description: S3 bucket name
+    Value: !Ref AssetsBucket
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-bucket'
+
+  BucketArn:
+    Description: S3 bucket ARN
+    Value: !GetAtt AssetsBucket.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-bucket-arn'
+
+  CdnDistributionId:
+    Description: CloudFront distribution ID
+    Value: !Ref CdnDistribution
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cloudfront-id'
+
+  CloudFrontDomainName:
+    Description: CloudFront domain name
+    Value: !GetAtt CdnDistribution.DomainName
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cdn-domain'
+
+  CloudFrontUrl:
+    Description: CloudFront URL
+    Value: !Sub 'https://${CdnDistribution.DomainName}'
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-url'
+
+  OriginAccessControlId:
+    Description: CloudFront Origin Access Control ID
+    Value: !Ref OriginAccessControl
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-oac-id'

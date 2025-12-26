@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM roles and policies for Growksh website Lambda functions
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+
+    Description: Environment name
+
+Resources:
+  AuthLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'growksh-website-auth-lambda-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/growksh-*'
+        - PolicyName: CognitoAdminAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cognito-idp:AdminCreateUser
+                  - cognito-idp:AdminSetUserPassword
+                  - cognito-idp:AdminUpdateUserAttributes
+                Resource: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*'
+        - PolicyName: SESAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: '*'
+
+  CognitoTriggerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'growksh-website-cognito-trigger-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cognito-idp.amazonaws.com
+            Action: sts:AssumeRole
+
+  ContactLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'growksh-website-contact-lambda-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/growksh-contacts'
+
+  ApiGatewayCloudWatchLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'growksh-website-apigw-logs-${Environment}'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+
+Outputs:
+  AuthLambdaRoleArn:
+    Description: ARN of Auth Lambda Execution Role
+    Value: !GetAtt AuthLambdaRole.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-auth-lambda-role-arn'
+
+  ContactLambdaRoleArn:
+    Description: ARN of Contact Lambda Execution Role
+    Value: !GetAtt ContactLambdaRole.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-contact-lambda-role-arn'
+
+  CognitoTriggerRoleArn:
+    Description: ARN of Cognito Lambda Invoke Role
+    Value: !GetAtt CognitoTriggerRole.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cognito-lambda-role-arn'
+
+  ApiGatewayCloudWatchLogsRoleArn:
+    Description: ARN of API Gateway CloudWatch Logs Role
+    Value: !GetAtt ApiGatewayCloudWatchLogsRole.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-apigw-logs-role-arn'
