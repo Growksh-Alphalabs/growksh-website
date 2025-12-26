@@ -55,18 +55,31 @@ if [[ $IS_EPHEMERAL == "true" ]]; then
       exit 1
     fi
     
-    # Wait for bucket to be available (S3 eventual consistency)
+    # Wait for bucket to be fully available with retries (S3 eventual consistency)
     echo "   → Waiting for bucket to be available..."
-    sleep 2
-    
-    # Verify bucket exists
-    if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
-      echo "❌ Bucket created but not accessible yet" >&2
-      DEPLOYMENT_FAILED=true
-      exit 1
-    fi
+    local max_attempts=10
+    local attempt=1
+    while [ $attempt -le $max_attempts ]; do
+      sleep $((attempt))  # Exponential backoff: 1s, 2s, 3s, etc.
+      
+      if aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null && \
+         aws s3api head-bucket --bucket "$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
+        echo "   ✅ Bucket is ready after $((attempt)) seconds"
+        break
+      fi
+      
+      if [ $attempt -eq $max_attempts ]; then
+        echo "❌ Bucket not ready after $((max_attempts * (max_attempts + 1) / 2)) seconds" >&2
+        DEPLOYMENT_FAILED=true
+        exit 1
+      fi
+      
+      echo "   → Attempt $attempt/$max_attempts: bucket not yet ready, waiting..."
+      attempt=$((attempt + 1))
+    done
+  else
+    echo "✅ Lambda code bucket already exists: s3://$LAMBDA_BUCKET"
   fi
-  echo "✅ Lambda code bucket ready: s3://$LAMBDA_BUCKET"
   echo ""
   
   # Build and upload Lambda functions
