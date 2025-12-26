@@ -25,6 +25,15 @@ echo "📦 Target bucket: $LAMBDA_BUCKET"
 echo "🏗️  Build directory: $BUILD_DIR"
 echo ""
 
+# Verify bucket exists
+echo "🔍 Verifying Lambda code bucket exists..."
+if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" &>/dev/null; then
+  echo "❌ Lambda code bucket does not exist: s3://$LAMBDA_BUCKET"
+  exit 1
+fi
+echo "✅ Bucket verified: s3://$LAMBDA_BUCKET"
+echo ""
+
 # Clean and create build directory
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
@@ -62,26 +71,40 @@ build_lambda() {
     cd "$PROJECT_ROOT"
   fi
   
-  # Create zip file (S3 key follows pattern: type/name-environment.zip)
-  local zip_name="${func_name}-${ENVIRONMENT}.zip"
-  local zip_path="$BUILD_DIR/${zip_name}"
+  # Create zip file in build directory (not nested in subdirectory)
+  local zip_name="${func_type}-${func_name}-${ENVIRONMENT}.zip"
+  local zip_path="$BUILD_DIR/$zip_name"
   
+  # Remove old zip if it exists
+  rm -f "$zip_path"
+  
+  # Create zip from artifact directory contents
   cd "$artifact_dir"
-  zip -r -q "$zip_path" . 2>/dev/null || {
+  zip -r -q "$zip_path" . || {
     echo "❌ Failed to create zip: $zip_name"
+    cd "$PROJECT_ROOT"
     return 1
   }
+  
+  # Verify zip was created
+  if [ ! -f "$zip_path" ]; then
+    echo "❌ Zip file not created: $zip_path"
+    cd "$PROJECT_ROOT"
+    return 1
+  fi
+  
   cd "$PROJECT_ROOT"
   
   # Upload to S3
-  local s3_key="${func_type}/${zip_name}"
+  local s3_key="${func_type}/${func_name}-${ENVIRONMENT}.zip"
   echo "📤 Uploading: s3://$LAMBDA_BUCKET/$s3_key"
-  aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
+  
+  if ! aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
     --region "$REGION" \
-    --sse AES256 2>&1 | grep -v "Completed" || {
+    --sse AES256 2>&1; then
     echo "❌ Failed to upload: $s3_key"
     return 1
-  }
+  fi
   
   echo "✅ Uploaded: $s3_key"
 }
