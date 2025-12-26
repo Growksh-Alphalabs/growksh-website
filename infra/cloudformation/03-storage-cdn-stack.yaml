@@ -68,6 +68,7 @@ Resources:
 
   LambdaCodeBucket:
     Type: AWS::S3::Bucket
+    Condition: !Not [IsEphemeralEnv]
     DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
     UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
     Properties:
@@ -223,12 +224,12 @@ Outputs:
 
   LambdaCodeBucketName:
     Description: S3 bucket for Lambda function code
-    Value: !Ref LambdaCodeBucket
+    Value: !If [IsEphemeralEnv, !Sub 'growksh-website-lambda-code-${Environment}', !Ref LambdaCodeBucket]
     Export:
       Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket'
 
   LambdaCodeBucketArn:
     Description: S3 Lambda code bucket ARN
-    Value: !GetAtt LambdaCodeBucket.Arn
+    Value: !If [IsEphemeralEnv, !Sub 'arn:aws:s3:::growksh-website-lambda-code-${Environment}', !GetAtt LambdaCodeBucket.Arn]
     Export:
       Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket-arn'
