@@ -178,12 +178,6 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-url'
 
-  CloudFrontUrl:
-    Description: CloudFront URL
-    Value: !Sub 'https://${CdnDistribution.DomainName}'
-    Export:
-      Name: !Sub 'growksh-website-${Environment}-url'
-
   OriginAccessControlId:
     Description: CloudFront Origin Access Control ID
     Value: !Ref OriginAccessControl
