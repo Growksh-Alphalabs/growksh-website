@@ -215,6 +215,7 @@ jobs:
           ./infra/scripts/cleanup-stacks.sh ${{ needs.prepare.outputs.environment_name }}
         env:
           AWS_REGION: ap-south-1
+          CLEANUP_SUCCESSFUL_STACKS: "true"
         continue-on-error: true
 
       - name: Notify cleanup success
