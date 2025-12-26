@@ -90,7 +90,7 @@ build_lambda() {
   local s3_key="${func_type}/${func_name}-${ENVIRONMENT}.zip"
   echo "📤 Uploading: s3://$LAMBDA_BUCKET/$s3_key"
   
-  local max_retries=3
+  local max_retries=5
   local retry=0
   while [ $retry -lt $max_retries ]; do
     if aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
@@ -102,7 +102,7 @@ build_lambda() {
     
     retry=$((retry + 1))
     if [ $retry -lt $max_retries ]; then
-      local wait_time=$((2 ** retry))
+      local wait_time=$((3 ** retry))  # 3, 9, 27, 81, 243 seconds
       echo "⚠️  Upload failed, retrying in ${wait_time}s (attempt $((retry + 1))/$max_retries)..."
       sleep $wait_time
     fi
