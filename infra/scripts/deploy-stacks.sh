@@ -2,6 +2,7 @@
 set -e
 
 # Deploy CloudFormation stacks in dependency order
+# Bucket strategy: For ephemeral, CloudFormation creates both buckets
 # Usage: ./deploy-stacks.sh <environment>
 # Example: ./deploy-stacks.sh dev
 
@@ -19,87 +20,25 @@ REGION=${AWS_REGION:-ap-south-1}
 TEMPLATE_DIR="infra/cloudformation"
 PARAM_DIR="infra/cloudformation/parameters"
 
-# Determine if this is an ephemeral environment and set flag
+# Determine if this is an ephemeral environment
 IS_EPHEMERAL="false"
 if [[ $ENVIRONMENT == feature-* ]]; then
   IS_EPHEMERAL="true"
-  # Use random 6-character alphanumeric suffix for guaranteed uniqueness
+  # Use random 6-character suffix for guaranteed uniqueness
   RANDOM_SUFFIX=$(openssl rand -hex 3)
-  BUCKET_NAME="$ENVIRONMENT-$RANDOM_SUFFIX"
+  ASSETS_BUCKET_NAME="$ENVIRONMENT-$RANDOM_SUFFIX"
+  LAMBDA_BUCKET_NAME="growksh-website-lambda-code-$RANDOM_SUFFIX"
 else
-  BUCKET_NAME="$ENVIRONMENT-assets"
+  ASSETS_BUCKET_NAME="$ENVIRONMENT-assets"
+  LAMBDA_BUCKET_NAME="growksh-website-lambda-code-$ENVIRONMENT"
 fi
 
 echo "🚀 Starting CloudFormation deployment for environment: $ENVIRONMENT"
 echo "📍 Region: $REGION"
 echo "🔄 Ephemeral environment: $IS_EPHEMERAL"
+echo "📦 Assets bucket: $ASSETS_BUCKET_NAME"
+echo "📦 Lambda bucket: $LAMBDA_BUCKET_NAME"
 echo "⏱️  Timestamp: $(date)"
-echo "🔐 IAM Role: GrowkshDeveloperRole (with wildcard permissions)"
-echo ""
-
-# For ephemeral environments, create Lambda code bucket and build Lambda functions
-if [[ $IS_EPHEMERAL == "true" ]]; then
-  LAMBDA_BUCKET="growksh-website-lambda-code-$RANDOM_SUFFIX"
-  
-  echo "🔨 Building and uploading Lambda functions..."
-  echo "📦 Lambda bucket: $LAMBDA_BUCKET"
-  echo ""
-  
-  # Create Lambda code bucket if it doesn't exist
-  echo "📦 Creating Lambda code bucket: $LAMBDA_BUCKET"
-  if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
-    echo "   → Bucket doesn't exist, creating..."
-    if ! aws s3 mb "s3://$LAMBDA_BUCKET" --region "$REGION" 2>&1; then
-      echo "❌ Failed to create Lambda code bucket" >&2
-      DEPLOYMENT_FAILED=true
-      exit 1
-    fi
-    
-    # Wait for bucket to be fully available with retries (S3 eventual consistency)
-    echo "   → Waiting for bucket to be available..."
-    local max_attempts=10
-    local attempt=1
-    while [ $attempt -le $max_attempts ]; do
-      sleep $((attempt))  # Exponential backoff: 1s, 2s, 3s, etc.
-      
-      if aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null && \
-         aws s3api head-bucket --bucket "$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
-        echo "   ✅ Bucket is ready after $((attempt)) seconds"
-        break
-      fi
-      
-      if [ $attempt -eq $max_attempts ]; then
-        echo "❌ Bucket not ready after $((max_attempts * (max_attempts + 1) / 2)) seconds" >&2
-        DEPLOYMENT_FAILED=true
-        exit 1
-      fi
-      
-      echo "   → Attempt $attempt/$max_attempts: bucket not yet ready, waiting..."
-      attempt=$((attempt + 1))
-    done
-  else
-    echo "✅ Lambda code bucket already exists: s3://$LAMBDA_BUCKET"
-  fi
-  echo ""
-  
-  # Build and upload Lambda functions
-  if [ -f "infra/scripts/build-and-upload-lambdas.sh" ]; then
-    chmod +x infra/scripts/build-and-upload-lambdas.sh
-    ./infra/scripts/build-and-upload-lambdas.sh "$ENVIRONMENT" "$LAMBDA_BUCKET" || {
-      echo "❌ Failed to build/upload Lambda functions" >&2
-      DEPLOYMENT_FAILED=true
-      exit 1
-    }
-  else
-    echo "⚠️  Lambda build script not found, skipping Lambda deployment" >&2
-  fi
-  
-  echo ""
-else
-  # For non-ephemeral environments, use default Lambda bucket
-  LAMBDA_BUCKET="growksh-website-lambda-code-$ENVIRONMENT"
-fi
-
 echo ""
 
 # Function to deploy a stack
@@ -112,14 +51,17 @@ deploy_stack() {
   
   # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
-    # When using parameter file, still override IsEphemeral for database/storage stacks if it's ephemeral
     local param_overrides="file://$param_file"
-    if [[ $ENVIRONMENT == feature-* ]] && ([[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]]); then
-      param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL"
-    fi
-    # Add LambdaCodeBucketName for lambda stacks in ephemeral environments
-    if [[ $ENVIRONMENT == feature-* ]] && ([[ "$stack_name" == *"cognito-lambdas"* ]] || [[ "$stack_name" == *"api-lambdas"* ]]); then
-      param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET"
+    
+    # Override parameters for ephemeral environments
+    if [[ $ENVIRONMENT == feature-* ]]; then
+      if [[ "$stack_name" == *"storage-cdn"* ]]; then
+        param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL BucketName=$ASSETS_BUCKET_NAME"
+      elif [[ "$stack_name" == *"database"* ]]; then
+        param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL"
+      elif [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
+        param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL BucketName=$LAMBDA_BUCKET_NAME"
+      fi
     fi
     
     aws cloudformation deploy \
@@ -138,25 +80,29 @@ deploy_stack() {
     # Build dynamic parameters for ephemeral/non-standard environments
     local params="Environment=$ENVIRONMENT"
     
-    # Add IsEphemeral only to stacks that use it (database and storage stacks)
-    if [[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]]; then
+    # Add IsEphemeral for stacks that use it
+    if [[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]] || [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
       params="$params IsEphemeral=$IS_EPHEMERAL"
     fi
     
+    # Add specific parameters for Lambda Code Bucket stack
+    if [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
+      params="$params BucketName=$LAMBDA_BUCKET_NAME"
+    fi
+    
     # Add specific parameters for Storage CDN stack
-    # Don't pass empty strings for optional parameters - let CloudFormation use defaults
     if [[ "$stack_name" == *"storage-cdn"* ]]; then
-      params="$params BucketName=$BUCKET_NAME LambdaCodeBucketName=growksh-website-lambda-code-$RANDOM_SUFFIX"
+      params="$params BucketName=$ASSETS_BUCKET_NAME"
     fi
     
     # Add specific parameters for Cognito Lambdas
     if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
-      params="$params LambdaCodeBucketName=growksh-website-lambda-code-$RANDOM_SUFFIX SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
+      params="$params LambdaCodeBucketName=$LAMBDA_BUCKET_NAME SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$ASSETS_BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
     fi
     
     # Add specific parameters for API Lambdas
     if [[ "$stack_name" == *"api-lambdas"* ]]; then
-      params="$params LambdaCodeBucketName=growksh-website-lambda-code-$RANDOM_SUFFIX SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
+      params="$params LambdaCodeBucketName=$LAMBDA_BUCKET_NAME SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$ASSETS_BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
     fi
     
     aws cloudformation deploy \
@@ -183,10 +129,11 @@ echo "📋 Deployment Plan:"
 echo "  1. growksh-website-iam-$ENVIRONMENT (IAM roles)"
 echo "  2. growksh-website-database-$ENVIRONMENT (DynamoDB)"
 echo "  3. growksh-website-cognito-$ENVIRONMENT (Cognito)"
-echo "  4. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
-echo "  5. growksh-website-api-$ENVIRONMENT (API Gateway)"
-echo "  6. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
-echo "  7. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+echo "  4. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+echo "  5. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+echo "  6. growksh-website-api-$ENVIRONMENT (API Gateway)"
+echo "  7. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+echo "  8. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
 echo ""
 
 # Stage 1: IAM (no dependencies)
@@ -207,42 +154,54 @@ deploy_stack \
   "growksh-website-cognito-$ENVIRONMENT" \
   "$TEMPLATE_DIR/02-cognito-stack.yaml"
 
-# Stage 4: Storage & CDN (no dependencies)
-echo "Stage 4️⃣: Storage & CDN"
-# For ephemeral environments, pass parameters directly instead of using param file
-if [[ $ENVIRONMENT == feature-* ]]; then
-  deploy_stack \
-    "growksh-website-storage-cdn-$ENVIRONMENT" \
-    "$TEMPLATE_DIR/03-storage-cdn-stack.yaml"
-else
-  # For dev/prod, use parameter files
-  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-storage-cdn.json"
-  deploy_stack \
-    "growksh-website-storage-cdn-$ENVIRONMENT" \
-    "$TEMPLATE_DIR/03-storage-cdn-stack.yaml" \
-    "$PARAM_FILE"
+# Stage 4: Lambda Code Bucket (no dependencies, BEFORE Lambda functions!)
+echo "Stage 4️⃣: Lambda Code Bucket"
+deploy_stack \
+  "growksh-website-lambda-code-bucket-$ENVIRONMENT" \
+  "$TEMPLATE_DIR/04-lambda-code-bucket-stack.yaml"
+
+# Stage 4.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Lambda stacks)
+if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]]; then
+  echo "🔨 Building and uploading Lambda functions..."
+  if [ -f "infra/scripts/build-and-upload-lambdas.sh" ]; then
+    chmod +x infra/scripts/build-and-upload-lambdas.sh
+    ./infra/scripts/build-and-upload-lambdas.sh "$ENVIRONMENT" "$LAMBDA_BUCKET_NAME" || {
+      echo "❌ Failed to build/upload Lambda functions" >&2
+      DEPLOYMENT_FAILED=true
+      exit 1
+    }
+  else
+    echo "⚠️  Lambda build script not found, skipping Lambda deployment" >&2
+  fi
+  echo ""
 fi
 
-# Stage 5: API Gateway (no dependencies)
-echo "Stage 5️⃣: API Gateway"
+# Stage 5: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
+echo "Stage 5️⃣: Storage & CDN"
+deploy_stack \
+  "growksh-website-storage-cdn-$ENVIRONMENT" \
+  "$TEMPLATE_DIR/03-storage-cdn-stack.yaml"
+
+# Stage 6: API Gateway (no dependencies)
+echo "Stage 6️⃣: API Gateway"
 deploy_stack \
   "growksh-website-api-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/04-api-gateway-stack.yaml"
+  "$TEMPLATE_DIR/05-api-gateway-stack.yaml"
 
-# Stage 6: Cognito Lambda Triggers (depends on Cognito, IAM, Database)
-echo "Stage 6️⃣: Cognito Lambda Triggers"
+# Stage 7: Cognito Lambda Triggers (depends on Cognito, IAM, Database, Lambda code bucket)
+echo "Stage 7️⃣: Cognito Lambda Triggers"
 PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-cognito-lambdas.json"
 deploy_stack \
   "growksh-website-cognito-lambdas-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/05-cognito-lambdas-stack.yaml" \
+  "$TEMPLATE_DIR/06-cognito-lambdas-stack.yaml" \
   "$PARAM_FILE"
 
-# Stage 7: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database)
-echo "Stage 7️⃣: API Lambda Functions"
+# Stage 8: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database, Lambda code bucket)
+echo "Stage 8️⃣: API Lambda Functions"
 PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-06-api-lambdas.json"
 deploy_stack \
   "growksh-website-api-lambdas-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/06-api-lambdas-stack.yaml" \
+  "$TEMPLATE_DIR/07-api-lambdas-stack.yaml" \
   "$PARAM_FILE"
 
 echo ""
@@ -264,6 +223,10 @@ aws cloudformation describe-stacks \
 
 echo ""
 echo "🎉 Deployment complete for environment: $ENVIRONMENT"
+echo "📦 Assets bucket: $ASSETS_BUCKET_NAME"
+echo "📦 Lambda code bucket: $LAMBDA_BUCKET_NAME"
+echo ""
 
-# Output the actual bucket name for workflow use
-echo "BUCKET_NAME=$BUCKET_NAME" >> "$GITHUB_OUTPUT" 2>/dev/null || true
+# Output the bucket names for workflow use
+echo "ASSETS_BUCKET_NAME=$ASSETS_BUCKET_NAME" >> "$GITHUB_OUTPUT" 2>/dev/null || true
+echo "LAMBDA_BUCKET_NAME=$LAMBDA_BUCKET_NAME" >> "$GITHUB_OUTPUT" 2>/dev/null || true

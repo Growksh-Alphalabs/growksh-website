@@ -5,15 +5,10 @@ Parameters:
   Environment:
     Type: String
     Default: dev
-
     Description: Environment name
   BucketName:
     Type: String
     Description: S3 bucket name (must be globally unique)
-  LambdaCodeBucketName:
-    Type: String
-    Default: ""
-    Description: Lambda code bucket name (optional, defaults to growksh-website-lambda-code-{Environment})
   IsEphemeral:
     Type: String
     Default: "false"
@@ -36,9 +31,7 @@ Conditions:
   HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
-  HasCustomLambdaCodeBucketName: !Not [!Equals [!Ref LambdaCodeBucketName, ""]]
   IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
-  NotEphemeralEnv: !Not [!Equals [!Ref IsEphemeral, "true"]]
 
 Resources:
   AssetsBucket:
@@ -66,38 +59,6 @@ Resources:
           Value: Growksh
         - Key: Env
           Value: !Ref Environment
-
-  LambdaCodeBucket:
-    Type: AWS::S3::Bucket
-    Condition: NotEphemeralEnv
-    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
-    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
-    Properties:
-      BucketName: !If
-        - HasCustomLambdaCodeBucketName
-        - !Ref LambdaCodeBucketName
-        - !Sub 'growksh-website-lambda-code-${Environment}'
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        IgnorePublicAcls: true
-        BlockPublicPolicy: true
-        RestrictPublicBuckets: true
-      OwnershipControls:
-        Rules:
-          - ObjectOwnership: BucketOwnerEnforced
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      Tags:
-        - Key: App
-          Value: Website
-        - Key: Partner
-          Value: Growksh
-        - Key: Env
-          Value: !Ref Environment
-        - Key: Purpose
-          Value: Lambda code storage
 
   OriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
@@ -217,20 +178,14 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-url'
 
+  CloudFrontUrl:
+    Description: CloudFront URL
+    Value: !Sub 'https://${CdnDistribution.DomainName}'
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-url'
+
   OriginAccessControlId:
     Description: CloudFront Origin Access Control ID
     Value: !Ref OriginAccessControl
     Export:
       Name: !Sub 'growksh-website-${Environment}-oac-id'
-
-  LambdaCodeBucketName:
-    Description: S3 bucket for Lambda function code
-    Value: !If [NotEphemeralEnv, !Ref LambdaCodeBucket, !Sub 'growksh-website-lambda-code-${Environment}']
-    Export:
-      Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket'
-
-  LambdaCodeBucketArn:
-    Description: S3 Lambda code bucket ARN
-    Value: !If [NotEphemeralEnv, !GetAtt LambdaCodeBucket.Arn, !Sub 'arn:aws:s3:::growksh-website-lambda-code-${Environment}']
-    Export:
-      Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket-arn'
