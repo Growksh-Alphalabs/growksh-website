@@ -48,27 +48,6 @@ Resources:
     DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
     UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
 
-  # Lifecycle rule to clean up old Lambda versions (keep last 10)
-  BucketLifecycleConfiguration:
-    Type: AWS::S3::BucketLifecycleConfiguration
-    Properties:
-      Bucket: !Ref LambdaCodeBucket
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteOldVersions
-            Status: Enabled
-            NoncurrentVersionExpiration:
-              NoncurrentDays: 30
-          # Auto-cleanup for ephemeral environment after 7 days
-          - Id: DeleteEphemeralBuild
-            Status: !If [IsEphemeralEnv, Enabled, Disabled]
-            Prefix: auth/
-            ExpirationInDays: 7
-          - Id: DeleteEphemeralContact
-            Status: !If [IsEphemeralEnv, Enabled, Disabled]
-            Prefix: contact/
-            ExpirationInDays: 7
-
 Outputs:
   LambdaCodeBucketName:
     Description: Name of the Lambda code bucket
