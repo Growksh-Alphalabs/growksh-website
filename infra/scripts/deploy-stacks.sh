@@ -183,8 +183,14 @@ attempt=1
 while [ $attempt -le $max_attempts ]; do
   if aws s3 ls "s3://$LAMBDA_BUCKET_NAME" --region "$REGION" 2>/dev/null && \
      aws s3api head-bucket --bucket "$LAMBDA_BUCKET_NAME" --region "$REGION" 2>/dev/null; then
-    echo "✅ Lambda bucket ready: s3://$LAMBDA_BUCKET_NAME"
-    break
+    # Also verify we can write to the bucket with a test object
+    if aws s3 cp /dev/null "s3://$LAMBDA_BUCKET_NAME/.test-write-$(date +%s)" \
+       --region "$REGION" 2>/dev/null; then
+      echo "✅ Lambda bucket ready: s3://$LAMBDA_BUCKET_NAME"
+      # Clean up test object
+      aws s3 rm "s3://$LAMBDA_BUCKET_NAME/.test-write-"* --region "$REGION" 2>/dev/null || true
+      break
+    fi
   fi
   
   if [ $attempt -eq $max_attempts ]; then
