@@ -139,10 +139,17 @@ for stack in $STACKS; do
   fi
 done
 
-# NOTE: Shared buckets are not deleted during ephemeral cleanup:
-# - growksh-website-ephemeral-assets: Shared across all ephemeral environments
-# - growksh-website-lambda-code: Shared across all environments (ephemeral + dev + prod)
-# This prevents orphaned stacks while keeping shared artifacts available for reuse
+echo "Stage 4b️⃣: Delete Lambda Code Bucket Stack"
+for stack in $STACKS; do
+  if [[ $stack == *"lambda-code-bucket"* ]]; then
+    delete_stack "$stack"
+  fi
+done
+
+# NOTE: S3 buckets are retained even though their stacks are deleted:
+# - growksh-website-ephemeral-assets: Retained, reused by next ephemeral environment
+# - growksh-website-lambda-code: Retained, reused by all environments
+# CloudFormation stacks are deleted, but buckets persist with DeletionPolicy: Retain
 
 echo "Stage 5️⃣: Delete Cognito"
 for stack in $STACKS; do

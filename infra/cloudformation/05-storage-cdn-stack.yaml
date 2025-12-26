@@ -36,8 +36,8 @@ Conditions:
 Resources:
   AssetsBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
-    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Ref BucketName
       PublicAccessBlockConfiguration:
