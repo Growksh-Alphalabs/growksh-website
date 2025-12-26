@@ -129,11 +129,12 @@ echo "📋 Deployment Plan:"
 echo "  1. growksh-website-iam-$ENVIRONMENT (IAM roles)"
 echo "  2. growksh-website-database-$ENVIRONMENT (DynamoDB)"
 echo "  3. growksh-website-cognito-$ENVIRONMENT (Cognito)"
-echo "  4. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
-echo "  5. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
-echo "  6. growksh-website-api-$ENVIRONMENT (API Gateway)"
-echo "  7. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
-echo "  8. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+echo "  4. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
+echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
+echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
 echo ""
 
 # Stage 1: IAM (no dependencies)
@@ -154,13 +155,21 @@ deploy_stack \
   "growksh-website-cognito-$ENVIRONMENT" \
   "$TEMPLATE_DIR/02-cognito-stack.yaml"
 
-# Stage 4: Lambda Code Bucket (no dependencies, BEFORE Lambda functions!)
-echo "Stage 4️⃣: Lambda Code Bucket"
+# Stage 4: WAF (us-east-1, no dependencies, before CDN)
+echo "Stage 4️⃣: WAF (us-east-1)"
+PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+deploy_stack \
+  "growksh-website-waf-$ENVIRONMENT" \
+  "$TEMPLATE_DIR/03-waf-stack.yaml" \
+  "$PARAM_FILE"
+
+# Stage 5: Lambda Code Bucket (no dependencies)
+echo "Stage 5️⃣: Lambda Code Bucket"
 deploy_stack \
   "growksh-website-lambda-code-bucket-$ENVIRONMENT" \
   "$TEMPLATE_DIR/04-lambda-code-bucket-stack.yaml"
 
-# Stage 4.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Lambda stacks)
+# Stage 5.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Lambda stacks)
 if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]]; then
   echo "🔨 Building and uploading Lambda functions..."
   if [ -f "infra/scripts/build-and-upload-lambdas.sh" ]; then
@@ -176,32 +185,32 @@ if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]]; then
   echo ""
 fi
 
-# Stage 5: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
-echo "Stage 5️⃣: Storage & CDN"
+# Stage 6: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
+echo "Stage 6️⃣: Storage & CDN"
 deploy_stack \
   "growksh-website-storage-cdn-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/03-storage-cdn-stack.yaml"
+  "$TEMPLATE_DIR/05-storage-cdn-stack.yaml"
 
-# Stage 6: API Gateway (no dependencies)
-echo "Stage 6️⃣: API Gateway"
+# Stage 7: API Gateway (no dependencies)
+echo "Stage 7️⃣: API Gateway"
 deploy_stack \
   "growksh-website-api-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/05-api-gateway-stack.yaml"
+  "$TEMPLATE_DIR/06-api-gateway-stack.yaml"
 
-# Stage 7: Cognito Lambda Triggers (depends on Cognito, IAM, Database, Lambda code bucket)
-echo "Stage 7️⃣: Cognito Lambda Triggers"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-cognito-lambdas.json"
+# Stage 8: Cognito Lambda Triggers (depends on Cognito, IAM, Database, Lambda code bucket)
+echo "Stage 8️⃣: Cognito Lambda Triggers"
+PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-07-cognito-lambdas.json"
 deploy_stack \
   "growksh-website-cognito-lambdas-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/06-cognito-lambdas-stack.yaml" \
+  "$TEMPLATE_DIR/07-cognito-lambdas-stack.yaml" \
   "$PARAM_FILE"
 
-# Stage 8: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database, Lambda code bucket)
-echo "Stage 8️⃣: API Lambda Functions"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-06-api-lambdas.json"
+# Stage 9: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database, Lambda code bucket)
+echo "Stage 9️⃣: API Lambda Functions"
+PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-08-api-lambdas.json"
 deploy_stack \
   "growksh-website-api-lambdas-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/07-api-lambdas-stack.yaml" \
+  "$TEMPLATE_DIR/08-api-lambdas-stack.yaml" \
   "$PARAM_FILE"
 
 echo ""
