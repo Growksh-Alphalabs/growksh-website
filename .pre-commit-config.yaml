@@ -1,0 +1,24 @@
+repos:
+  # CloudFormation validation
+  - repo: https://github.com/aws-cloudformation/cfn-python-lint
+    rev: v1.43.1
+    hooks:
+      - id: cfn-python-lint
+        files: infra/cloudformation/.*\.ya?ml$
+        args: [--template]
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+        files: \.(yaml|yml)$
+        exclude: ^(infra/cloudformation|infra/sam-template)
+      - id: check-json
+      - id: check-toml
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: [--fix=lf]

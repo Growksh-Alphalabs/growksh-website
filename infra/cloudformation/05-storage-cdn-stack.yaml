@@ -9,11 +9,6 @@ Parameters:
   BucketName:
     Type: String
     Description: S3 bucket name (must be globally unique)
-  IsEphemeral:
-    Type: String
-    Default: "false"
-    AllowedValues: ["true", "false"]
-    Description: Whether this is an ephemeral environment (auto-deletes resources on stack deletion)
   DomainNames:
     Type: CommaDelimitedList
     Default: ""
@@ -31,7 +26,6 @@ Conditions:
   HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
-  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
 
 Resources:
   AssetsBucket:
@@ -103,7 +97,7 @@ Resources:
         DefaultRootObject: index.html
         PriceClass: PriceClass_All
         HttpVersion: http2and3
-        Aliases: !If 
+        Aliases: !If
           - HasDomainNames
           - !Ref DomainNames
           - !Ref AWS::NoValue

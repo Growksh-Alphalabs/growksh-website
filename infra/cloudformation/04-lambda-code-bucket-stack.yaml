@@ -8,14 +8,6 @@ Parameters:
   BucketName:
     Type: String
     Description: S3 bucket name for Lambda code
-  IsEphemeral:
-    Type: String
-    Default: "false"
-    AllowedValues: ["true", "false"]
-    Description: Whether this is an ephemeral environment (auto-deletes bucket on stack deletion)
-
-Conditions:
-  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
 
 Resources:
   LambdaCodeBucket:
