@@ -38,6 +38,7 @@ Conditions:
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
   HasCustomLambdaCodeBucketName: !Not [!Equals [!Ref LambdaCodeBucketName, ""]]
   IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
+  NotEphemeralEnv: !Not [IsEphemeralEnv]
 
 Resources:
   AssetsBucket:
@@ -68,7 +69,7 @@ Resources:
 
   LambdaCodeBucket:
     Type: AWS::S3::Bucket
-    Condition: !Not [IsEphemeralEnv]
+    Condition: NotEphemeralEnv
     DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
     UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
     Properties:
@@ -224,12 +225,12 @@ Outputs:
 
   LambdaCodeBucketName:
     Description: S3 bucket for Lambda function code
-    Value: !If [IsEphemeralEnv, !Sub 'growksh-website-lambda-code-${Environment}', !Ref LambdaCodeBucket]
+    Value: !If [NotEphemeralEnv, !Ref LambdaCodeBucket, !Sub 'growksh-website-lambda-code-${Environment}']
     Export:
       Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket'
 
   LambdaCodeBucketArn:
     Description: S3 Lambda code bucket ARN
-    Value: !If [IsEphemeralEnv, !Sub 'arn:aws:s3:::growksh-website-lambda-code-${Environment}', !GetAtt LambdaCodeBucket.Arn]
+    Value: !If [NotEphemeralEnv, !GetAtt LambdaCodeBucket.Arn, !Sub 'arn:aws:s3:::growksh-website-lambda-code-${Environment}']
     Export:
       Name: !Sub 'growksh-website-${Environment}-lambda-code-bucket-arn'
