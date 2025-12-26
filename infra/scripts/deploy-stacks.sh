@@ -6,6 +6,11 @@ set -e
 # Usage: ./deploy-stacks.sh <environment>
 # Example: ./deploy-stacks.sh dev
 
+# TODO: Refactor into modular deploy-single-stack.sh for better maintainability
+# See: https://github.com/Growksh-Alphalabs/growksh-website/issues/XX
+# This would allow orchestration of individual stack deployments with better
+# separation of concerns and testability. Currently handled monolithically here.
+
 ENVIRONMENT=$1
 DEPLOYMENT_FAILED=false
 
@@ -168,6 +173,29 @@ echo "Stage 5️⃣: Lambda Code Bucket"
 deploy_stack \
   "growksh-website-lambda-code-bucket-$ENVIRONMENT" \
   "$TEMPLATE_DIR/04-lambda-code-bucket-stack.yaml"
+
+# Verify Lambda bucket is ready before uploading code
+echo "⏳ Verifying Lambda code bucket is accessible..."
+max_attempts=10
+attempt=1
+while [ $attempt -le $max_attempts ]; do
+  if aws s3 ls "s3://$LAMBDA_BUCKET_NAME" --region "$REGION" 2>/dev/null && \
+     aws s3api head-bucket --bucket "$LAMBDA_BUCKET_NAME" --region "$REGION" 2>/dev/null; then
+    echo "✅ Lambda bucket ready: s3://$LAMBDA_BUCKET_NAME"
+    break
+  fi
+  
+  if [ $attempt -eq $max_attempts ]; then
+    echo "❌ Lambda bucket not ready after $((attempt)) attempts" >&2
+    DEPLOYMENT_FAILED=true
+    exit 1
+  fi
+  
+  sleep $((attempt))
+  echo "⏳ Waiting for bucket (attempt $attempt/$max_attempts)..."
+  attempt=$((attempt + 1))
+done
+echo ""
 
 # Stage 5.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Lambda stacks)
 if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]]; then
