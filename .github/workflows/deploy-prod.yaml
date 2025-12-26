@@ -18,7 +18,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
   approval:
     needs: validate
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: ⏸️ Waiting for manual approval
         run: echo "⏸️ Production deployment pending manual approval"
@@ -40,7 +40,7 @@ jobs:
   deploy:
     needs: [validate, approval]
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -98,15 +98,15 @@ jobs:
           release_name: Production Release ${{ github.run_number }}
           body: |
             ## Production Deployment
-            
+
             **Commit**: ${{ github.sha }}
             **Branch**: ${{ github.ref }}
             **Run**: ${{ github.run_id }}
-            
+
             ### URLs
             - **Frontend**: https://${{ steps.deploy-info.outputs.cloudfront_domain }}
             - **API**: ${{ steps.deploy-info.outputs.api_endpoint }}
-            
+
             ### Stacks Deployed
             - growksh-website-iam-prod
             - growksh-website-database-prod

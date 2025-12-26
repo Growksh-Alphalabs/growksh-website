@@ -52,7 +52,7 @@ export default function Login() {
       setMessage(`OTP sent to ${email}. Please check your email.`)
     } catch (error) {
       console.error('Auth error:', error)
-      
+
       // Check if user is not registered
       const errorMsg = error.message || ''
       if (
@@ -64,7 +64,7 @@ export default function Login() {
         navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
         return
       }
-      
+
       setErrorMessage(
         errorMsg ||
           'Failed to initiate login. Please check your email and try again.'
@@ -113,7 +113,7 @@ export default function Login() {
           localStorage.setItem('refreshToken', RefreshToken)
         }
         localStorage.setItem('userEmail', email)
-        
+
         // Re-check auth state immediately to update navbar
         await checkAuth()
       }

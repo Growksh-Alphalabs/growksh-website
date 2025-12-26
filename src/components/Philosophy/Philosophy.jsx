@@ -42,7 +42,7 @@ export default function Philosophy() {
                 <div className="text-sm text-slate-600">Helps you grow your money.</div>
               </div>
 
-             
+
             </div>
 
             {/* <div className="mt-8">

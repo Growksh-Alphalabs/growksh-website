@@ -7,7 +7,7 @@ export default function Hero() {
     <section id="alphalabs-hero" className="relative overflow-hidden  text-slate-900">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
-      
+
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-30 md:opacity-40">
         <svg
@@ -31,7 +31,7 @@ export default function Hero() {
               <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
             </filter>
           </defs>
-          
+
           {/* Large Organic Shapes */}
           <g filter="url(#blur1)">
             <path
@@ -58,7 +58,7 @@ export default function Hero() {
               opacity="0.6"
             />
           </g>
-          
+
           {/* Floating Circles */}
           <g>
             <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
@@ -67,7 +67,7 @@ export default function Hero() {
             <circle cx="400" cy="600" r="50" fill="url(#grad2)" opacity="0.5" />
             <circle cx="1200" cy="300" r="70" fill="url(#grad1)" opacity="0.3" />
           </g>
-          
+
           {/* Dots Pattern */}
           <g>
             {Array.from({ length: 40 }).map((_, i) => (
@@ -83,11 +83,11 @@ export default function Hero() {
           </g>
         </svg>
       </div>
-      
+
       {/* Gradient Overlays for Depth */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
+
       {/* Animated Particles - Reduced on mobile */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         {[...Array(15)].map((_, i) => (
@@ -162,8 +162,8 @@ export default function Hero() {
 
             {/* Description */}
             <p className="mt-4 md:mt-6 text-lg md:text-xl text-slate-700 leading-relaxed">
-              Growksh Alphalabs is an experiential learning studio by Growksh — designed to help individuals think, decide, 
-              and grow smarter with money. Here, finance isn't just taught — it's experienced, questioned, and understood 
+              Growksh Alphalabs is an experiential learning studio by Growksh — designed to help individuals think, decide,
+              and grow smarter with money. Here, finance isn't just taught — it's experienced, questioned, and understood
               deeply, so you can make better choices in your financial life and beyond.
             </p>
 
@@ -226,10 +226,10 @@ export default function Hero() {
                 className="group inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
               >
                 Explore Programs
-                <svg 
-                  className="w-4 h-4 md:w-5 md:h-5 ml-2 group-hover:translate-x-1 transition-transform" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-4 h-4 md:w-5 md:h-5 ml-2 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -286,12 +286,12 @@ export default function Hero() {
               <div className="relative bg-white/80 backdrop-blur-sm rounded-2xl md:rounded-3xl border-2 border-[#00674F]/10 p-4 md:p-6 lg:p-8 shadow-xl md:shadow-2xl overflow-hidden">
                 {/* Background Glow */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/5 via-transparent to-[#00674F]/5" />
-                
+
                 {/* Network Visualization */}
-                <svg 
-                  viewBox="0 0 460 360" 
-                  className="w-full h-auto max-h-72 md:max-h-80 p-2 md:p-4" 
-                  role="img" 
+                <svg
+                  viewBox="0 0 460 360"
+                  className="w-full h-auto max-h-72 md:max-h-80 p-2 md:p-4"
+                  role="img"
                   aria-label="Interactive learning network showing progression from thinking to growth"
                   focusable="false"
                 >
@@ -300,12 +300,12 @@ export default function Hero() {
                       <stop offset="0%" stopColor="#00674F" stopOpacity="0.95" />
                       <stop offset="100%" stopColor="#005e48" stopOpacity="0.85" />
                     </linearGradient>
-                    
+
                     <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
                       <stop offset="0%" stopColor="#00674F" stopOpacity="0.35" />
                       <stop offset="100%" stopColor="#005e48" stopOpacity="0.18" />
                     </linearGradient>
-                    
+
                     <filter id="glow">
                       <feGaussianBlur stdDeviation="2" result="blur" />
                       <feMerge>
@@ -363,7 +363,7 @@ export default function Hero() {
                 <div className="text-xs text-[#00674F] font-bold mb-1">EXPERIENTIAL</div>
                 <div className="text-sm text-slate-800">Learn by doing</div>
               </div>
-              
+
               <div className="hidden md:block absolute -bottom-2 -left-2 md:-bottom-3 md:-left-3 lg:-bottom-4 lg:-left-4 bg-white/90 backdrop-blur-sm p-3 md:p-4 rounded-xl border border-[#ffde21] shadow-lg w-32 md:w-36 lg:w-40">
                 <div className="text-xs text-[#00674F] font-bold mb-1">PRACTICAL</div>
                 <div className="text-sm text-slate-800">Real-world skills</div>

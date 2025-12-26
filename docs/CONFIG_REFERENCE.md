@@ -104,21 +104,21 @@ Parameters:
   SESSourceEmail:
     Default: "noreply@growksh.com"
     # Email address verified in SES
-    
+
   VerifyBaseUrl:
     Default: "https://d2eipj1xhqte5b.cloudfront.net/auth/verify-email"
     # Frontend URL for email verification callback
-    
+
   DebugLogVerify:
     Default: '1'
     # Enable debug logging of verification URLs
     # Set to '0' in production
-    
+
   DebugLogOTP:
     Default: '0'
     # Enable debug logging of OTPs
     # NEVER set to '1' in production (security risk)
-    
+
   VerifySecret:
     Default: "change-me-replace-with-a-long-secret"
     # HMAC secret for verification tokens

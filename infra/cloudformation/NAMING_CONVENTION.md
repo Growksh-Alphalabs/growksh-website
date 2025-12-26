@@ -81,9 +81,8 @@ To make the templates even more consistent, consider these changes (when you hav
 ## Implementation Status
 
 ✅ Logical resource names follow PascalCase convention
-✅ AWS resource names use `growksh-{component}-{environment}` pattern  
-✅ CloudFormation exports use consistent naming  
+✅ AWS resource names use `growksh-{component}-{environment}` pattern
+✅ CloudFormation exports use consistent naming
 ⏳ Minor refinements (documented above) for future iterations
 
 **Current status**: Naming is consistent enough for Phase 2. Refinements can be done incrementally.
-

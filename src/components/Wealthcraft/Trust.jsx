@@ -2,7 +2,7 @@ import React from 'react'
 import img1 from '../../assets/Website images/Wealthcraft - sebi logo.png'
 import img2 from '../../assets/Website images/Wealthcraft - comprehensive approach.png'
 import img3 from '../../assets/Website images/Wealthcraft - customised planning.png'
-import img4 from '../../assets/Website images/Wealthcraft - partnership for life.png' 
+import img4 from '../../assets/Website images/Wealthcraft - partnership for life.png'
 
 export default function Trust() {
   const items = [
@@ -50,7 +50,7 @@ export default function Trust() {
             >
               {/* Image at the top */}
               <div className="relative h-48 overflow-hidden">
-                <img 
+                <img
                   src={it.image}
                   alt=""
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

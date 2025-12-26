@@ -49,7 +49,7 @@ export default function InsightsPreview() {
                   <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
-              
+
 
                 <h4 className="mt-4 text-lg font-medium text-slate-900 leading-snug">{p.title}</h4>
                 <p className="mt-3 text-sm text-slate-600 flex-1">{p.excerpt}</p>

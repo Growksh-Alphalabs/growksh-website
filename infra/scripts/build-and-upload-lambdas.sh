@@ -35,40 +35,40 @@ build_lambda() {
   local func_name=$2
   local source_dir=$3
   local handler_file=$4
-  
+
   echo "📦 Building: $func_name"
-  
+
   local artifact_dir="$BUILD_DIR/$func_type/$func_name"
   mkdir -p "$artifact_dir"
-  
+
   # Copy handler file
   if [ ! -f "$source_dir/$handler_file" ]; then
     echo "⚠️  Warning: Handler file not found: $source_dir/$handler_file (skipping)"
     return 0
   fi
-  
+
   cp "$source_dir/$handler_file" "$artifact_dir/"
-  
+
   # Copy package.json and install dependencies
   if [ -f "$source_dir/package.json" ]; then
     cp "$source_dir/package.json" "$artifact_dir/"
     if [ -f "$source_dir/package-lock.json" ]; then
       cp "$source_dir/package-lock.json" "$artifact_dir/"
     fi
-    
+
     # Install dependencies
     cd "$artifact_dir"
     npm install --production --silent 2>&1 | grep -v "npm warn" || true
     cd "$PROJECT_ROOT"
   fi
-  
+
   # Create zip file in build directory (not nested in subdirectory)
   local zip_name="${func_type}-${func_name}-${ENVIRONMENT}.zip"
   local zip_path="$BUILD_DIR/$zip_name"
-  
+
   # Remove old zip if it exists
   rm -f "$zip_path"
-  
+
   # Create zip from artifact directory contents
   cd "$artifact_dir"
   zip -r -q "$zip_path" . || {
@@ -76,35 +76,35 @@ build_lambda() {
     cd "$PROJECT_ROOT"
     return 1
   }
-  
+
   # Verify zip was created
   if [ ! -f "$zip_path" ]; then
     echo "❌ Zip file not created: $zip_path"
     cd "$PROJECT_ROOT"
     return 1
   fi
-  
+
   cd "$PROJECT_ROOT"
-  
+
   # Upload to S3 with retry logic
   local s3_key="${func_type}/${func_name}-${ENVIRONMENT}.zip"
   echo "📤 Uploading: s3://$LAMBDA_BUCKET/$s3_key"
-  
+
   local max_retries=5
   local retry=0
   local upload_output
-  
+
   while [ $retry -lt $max_retries ]; do
     # Capture both stdout and stderr
     upload_output=$(aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
       --region "$REGION" \
       --sse AES256 2>&1)
-    
+
     if [ $? -eq 0 ]; then
       echo "✅ Uploaded: $s3_key"
       return 0
     fi
-    
+
     retry=$((retry + 1))
     if [ $retry -lt $max_retries ]; then
       local wait_time=$((3 ** retry))  # 3, 9, 27, 81, 243 seconds
@@ -113,7 +113,7 @@ build_lambda() {
       sleep $wait_time
     fi
   done
-  
+
   echo "❌ Failed to upload after $max_retries attempts: $s3_key" >&2
   echo "📋 Last error: $upload_output" >&2
   return 1

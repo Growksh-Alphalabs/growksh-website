@@ -6,7 +6,7 @@ export default function Philosophy() {
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#00674F]/8 to-[#00674F]/4 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-[#00674F]/6 to-[#00674F]/3 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl" />
-      
+
       {/* Abstract Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-1/4 left-10 w-32 h-32 border-2 border-[#00674F]/20 rounded-full" />

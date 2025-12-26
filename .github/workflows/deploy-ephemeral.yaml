@@ -15,7 +15,7 @@ jobs:
     outputs:
       environment_name: ${{ steps.env-name.outputs.environment_name }}
       environment_hash: ${{ steps.env-name.outputs.hash }}
-    
+
     steps:
       - name: Generate environment name
         id: env-name
@@ -24,7 +24,7 @@ jobs:
           BRANCH_NAME=$(echo "${{ github.head_ref || github.ref }}" | sed 's/refs\/heads\///' | sed 's/feature\///')
           HASH=$(echo -n "$BRANCH_NAME" | sha256sum | cut -c1-8)
           ENVIRONMENT_NAME="feature-${HASH}"
-          
+
           echo "environment_name=$ENVIRONMENT_NAME" >> $GITHUB_OUTPUT
           echo "hash=$HASH" >> $GITHUB_OUTPUT
           echo "Environment: $ENVIRONMENT_NAME"
@@ -33,7 +33,7 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     if: github.event.action != 'closed'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -101,15 +101,15 @@ jobs:
       - name: Invalidate CloudFront cache
         run: |
           ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
-          
+
           # Get CloudFront distribution ID from stack outputs
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`CdnDistributionId`].OutputValue' --output text 2>/dev/null || echo "")
-          
+
           if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" == "None" ]; then
             echo "⚠️  CloudFront distribution ID not found, skipping cache invalidation"
             exit 0
           fi
-          
+
           echo "🔄 Invalidating CloudFront cache for distribution: $DISTRIBUTION_ID"
           INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --query 'Invalidation.Id' --output text)
           echo "📋 Invalidation ID: $INVALIDATION_ID"
@@ -121,10 +121,10 @@ jobs:
         id: deployment-urls
         run: |
           ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
-          
+
           # Get CloudFront domain from stack outputs
           CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' --output text 2>/dev/null || echo "")
-          
+
           if [ -z "$CLOUDFRONT_DOMAIN" ] || [ "$CLOUDFRONT_DOMAIN" == "None" ]; then
             # Fallback: use assets bucket from deploy output
             ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME }}"
@@ -135,9 +135,9 @@ jobs:
           else
             FRONTEND_URL="https://${CLOUDFRONT_DOMAIN}"
           fi
-          
+
           API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name ${ENVIRONMENT}-api --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text 2>/dev/null || echo "N/A")
-          
+
           echo "frontend_url=$FRONTEND_URL" >> $GITHUB_OUTPUT
           echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
 
@@ -149,24 +149,24 @@ jobs:
             const environment = '${{ needs.prepare.outputs.environment_name }}';
             const frontendUrl = '${{ steps.deployment-urls.outputs.frontend_url }}';
             const apiEndpoint = '${{ steps.deployment-urls.outputs.api_endpoint }}';
-            
+
             const comment = `## 🚀 Ephemeral Environment Deployed
-            
+
             **Environment**: \`${environment}\`
-            
+
             ### URLs
             - **Frontend**: [${frontendUrl}](${frontendUrl})
             - **API**: ${apiEndpoint}
-            
+
             ### Stack Details
             - All resources tagged with:
               - App: Website
               - Partner: Growksh
               - Env: ${environment}
-            
+
             ⚠️ This environment will be automatically cleaned up when the PR is closed.
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -185,7 +185,7 @@ jobs:
     needs: prepare
     runs-on: ubuntu-latest
     if: github.event.action == 'closed'
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -215,7 +215,7 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request_target'
-    
+
     steps:
       - name: Verify ephemeral deployment success
         run: |

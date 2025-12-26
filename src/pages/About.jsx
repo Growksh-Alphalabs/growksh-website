@@ -48,9 +48,9 @@ export default function About() {
               <div className="relative bg-white rounded-2xl p-8 shadow-2xl border border-gray-100 max-w-sm">
                 <div className="relative w-48 h-48 mx-auto">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-full blur-md opacity-30"></div>
-                  <img 
-                    src={krutikaImg} 
-                    alt="Krutika Kathal" 
+                  <img
+                    src={krutikaImg}
+                    alt="Krutika Kathal"
                     className="relative w-48 h-48 rounded-full object-cover ring-4 ring-white shadow-lg"
                   />
                 </div>

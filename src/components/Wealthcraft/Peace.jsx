@@ -48,7 +48,7 @@ const steps = [
 export default function Peace() {
     const [active, setActive] = useState(null)
     const [reduceMotion, setReduceMotion] = useState(false)
-    
+
 
     useEffect(() => {
         const media = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)')

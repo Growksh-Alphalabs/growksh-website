@@ -8,6 +8,6 @@ exports.handler = async (event) => {
 
   // User email has been confirmed
   // You can add custom logic here if needed
-  
+
   return event;
 };

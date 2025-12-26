@@ -244,7 +244,7 @@ Attributes:
 ### Frontend (.env.local)
 ```
 VITE_COGNITO_USER_POOL_ID    ← CloudFormation Output: CognitoUserPoolId
-VITE_COGNITO_CLIENT_ID       ← CloudFormation Output: CognitoUserPoolClientId  
+VITE_COGNITO_CLIENT_ID       ← CloudFormation Output: CognitoUserPoolClientId
 VITE_API_URL                 ← CloudFormation Output: AuthApiEndpoint
 VITE_USE_FAKE_AUTH           ← Set to 1 for testing without AWS (default: 0)
 ```
@@ -299,10 +299,10 @@ DEBUG_LOG                    ← Enable/disable debug logging
 ```
 1. User fills /signup form
    └─ Frontend: signup() → Backend: Lambda signup()
-   
+
 2. Cognito triggers PreSignUp
    └─ Auto-confirms user
-   
+
 3. Cognito triggers CustomMessage
    └─ Sends verification email with magic link
 ```
@@ -320,14 +320,14 @@ DEBUG_LOG                    ← Enable/disable debug logging
 ```
 1. User enters email at /login
    └─ Frontend: initiateAuth() → Cognito → CreateAuthChallenge
-   
+
 2. Lambda generates OTP (6-digit)
    └─ Stores in DynamoDB
    └─ Sends via SES email
-   
+
 3. User enters OTP
    └─ Frontend: verifyOTP() → Cognito → VerifyAuthChallenge
-   
+
 4. Lambda validates OTP
    └─ Deletes from DynamoDB
    └─ Returns auth tokens

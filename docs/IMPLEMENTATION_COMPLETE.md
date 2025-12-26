@@ -4,7 +4,7 @@
 
 A **complete, production-ready passwordless authentication system** for Growksh using:
 - **Frontend**: React + Vite components
-- **Backend**: AWS Cognito + Lambda serverless functions  
+- **Backend**: AWS Cognito + Lambda serverless functions
 - **Database**: DynamoDB for OTP storage
 - **Email**: AWS SES for sending verification links and OTPs
 - **Infrastructure**: SAM (Serverless Application Model) + CloudFormation
@@ -253,7 +253,7 @@ import { useAuth } from '../context/AuthContext'
 
 function MyComponent() {
   const { user, isAuthenticated, logout } = useAuth()
-  
+
   if (isAuthenticated) {
     return <button onClick={logout}>Logout {user.email}</button>
   }

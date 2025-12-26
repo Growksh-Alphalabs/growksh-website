@@ -4,27 +4,27 @@ import a2 from '../../assets/Testimonial client Photos/Satyawan Aglawe.jpg'
 import a3 from '../../assets/Testimonial client Photos/Garima Bhandari.png'
 
 const testimonials = [
-  { 
-    quote: 'Hi team. Want to express my gratitude for the outstanding work you are doing. The expertise you bring to the table and attention to detail with which you have handled all my queries is exceptional. Am sure my finances are in trusted hands. Would be glad to recommend your services. Wishing you the very best 🙂', 
-    name: 'Aastha Sharma', 
+  {
+    quote: 'Hi team. Want to express my gratitude for the outstanding work you are doing. The expertise you bring to the table and attention to detail with which you have handled all my queries is exceptional. Am sure my finances are in trusted hands. Would be glad to recommend your services. Wishing you the very best 🙂',
+    name: 'Aastha Sharma',
     location: '',
     role: '',
     avatarColor: 'bg-[#3dc7f5]',
     initials: 'AS',
     avatar: a1
   },
-  { 
-    quote: 'Hi Growksh team, first of all thank you So much for all your support and handholding. You made trading so easy that anybody can do it and enjoy the freedom of time and money in long run. You guys are simply awesome, kind hearted and always ready to help. You are strategic thinkers, and your system oriented approach is a must learn for everyone. More blessings and power to you to touch many more lives !! Thank you so much for all the knowledge and help !!', 
-    name: 'Satyawan Aglawe', 
+  {
+    quote: 'Hi Growksh team, first of all thank you So much for all your support and handholding. You made trading so easy that anybody can do it and enjoy the freedom of time and money in long run. You guys are simply awesome, kind hearted and always ready to help. You are strategic thinkers, and your system oriented approach is a must learn for everyone. More blessings and power to you to touch many more lives !! Thank you so much for all the knowledge and help !!',
+    name: 'Satyawan Aglawe',
     location: '',
     role: '',
     avatarColor: 'bg-[#3dc7f5]',
     initials: 'SA',
     avatar: a2
   },
-  { 
-    quote: 'TRUST. CLARITY. IMPLEMENTATION \n is what describes Krutika. In the race of making money Krutika makes you pause and plan your future in a more organised and a strategic way. She would not just show you the path but also hold your hand and help you implement the same. Many times we just need that little push and confidence to take the risk while investing into different mediums and that is what you get when you work with Krutika. This is my way of saying thankyou for answering and replying to all my whatsapp queries at odd times and for educating me on things and terms that always made me feel so intimidated.', 
-    name: 'Garima Bhandari', 
+  {
+    quote: 'TRUST. CLARITY. IMPLEMENTATION \n is what describes Krutika. In the race of making money Krutika makes you pause and plan your future in a more organised and a strategic way. She would not just show you the path but also hold your hand and help you implement the same. Many times we just need that little push and confidence to take the risk while investing into different mediums and that is what you get when you work with Krutika. This is my way of saying thankyou for answering and replying to all my whatsapp queries at odd times and for educating me on things and terms that always made me feel so intimidated.',
+    name: 'Garima Bhandari',
     location: '',
     role: '',
     avatarColor: 'bg-[#3dc7f5]',
@@ -77,19 +77,19 @@ export default function Testimonials() {
     <section className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          
+
           {/* Left Column - Header */}
           <div className="space-y-4">
             <span className="text-sm font-medium text-[#cf87bf]">TRUST & IMPACT</span>
-            
+
             <h2 className="text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">
               Voices of <span className="text-[#cf87bf]">Confidence</span>
             </h2>
-            
+
             <p className="text-lg text-slate-600 max-w-lg">
               Hear from professionals, NRIs, and women investors who transformed their financial journey with Growksh.
             </p>
-            
+
             {/* Stats */}
             <div className="flex flex-wrap gap-6 pt-4">
               <div className="space-y-1">
@@ -109,7 +109,7 @@ export default function Testimonials() {
 
           {/* Right Column - Testimonial Carousel */}
           <div className="relative">
-            <div 
+            <div
               className="relative bg-white rounded-2xl shadow-xl p-8 lg:p-10"
               onMouseEnter={() => setPaused(true)}
               onMouseLeave={() => setPaused(false)}
@@ -184,8 +184,8 @@ export default function Testimonials() {
                     key={index}
                     onClick={() => goToSlide(index)}
                     className={`w-8 h-2 rounded-full transition-all duration-300 ${
-                      index === currentIndex 
-                        ? 'bg-[#3dc7f5] w-12' 
+                      index === currentIndex
+                        ? 'bg-[#3dc7f5] w-12'
                         : 'bg-slate-200 hover:bg-slate-300'
                     }`}
                     aria-label={`View testimonial ${index + 1}`}

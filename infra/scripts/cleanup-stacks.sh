@@ -62,14 +62,14 @@ done
 
 if [ "$HAS_STORAGE_CDN" = true ]; then
   echo "🧹 Pre-cleanup: Invalidating CloudFront caches..."
-  
+
   # Get CloudFront distribution IDs for this environment and invalidate them
   DISTRIBUTIONS=$(aws cloudformation list-stack-resources \
     --stack-name "$(echo $STACKS | grep 'storage-cdn' | head -1)" \
     --region "$REGION" \
     --query 'StackResourceSummaries[?ResourceType==`AWS::CloudFront::Distribution`].PhysicalResourceId' \
     --output text 2>/dev/null || true)
-  
+
   if [ -n "$DISTRIBUTIONS" ]; then
     for dist_id in $DISTRIBUTIONS; do
       echo "  Invalidating CloudFront: $dist_id"
@@ -78,16 +78,16 @@ if [ "$HAS_STORAGE_CDN" = true ]; then
         --paths "/*" 2>/dev/null || echo "    (invalidation may have already completed)"
     done
   fi
-  
+
   echo ""
 fi
 
 # Simple delete function - let CloudFormation handle DeletionPolicy
 delete_stack() {
   local stack_name=$1
-  
+
   echo "🗑️  Deleting stack: $stack_name"
-  
+
   # Capture stack events before deletion for debugging
   echo "📋 Stack events:"
   aws cloudformation describe-stack-events \
@@ -96,16 +96,16 @@ delete_stack() {
     --query 'StackEvents[?contains(ResourceStatusReason, `Error`) || contains(ResourceStatusReason, `Failed`) || ResourceStatus == `CREATE_FAILED` || ResourceStatus == `UPDATE_FAILED`]' \
     --output table 2>/dev/null || true
   echo ""
-  
+
   aws cloudformation delete-stack \
     --stack-name "$stack_name" \
     --region "$REGION" 2>/dev/null || true
-  
+
   echo "⏳ Waiting for stack deletion..."
   aws cloudformation wait stack-delete-complete \
     --stack-name "$stack_name" \
     --region "$REGION" 2>/dev/null || true
-  
+
   echo "✅ Stack deleted: $stack_name"
   echo ""
 }

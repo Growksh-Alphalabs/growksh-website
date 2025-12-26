@@ -160,7 +160,7 @@ chmod +x infra/scripts/deploy-stacks.sh
   2. growksh-website-database-dev (DynamoDB)
   3. growksh-website-cognito-dev (Cognito)
   ...
-  
+
 Stage 1️⃣: IAM Roles
 ✅ Stack deployed: growksh-website-iam-dev
 
@@ -402,7 +402,7 @@ aws cloudformation describe-stack-events \
 
 #### Issue: Stack Creation Timeout
 **Cause**: Deployment taking too long
-**Solution**: 
+**Solution**:
 - Check CloudFormation events for stuck resources
 - Delete and retry
 - Check AWS service quotas
@@ -539,6 +539,6 @@ cfn-lint infra/cloudformation/*.yaml
 
 ---
 
-**Last Updated**: Dec 24, 2025  
-**Version**: 1.0  
+**Last Updated**: Dec 24, 2025
+**Version**: 1.0
 **Maintained By**: Engineering Team

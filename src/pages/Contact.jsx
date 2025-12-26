@@ -38,7 +38,7 @@ export default function Contact() {
         {/* Abstract Green Shapes */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-[#00674F]/5 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-[#00674F]/3 rounded-full blur-3xl" />
-        
+
         {/* Grid Pattern */}
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute inset-0" style={{
@@ -72,7 +72,7 @@ export default function Contact() {
             <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">Contact Us</span>
             <div className="w-2 h-2 rounded-full bg-[#00674F]/50" />
           </div>
-          
+
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 mb-6 leading-tight">
             Get In Touch With{' '}
             <span className="relative inline-block">
@@ -82,7 +82,7 @@ export default function Contact() {
               <span className="absolute inset-0 bg-gradient-to-r from-[#00674F]/20 via-[#009A7B]/20 to-[#00674F]/20 blur-xl -z-10" />
             </span>
           </h1>
-          
+
           <p className="text-lg md:text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
             Tell us about your goals and we'll suggest the right next steps — a discovery call, program info, or partnership details.
           </p>
@@ -106,7 +106,7 @@ export default function Contact() {
                 {/* Contact Info Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
                   {contactInfo.map((item, index) => (
-                    <div 
+                    <div
                       key={index}
                       className="group relative p-5 rounded-xl border border-[#00674F]/5 hover:border-[#00674F]/20 bg-white/50 hover:bg-white transition-all duration-300 hover:-translate-y-1"
                     >
@@ -119,8 +119,8 @@ export default function Contact() {
                         <div className="flex-1">
                           <h4 className="text-sm font-semibold text-slate-700 mb-1">{item.title}</h4>
                           {item.link ? (
-                            <a 
-                              href={item.link} 
+                            <a
+                              href={item.link}
                               className="block text-base font-medium text-[#00674F] hover:text-[#004D36] transition-colors"
                             >
                               {item.value}
@@ -143,8 +143,8 @@ export default function Contact() {
                     </div>
                     <h4 className="text-sm font-semibold text-slate-700">For Partnerships</h4>
                   </div>
-                  <a 
-                    href="mailto:partners@growksh.com" 
+                  <a
+                    href="mailto:partners@growksh.com"
                     className="text-lg font-medium text-[#00674F] hover:text-[#004D36] transition-colors"
                   >
                     partners@growksh.com

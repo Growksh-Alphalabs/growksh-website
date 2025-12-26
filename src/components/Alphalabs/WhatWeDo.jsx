@@ -6,7 +6,7 @@ export default function WhatWeDo() {
     <section id="what-we-do" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#00674F]/10 via-white to-[#00674F]/5 -z-30" />
-      
+
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-40">
         <svg
@@ -30,7 +30,7 @@ export default function WhatWeDo() {
               <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
             </filter>
           </defs>
-          
+
           {/* Large Organic Shapes */}
           <g filter="url(#blur1)">
             <path
@@ -57,7 +57,7 @@ export default function WhatWeDo() {
               opacity="0.6"
             />
           </g>
-          
+
           {/* Floating Circles */}
           <g>
             <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
@@ -66,7 +66,7 @@ export default function WhatWeDo() {
             <circle cx="400" cy="600" r="50" fill="url(#grad2)" opacity="0.5" />
             <circle cx="1200" cy="300" r="70" fill="url(#grad1)" opacity="0.3" />
           </g>
-          
+
           {/* Dots Pattern */}
           <g>
             {Array.from({ length: 40 }).map((_, i) => (
@@ -82,11 +82,11 @@ export default function WhatWeDo() {
           </g>
         </svg>
       </div>
-      
+
       {/* Gradient Overlays for Depth */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
+
       {/* Subtle green glows */}
       <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#00674F]/10 rounded-full blur-3xl" />
       <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#00674F]/5 rounded-full blur-3xl" />
@@ -188,17 +188,17 @@ export default function WhatWeDo() {
                 className="group inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 See Our Courses
-                <svg 
-                  className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" 
-                  fill="none" 
-                  stroke="currentColor" 
+                <svg
+                  className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </a>
-              {/* <Link 
-                to="#about" 
+              {/* <Link
+                to="#about"
                 className="inline-flex items-center px-6 py-3 border-2 border-[#ffde21] text-[#000] font-medium rounded-full hover:border-[#00674F]/50 hover:bg-[#00674F]/5 transition-all duration-300"
               >
                 Learn Our Approach
@@ -214,7 +214,7 @@ export default function WhatWeDo() {
               <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#ffde21] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">01</span>
               </div>
-              
+
               {/* Content */}
               <div className="pt-4">
                 <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
@@ -233,7 +233,7 @@ export default function WhatWeDo() {
               <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#ffde21] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">02</span>
               </div>
-              
+
               {/* Content */}
               <div className="pt-4">
                 <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
@@ -252,7 +252,7 @@ export default function WhatWeDo() {
               <div className="absolute -top-3 -left-3 w-12 h-12 bg-[#ffde21] rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">03</span>
               </div>
-              
+
               {/* Content */}
               <div className="pt-4">
                 <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">

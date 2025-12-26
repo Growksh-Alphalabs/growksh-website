@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 export default function Hero() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  
+
   const words = useMemo(
     () => ["education", "planning", "purposeful action"],
     []
@@ -12,7 +12,7 @@ export default function Hero() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setCurrentWordIndex((prevIndex) => 
+      setCurrentWordIndex((prevIndex) =>
         prevIndex === words.length - 1 ? 0 : prevIndex + 1
       );
     }, 2000);
@@ -164,7 +164,7 @@ export default function Hero() {
                 <svg viewBox="0 0 400 400" className="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                   <defs>
                     {/* circularGradient removed; using solid stroke color instead */}
-                    
+
                     {/* Glow effect for animated dots */}
                     <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
                       <feGaussianBlur stdDeviation="3" result="blur" />
@@ -174,18 +174,18 @@ export default function Hero() {
                       </feMerge>
                     </filter>
                   </defs>
-                  
+
                   {/* Circular paths */}
                   <g fill="none" stroke="#3dc7f5" strokeWidth="2" strokeLinecap="round">
                       {/* Main circular path */}
-                      <path id="mainOrbit" d="M200,50 A150,150 0 1,1 200,350 A150,150 0 1,1 200,50" 
+                      <path id="mainOrbit" d="M200,50 A150,150 0 1,1 200,350 A150,150 0 1,1 200,50"
                         strokeOpacity="0.15" strokeDasharray="2,3" />
-                    
+
                       {/* Inner path */}
-                      <path id="innerOrbit" d="M200,100 A100,100 0 1,1 200,300 A100,100 0 1,1 200,100" 
+                      <path id="innerOrbit" d="M200,100 A100,100 0 1,1 200,300 A100,100 0 1,1 200,100"
                         strokeOpacity="0.1" strokeDasharray="1,2" />
                   </g>
-                  
+
                   {/* Animated dots moving along paths */}
                   {/* Dot 1 - Alphalabs */}
                     <g className="animate-[orbit_8s_linear_infinite]">
@@ -197,7 +197,7 @@ export default function Hero() {
                       />
                     </circle>
                   </g>
-                  
+
                   {/* Dot 2 - Wealthcraft */}
                     <g className="animate-[orbit_8s_linear_infinite] origin-center" style={{animationDelay: '-2.7s'}}>
                     <circle cx="200" cy="50" r="5" fill="#cf87bf" filter="url(#glow)" opacity="0.85">
@@ -208,7 +208,7 @@ export default function Hero() {
                       />
                     </circle>
                   </g>
-                  
+
                   {/* Dot 3 - Ventures */}
                     <g className="animate-[orbit_8s_linear_infinite] origin-center" style={{animationDelay: '-5.3s'}}>
                     <circle cx="50" cy="200" r="5" fill="#3dc7f5" filter="url(#glow)" opacity="0.8">
@@ -219,7 +219,7 @@ export default function Hero() {
                       />
                     </circle>
                   </g>
-                  
+
                   {/* Labels */}
                   <g fontSize="12" fontWeight="500" textAnchor="middle" fill="#2e3b4b">
                     {/* Alphalabs label - moves along orbit */}
@@ -246,7 +246,7 @@ export default function Hero() {
                       </animateMotion>
                     </text>
                   </g>
-                  
+
                   {/* Connection arrows */}
                   <g fill="none" stroke="#94a3b8" strokeWidth="1" strokeDasharray="4,2" opacity="0.4">
                     <path d="M350,200 A150,150 0 0,0 200,50" />
@@ -278,13 +278,13 @@ export default function Hero() {
                     </text>
                   </g>
                 </svg>
-                
+
                 {/* Center badge */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="relative">
                     {/* Pulsing glow effect */}
                     <div className="absolute inset-0 bg-[#3dc7f5]/20 rounded-full blur-xl animate-pulse"></div>
-                    
+
                     {/* Center circle with hero PNG */}
                     <div className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-full w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-36 lg:h-36 flex items-center justify-center shadow-2xl relative z-10">
                       <img
@@ -295,7 +295,7 @@ export default function Hero() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Background blur effects */}
                 <div className="absolute -right-6 sm:-right-8 md:-right-12 -bottom-4 sm:-bottom-6 md:-bottom-8 w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-60 lg:h-60 rounded-full bg-[#3dc7f5]/10 blur-3xl" />
                 <div className="absolute -left-6 sm:-left-8 md:-left-12 -top-4 sm:-top-6 md:-top-8 w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-48 lg:h-48 rounded-full bg-[#cf87bf]/8 blur-3xl" />

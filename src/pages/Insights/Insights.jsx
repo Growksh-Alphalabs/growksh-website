@@ -199,8 +199,8 @@ function LinkedInSection() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {articles.map(a => (
-              <article 
-                key={a.id} 
+              <article
+                key={a.id}
                 className="border rounded-2xl p-6 bg-white hover:shadow-xl transition-shadow duration-300 hover:-translate-y-1 transform"
               >
                 <h3 className="font-semibold text-xl text-gray-900 mb-3">{a.title}</h3>
@@ -208,10 +208,10 @@ function LinkedInSection() {
                   {a.excerpt && a.excerpt.slice(0, 140)}...
                 </p>
                 {a.url && (
-                  <a 
-                    className="inline-block mt-3 text-sm font-medium text-[#0077b5] hover:text-[#005983] transition-colors" 
-                    href={a.url} 
-                    target="_blank" 
+                  <a
+                    className="inline-block mt-3 text-sm font-medium text-[#0077b5] hover:text-[#005983] transition-colors"
+                    href={a.url}
+                    target="_blank"
                     rel="noreferrer"
                   >
                     Read on LinkedIn →

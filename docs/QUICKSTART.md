@@ -60,7 +60,7 @@ import { useAuth } from '../context/AuthContext'
 
 export function MyComponent() {
   const { user, isAuthenticated, signup, logout } = useAuth()
-  
+
   return (
     <div>
       {isAuthenticated ? (
@@ -108,25 +108,25 @@ const token = await getIdToken()
 1. User fills signup form → /signup
    └─ Backend: Create user in Cognito
    └─ Email: Verification link sent
-   
+
 2. User clicks email link → /auth/verify-email
    └─ Backend: Validates HMAC token
    └─ Redirect: To login page with email pre-filled
-   
+
 3. User enters email → /login
    └─ Frontend: Check if email exists (POST /auth/check-user)
    └─ If NOT found: Redirect to /signup?email=...
    └─ If found: Proceed to OTP stage
-   
+
 4. OTP sent to email (if user found)
    └─ Backend: CreateAuthChallenge generates 6-digit OTP
    └─ Email: OTP sent
-   
+
 5. User enters OTP → /login (OTP entry screen)
    └─ Backend: VerifyAuthChallenge validates OTP
    └─ Token: Stored in localStorage
    └─ Redirect: To home page
-   
+
 6. User logged in
    └─ Navbar: Shows profile dropdown with user details
    └─ Logout: Button available with confirmation dialog
@@ -242,13 +242,13 @@ Do not share this code with anyone.
 **Fix**: User hasn't verified email. Check /signup flow.
 
 ### Issue: "Invalid OTP"
-**Fix**: 
+**Fix**:
 - OTP might be expired (10 min limit)
 - Check email received OTP
 - Typo in OTP entry
 
 ### Issue: "Verify your SES email"
-**Fix**: 
+**Fix**:
 - Verify sender email in SES console
 - May need production access for SES
 - Check CloudWatch logs

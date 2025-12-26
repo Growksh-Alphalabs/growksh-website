@@ -1,7 +1,7 @@
 # Deployment Workflow Redesign - CloudFormation & GitHub Actions
 
-**Status**: 🔄 In Progress (Started: Dec 24, 2025)  
-**Owner**: Infrastructure Team  
+**Status**: 🔄 In Progress (Started: Dec 24, 2025)
+**Owner**: Infrastructure Team
 **Objective**: Move from SAM templates to modular CloudFormation stacks with environment-specific GitHub workflows
 
 ---
@@ -173,7 +173,7 @@ ResourcePrefix:
 **File**: `.github/workflows/deploy-develop.yaml`
 
 ```yaml
-Trigger: 
+Trigger:
   - push to develop branch (PR merged)
   - Manual trigger (workflow_dispatch)
 
@@ -198,7 +198,7 @@ Steps:
 **File**: `.github/workflows/deploy-prod.yaml`
 
 ```yaml
-Trigger: 
+Trigger:
   - push to main branch (PR merged)
   - Manual trigger (workflow_dispatch)
 
@@ -346,4 +346,3 @@ aws cloudformation cancel-update-stack --stack-name growksh-prod-api-gateway-sta
 - **AWS OIDC Setup**: [Link to Phase 0 docs]
 - **Deployment Tracker**: [Link to DEPLOYMENT_TRACKER.md]
 - **GitHub Actions**: [Link to .github/workflows/]
-

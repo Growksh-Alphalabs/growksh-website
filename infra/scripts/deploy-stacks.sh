@@ -54,13 +54,13 @@ deploy_stack() {
   local template_file=$2
   local param_file=$3
   local deploy_region=${4:-$REGION}  # Use provided region or default to REGION
-  
+
   echo "📦 Deploying stack: $stack_name (region: $deploy_region)"
-  
+
   # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
     local param_overrides="file://$param_file"
-    
+
     # Override parameters for ephemeral environments
     if [[ $ENVIRONMENT == feature-* ]]; then
       if [[ "$stack_name" == *"storage-cdn"* ]]; then
@@ -71,7 +71,7 @@ deploy_stack() {
         param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL BucketName=$LAMBDA_BUCKET_NAME"
       fi
     fi
-    
+
     aws cloudformation deploy \
       --template-file "$template_file" \
       --stack-name "$stack_name" \
@@ -87,32 +87,32 @@ deploy_stack() {
   else
     # Build dynamic parameters for ephemeral/non-standard environments
     local params="Environment=$ENVIRONMENT"
-    
+
     # Add IsEphemeral for stacks that use it
     if [[ "$stack_name" == *"database"* ]] || [[ "$stack_name" == *"storage-cdn"* ]] || [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
       params="$params IsEphemeral=$IS_EPHEMERAL"
     fi
-    
+
     # Add specific parameters for Lambda Code Bucket stack
     if [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
       params="$params BucketName=$LAMBDA_BUCKET_NAME"
     fi
-    
+
     # Add specific parameters for Storage CDN stack
     if [[ "$stack_name" == *"storage-cdn"* ]]; then
       params="$params BucketName=$ASSETS_BUCKET_NAME"
     fi
-    
+
     # Add specific parameters for Cognito Lambdas
     if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
       params="$params LambdaCodeBucketName=$LAMBDA_BUCKET_NAME SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$ASSETS_BUCKET_NAME.s3.amazonaws.com/auth/verify-email DebugLogOTP=1"
     fi
-    
+
     # Add specific parameters for API Lambdas
     if [[ "$stack_name" == *"api-lambdas"* ]]; then
       params="$params LambdaCodeBucketName=$LAMBDA_BUCKET_NAME SESSourceEmail=noreply@growksh.com VerifyBaseUrl=https://$ASSETS_BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
     fi
-    
+
     aws cloudformation deploy \
       --template-file "$template_file" \
       --stack-name "$stack_name" \
@@ -126,7 +126,7 @@ deploy_stack() {
       return 0
     }
   fi
-  
+
   # Only print success if deployment actually succeeded
   echo "✅ Stack deployed: $stack_name"
   echo ""
@@ -199,7 +199,7 @@ while [ $attempt -le $max_attempts ]; do
     rm -f "$TEST_FILE"
     break
   fi
-  
+
   if [ $attempt -eq $max_attempts ]; then
     echo "❌ Lambda bucket not ready after $max_attempts attempts" >&2
     # Show what failed
@@ -209,7 +209,7 @@ while [ $attempt -le $max_attempts ]; do
     DEPLOYMENT_FAILED=true
     exit 1
   fi
-  
+
   sleep_time=$attempt
   echo "⏳ Attempt $attempt/$max_attempts: Waiting ${sleep_time}s before retry..."
   sleep $sleep_time

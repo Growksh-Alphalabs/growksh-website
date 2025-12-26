@@ -57,28 +57,28 @@ $CognitoLambdas = @{
 
 function Package-Lambda {
     param([string]$Name, [string]$SourceDir, [array]$Files)
-    
+
     Write-Host "Packaging: $Name" -ForegroundColor Yellow
-    
+
     $TempDir = Join-Path $env:TEMP "lambda-$Name-$([guid]::NewGuid().ToString().Substring(0,8))"
     $ZipPath = "$Name-$Environment.zip"
-    
+
     try {
         New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
-        
+
         # Copy source files (aws-sdk is built-in to Lambda)
         Get-ChildItem -Path $SourceDir -File | Where-Object { $_.Name -match '\.js$' -or $_.Name -eq 'package.json' } | ForEach-Object {
             Copy-Item -Path $_.FullName -Destination (Join-Path $TempDir $_.Name) -Force
         }
-        
+
         if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
-        
+
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::CreateFromDirectory($TempDir, $ZipPath, 'Optimal', $false)
-        
+
         $ZipSize = (Get-Item $ZipPath).Length / 1024
         Write-Host "Created: $ZipPath ($('{0:F2}' -f $ZipSize) KB)" -ForegroundColor Green
-        
+
         return $ZipPath
     }
     finally {

@@ -106,7 +106,7 @@ These scripts are automatically invoked by GitHub Actions workflows:
 
 - **deploy-develop.yaml**: Calls `deploy-stacks.sh dev` on push to develop
 - **deploy-prod.yaml**: Calls `deploy-stacks.sh prod` on push to main (after approval)
-- **deploy-ephemeral.yaml**: 
+- **deploy-ephemeral.yaml**:
   - Calls `deploy-stacks.sh <environment-hash>` on push to feature branch
   - Calls `cleanup-stacks.sh <environment-hash>` on PR closure
 

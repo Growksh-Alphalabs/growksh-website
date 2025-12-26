@@ -533,7 +533,7 @@ Three comprehensive guides:
 **Solution**: Set `VITE_COGNITO_USER_POOL_ID` and `VITE_COGNITO_CLIENT_ID`
 
 ### Issue: OTP not received
-**Solution**: 
+**Solution**:
 - Verify SES email in console
 - Check Lambda logs in CloudWatch
 - Confirm SES is out of sandbox

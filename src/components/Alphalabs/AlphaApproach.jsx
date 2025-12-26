@@ -14,7 +14,7 @@ export default function AlphaApproach() {
     <section id="alpha-approach" className="relative py-16 md:py-20 overflow-hidden">
       {/* Abstract Green Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#ffde21]/10 via-white to-[#ffde21]/5 -z-30" />
-      
+
       {/* Main Abstract Pattern */}
       <div className="absolute inset-0 -z-20 overflow-hidden opacity-40">
         <svg
@@ -38,7 +38,7 @@ export default function AlphaApproach() {
               <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
             </filter>
           </defs>
-          
+
           {/* Large Organic Shapes */}
           <g filter="url(#blur1)">
             <path
@@ -65,7 +65,7 @@ export default function AlphaApproach() {
               opacity="0.6"
             />
           </g>
-          
+
           {/* Floating Circles */}
           <g>
             <circle cx="200" cy="150" r="60" fill="url(#grad1)" />
@@ -74,7 +74,7 @@ export default function AlphaApproach() {
             <circle cx="400" cy="600" r="50" fill="url(#grad2)" opacity="0.5" />
             <circle cx="1200" cy="300" r="70" fill="url(#grad1)" opacity="0.3" />
           </g>
-          
+
           {/* Dots Pattern */}
           <g>
             {Array.from({ length: 40 }).map((_, i) => (
@@ -90,11 +90,11 @@ export default function AlphaApproach() {
           </g>
         </svg>
       </div>
-      
+
       {/* Gradient Overlays for Depth */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-t from-white via-transparent to-transparent" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-      
+
       {/* Animated Particles */}
       <div className="absolute inset-0 overflow-hidden -z-10">
         {[...Array(20)].map((_, i) => (
@@ -152,7 +152,7 @@ export default function AlphaApproach() {
             <div className="w-2 h-2 bg-[#00674F] rounded-full animate-pulse" />
             <span className="text-sm font-medium text-[#00674F] uppercase tracking-wide">OUR LEARNING METHODOLOGY</span>
           </div>
-          
+
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">
             The{' '}
             <span className="relative inline-block">
@@ -171,7 +171,7 @@ export default function AlphaApproach() {
             </span>
             {' '}Learning Model
           </h2>
-          
+
           <p className="text-lg text-slate-700 max-w-2xl mx-auto leading-relaxed">
             Every Alphalabs program follows our signature approach — built around five principles of meaningful, transformative learning.
           </p>
@@ -180,7 +180,7 @@ export default function AlphaApproach() {
         {/* ALPHA Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mb-12 md:mb-16">
           {rows.map(([letter, title, desc], idx) => (
-            <div 
+            <div
               key={letter+idx}
               className="group relative bg-white/80 backdrop-blur-sm p-5 md:p-6 rounded-2xl border-2 border-[#00674F]/10 hover:border-[#00674F]/30 transition-all duration-300 hover:-translate-y-2 shadow-lg hover:shadow-xl"
             >
@@ -193,12 +193,12 @@ export default function AlphaApproach() {
                   <div className="hidden lg:block absolute top-1/2 -right-3 w-6 h-0.5 bg-gradient-to-r from-[#00674F]/60 to-transparent group-hover:from-[#00674F]" />
                 </>
               )}
-              
+
               {/* Large Letter Background */}
               <div className="absolute -top-2 -right-2 text-6xl md:text-8xl font-black text-[#ffde21]/20 group-hover:text-[#ffde21] transition-colors duration-300">
                 {letter}
               </div>
-              
+
               {/* Letter Badge */}
               <div className="relative w-12 h-12 md:w-14 md:h-14 mb-4 md:mb-6">
                 <div className="absolute inset-0 bg-[#00674F] rounded-xl rotate-45 transform group-hover:rotate-0 transition-transform duration-300 shadow-md" />
@@ -206,7 +206,7 @@ export default function AlphaApproach() {
                   <span className="text-white text-xl md:text-2xl font-bold">{letter}</span>
                 </div>
               </div>
-              
+
               {/* Content */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
@@ -217,7 +217,7 @@ export default function AlphaApproach() {
                   {desc}
                 </p>
               </div>
-              
+
               {/* Index Number */}
               <div className="absolute bottom-3 right-3 text-xs font-bold text-slate-300 group-hover:text-[#00674F] transition-colors">
                 0{idx + 1}
@@ -232,10 +232,10 @@ export default function AlphaApproach() {
             className="group inline-flex items-center px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-[#00674F] to-[#005e48] text-white font-bold rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
           >
             <span className="text-sm md:text-base">Join the Next Learning Experience</span>
-            <svg 
-              className="w-4 h-4 md:w-5 md:h-5 ml-2 md:ml-3 group-hover:translate-x-1 transition-transform" 
-              fill="none" 
-              stroke="currentColor" 
+            <svg
+              className="w-4 h-4 md:w-5 md:h-5 ml-2 md:ml-3 group-hover:translate-x-1 transition-transform"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -260,7 +260,7 @@ export default function AlphaApproach() {
             opacity: 0;
           }
         }
-        
+
         .animate-ping {
           animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
         }

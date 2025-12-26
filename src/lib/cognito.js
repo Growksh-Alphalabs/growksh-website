@@ -131,10 +131,10 @@ export async function initiateAuth(email) {
       const session = 'fake-session-' + Math.random().toString(36).substring(7);
       pending.set(email, { otp, session });
       console.log('[FAKE AUTH] Generated OTP:', otp);
-      resolve({ 
-        challenge: true, 
+      resolve({
+        challenge: true,
         session,
-        challengeParameters: { _dev_code: otp } 
+        challengeParameters: { _dev_code: otp }
       });
     });
   }
