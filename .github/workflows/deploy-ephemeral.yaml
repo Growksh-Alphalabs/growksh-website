@@ -101,21 +101,24 @@ jobs:
 
       - name: Upload frontend to S3
         run: |
-          BUCKET_NAME="${{ steps.deploy.outputs.BUCKET_NAME || needs.prepare.outputs.environment_name }}-assets"
-          aws s3 mb s3://$BUCKET_NAME 2>/dev/null || true
-          aws s3 sync dist/ s3://$BUCKET_NAME/ --delete --cache-control "public, max-age=3600"
-          echo "✅ Frontend uploaded to $BUCKET_NAME"
+          ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME || needs.prepare.outputs.environment_name }}-assets"
+          aws s3 sync dist/ s3://$ASSETS_BUCKET_NAME/ --delete --cache-control "public, max-age=3600"
+          echo "✅ Frontend uploaded to $ASSETS_BUCKET_NAME"
+        env:
+          AWS_REGION: ap-south-1
 
       - name: Get deployment URLs
         id: deployment-urls
         run: |
           ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
-          # Try to get CloudFront domain, fallback to S3 website endpoint
-          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name ${ENVIRONMENT}-storage-cdn --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' --output text 2>/dev/null || echo "")
+          
+          # Get CloudFront domain from stack outputs
+          CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' --output text 2>/dev/null || echo "")
           
           if [ -z "$CLOUDFRONT_DOMAIN" ] || [ "$CLOUDFRONT_DOMAIN" == "None" ]; then
-            BUCKET_NAME="${ENVIRONMENT}-assets"
-            FRONTEND_URL="https://${BUCKET_NAME}.s3.amazonaws.com"
+            # Fallback: use assets bucket from deploy output
+            ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME || env.ENVIRONMENT }}-assets"
+            FRONTEND_URL="https://${ASSETS_BUCKET_NAME}.s3.amazonaws.com"
           else
             FRONTEND_URL="https://${CLOUDFRONT_DOMAIN}"
           fi
