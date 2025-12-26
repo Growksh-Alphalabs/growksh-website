@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: S3 bucket for Lambda function code storage
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment name (dev, prod, or feature-* for ephemeral)
+  BucketName:
+    Type: String
+    Description: S3 bucket name for Lambda code
+  IsEphemeral:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Whether this is an ephemeral environment (auto-deletes bucket on stack deletion)
+
+Conditions:
+  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
+
+Resources:
+  LambdaCodeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: Lambda code storage
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
+
+  # Lifecycle rule to clean up old Lambda versions (keep last 10)
+  BucketLifecycleConfiguration:
+    Type: AWS::S3::BucketLifecycleConfiguration
+    Properties:
+      Bucket: !Ref LambdaCodeBucket
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+          # Auto-cleanup for ephemeral environment after 7 days
+          - Id: DeleteEphemeralBuild
+            Status: !If [IsEphemeralEnv, Enabled, Disabled]
+            Prefix: auth/
+            ExpirationInDays: 7
+          - Id: DeleteEphemeralContact
+            Status: !If [IsEphemeralEnv, Enabled, Disabled]
+            Prefix: contact/
+            ExpirationInDays: 7
+
+Outputs:
+  LambdaCodeBucketName:
+    Description: Name of the Lambda code bucket
+    Value: !Ref LambdaCodeBucket
+    Export:
+      Name: !Sub 'growksh-lambda-code-bucket-${Environment}'
+
+  LambdaCodeBucketArn:
+    Description: ARN of the Lambda code bucket
+    Value: !GetAtt LambdaCodeBucket.Arn
+    Export:
+      Name: !Sub 'growksh-lambda-code-bucket-arn-${Environment}'
+
+  LambdaCodeBucketRegionalDomainName:
+    Description: Regional domain name of the Lambda code bucket
+    Value: !GetAtt LambdaCodeBucket.RegionalDomainName
+    Export:
+      Name: !Sub 'growksh-lambda-code-bucket-domain-${Environment}'
