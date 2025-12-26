@@ -335,6 +335,9 @@ This implementation demonstrates:
 - CI/CD pipelines (GitHub Actions)
 - API design (REST with auth)
 - DynamoDB patterns (TTL, design)
+- Pre-commit hooks for code quality
+- Multi-stack CloudFormation design
+- Ephemeral environment management
 
 ---
 
@@ -374,8 +377,6 @@ Possible additions:
 - Review Lambda execution logs
 - Verify IAM permissions
 - Test with AWS CLI directly
-
----
 
 ## ✨ Summary
 

@@ -16,16 +16,27 @@ This guide covers setting up and working with the development environment.
 
 ## Initial Setup
 
-### 1. Deploy Development Infrastructure
+### 1. Clone and Prepare Repository
 
 ```bash
 # Clone repository
-git clone https://github.com/Growksh-Alphalabs/growksh-website.git
+git clone https://github.com/Growksh-Alphlabs/growksh-website.git
 cd growksh-website
 
 # Checkout or create develop branch
 git checkout develop
 
+# Install pre-commit hooks (validates CloudFormation, code style, etc.)
+pip install pre-commit
+pre-commit install
+
+# Verify hooks work
+python -m pre_commit run --all-files
+```
+
+### 2. Deploy Development Infrastructure
+
+```bash
 # Deploy infrastructure
 chmod +x infra/scripts/deploy-stacks.sh
 ./infra/scripts/deploy-stacks.sh dev
