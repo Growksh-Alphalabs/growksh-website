@@ -46,7 +46,7 @@ Resources:
         - Key: Purpose
           Value: Lambda code storage
     DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
-    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: Retain  # Keep bucket on updates; cleanup script empties it on deletion
 
 Outputs:
   LambdaCodeBucketName:
