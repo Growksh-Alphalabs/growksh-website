@@ -38,7 +38,7 @@ Conditions:
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
   HasCustomLambdaCodeBucketName: !Not [!Equals [!Ref LambdaCodeBucketName, ""]]
   IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
-  NotEphemeralEnv: !Not [IsEphemeralEnv]
+  NotEphemeralEnv: !Not [!Equals [!Ref IsEphemeral, "true"]]
 
 Resources:
   AssetsBucket:
