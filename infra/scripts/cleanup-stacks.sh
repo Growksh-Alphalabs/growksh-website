@@ -19,13 +19,26 @@ echo "🧹 Starting cleanup for environment prefix: $ENVIRONMENT_PREFIX"
 echo "📍 Region: $REGION"
 echo ""
 
-# Get all stacks matching the environment prefix (only failed/rolled-back ones)
-# This ensures we only clean up stacks that actually failed, not successful ones
-STACKS=$(aws cloudformation list-stacks \
-  --stack-status-filter CREATE_FAILED UPDATE_FAILED ROLLBACK_COMPLETE DELETE_FAILED \
-  --query "StackSummaries[?contains(StackName, '$ENVIRONMENT_PREFIX')].StackName" \
-  --output text \
-  --region "$REGION")
+# Get all stacks matching the environment prefix
+# When called from GitHub Actions (PR closed), delete ALL stacks including successful ones
+# When called manually, only delete failed stacks (for safety)
+CLEANUP_SUCCESSFUL_STACKS="${CLEANUP_SUCCESSFUL_STACKS:-false}"
+
+if [ "$CLEANUP_SUCCESSFUL_STACKS" = "true" ]; then
+  # Delete all stacks for this environment (used when PR is closed)
+  STACKS=$(aws cloudformation list-stacks \
+    --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE CREATE_FAILED UPDATE_FAILED ROLLBACK_COMPLETE DELETE_FAILED \
+    --query "StackSummaries[?contains(StackName, '$ENVIRONMENT_PREFIX')].StackName" \
+    --output text \
+    --region "$REGION")
+else
+  # Only delete failed stacks (safer for manual cleanup)
+  STACKS=$(aws cloudformation list-stacks \
+    --stack-status-filter CREATE_FAILED UPDATE_FAILED ROLLBACK_COMPLETE DELETE_FAILED \
+    --query "StackSummaries[?contains(StackName, '$ENVIRONMENT_PREFIX')].StackName" \
+    --output text \
+    --region "$REGION")
+fi
 
 if [ -z "$STACKS" ]; then
   echo "ℹ️  No failed stacks found for environment: $ENVIRONMENT_PREFIX"
