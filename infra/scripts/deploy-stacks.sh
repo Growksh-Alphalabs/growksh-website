@@ -51,8 +51,9 @@ deploy_stack() {
   local stack_name=$1
   local template_file=$2
   local param_file=$3
+  local deploy_region=${4:-$REGION}  # Use provided region or default to REGION
   
-  echo "📦 Deploying stack: $stack_name"
+  echo "📦 Deploying stack: $stack_name (region: $deploy_region)"
   
   # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
@@ -74,7 +75,7 @@ deploy_stack() {
       --stack-name "$stack_name" \
       --parameter-overrides $param_overrides \
       --capabilities CAPABILITY_NAMED_IAM \
-      --region "$REGION" \
+      --region "$deploy_region" \
       --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
       echo "❌ Failed to deploy stack: $stack_name" >&2
       cat "/tmp/deploy-${stack_name}.log" >&2
@@ -115,7 +116,7 @@ deploy_stack() {
       --stack-name "$stack_name" \
       --parameter-overrides $params \
       --capabilities CAPABILITY_NAMED_IAM \
-      --region "$REGION" \
+      --region "$deploy_region" \
       --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-${stack_name}.log" || {
       echo "❌ Failed to deploy stack: $stack_name" >&2
       cat "/tmp/deploy-${stack_name}.log" >&2
@@ -166,7 +167,8 @@ PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
 deploy_stack \
   "growksh-website-waf-$ENVIRONMENT" \
   "$TEMPLATE_DIR/03-waf-stack.yaml" \
-  "$PARAM_FILE"
+  "$PARAM_FILE" \
+  "us-east-1"
 
 # Stage 5: Lambda Code Bucket (no dependencies)
 echo "Stage 5️⃣: Lambda Code Bucket"
