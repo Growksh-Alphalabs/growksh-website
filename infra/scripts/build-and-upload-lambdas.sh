@@ -18,14 +18,15 @@ fi
 REGION=${AWS_REGION:-ap-south-1}
 PROJECT_ROOT=$(cd "$(dirname "$0")"/../.. && pwd)
 LAMBDA_DIR="$PROJECT_ROOT/aws-lambda"
-BUILD_DIR="$PROJECT_ROOT/.build"
+BUILD_DIR="$PROJECT_ROOT/.build/lambda"
 
 echo "🔨 Building Lambda functions for environment: $ENVIRONMENT"
 echo "📦 Target bucket: $LAMBDA_BUCKET"
 echo "🏗️  Build directory: $BUILD_DIR"
 echo ""
 
-# Create build directory
+# Clean and create build directory
+rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
 # Function to build and upload a Lambda function
@@ -33,66 +34,81 @@ build_lambda() {
   local func_type=$1
   local func_name=$2
   local source_dir=$3
+  local handler_file=$4
   
-  echo "📦 Building: $func_name ($func_type)"
+  echo "📦 Building: $func_name"
   
-  ARTIFACTS_DIR="$BUILD_DIR/$func_type/$func_name-$ENVIRONMENT"
-  rm -rf "$ARTIFACTS_DIR"
-  mkdir -p "$ARTIFACTS_DIR"
+  local artifact_dir="$BUILD_DIR/$func_type/$func_name"
+  mkdir -p "$artifact_dir"
   
-  # Copy source files
-  cp "$source_dir"/*.js "$ARTIFACTS_DIR/" 2>/dev/null || true
-  cp "$source_dir"/package.json "$ARTIFACTS_DIR/" 2>/dev/null || true
-  cp "$source_dir"/package-lock.json "$ARTIFACTS_DIR/" 2>/dev/null || true
+  # Copy handler file
+  if [ ! -f "$source_dir/$handler_file" ]; then
+    echo "⚠️  Warning: Handler file not found: $source_dir/$handler_file (skipping)"
+    return 0
+  fi
   
-  # Install dependencies
-  if [ -f "$ARTIFACTS_DIR/package.json" ]; then
-    cd "$ARTIFACTS_DIR"
-    npm install --production --silent
+  cp "$source_dir/$handler_file" "$artifact_dir/"
+  
+  # Copy package.json and install dependencies
+  if [ -f "$source_dir/package.json" ]; then
+    cp "$source_dir/package.json" "$artifact_dir/"
+    if [ -f "$source_dir/package-lock.json" ]; then
+      cp "$source_dir/package-lock.json" "$artifact_dir/"
+    fi
+    
+    # Install dependencies
+    cd "$artifact_dir"
+    npm install --production --silent 2>&1 | grep -v "npm warn" || true
     cd "$PROJECT_ROOT"
   fi
   
-  # Create zip file
-  ZIP_FILE="$BUILD_DIR/${func_type}-${func_name}-${ENVIRONMENT}.zip"
-  rm -f "$ZIP_FILE"
-  cd "$ARTIFACTS_DIR"
-  zip -r -q "$ZIP_FILE" .
+  # Create zip file (S3 key follows pattern: type/name-environment.zip)
+  local zip_name="${func_name}-${ENVIRONMENT}.zip"
+  local zip_path="$BUILD_DIR/${zip_name}"
+  
+  cd "$artifact_dir"
+  zip -r -q "$zip_path" . 2>/dev/null || {
+    echo "❌ Failed to create zip: $zip_name"
+    return 1
+  }
   cd "$PROJECT_ROOT"
   
   # Upload to S3
-  S3_KEY="${func_type}/${func_name}-${ENVIRONMENT}.zip"
-  aws s3 cp "$ZIP_FILE" "s3://$LAMBDA_BUCKET/$S3_KEY" \
+  local s3_key="${func_type}/${zip_name}"
+  echo "📤 Uploading: s3://$LAMBDA_BUCKET/$s3_key"
+  aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
     --region "$REGION" \
-    --sse AES256 || {
-    echo "❌ Failed to upload $func_name"
+    --sse AES256 2>&1 | grep -v "Completed" || {
+    echo "❌ Failed to upload: $s3_key"
     return 1
   }
   
-  echo "✅ Uploaded: s3://$LAMBDA_BUCKET/$S3_KEY"
+  echo "✅ Uploaded: $s3_key"
 }
 
-# Build Cognito Lambda functions
+# Build Cognito Lambda functions from auth directory
 echo "📋 Building Cognito Lambda functions..."
-build_lambda "auth" "pre-sign-up" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "custom-message" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "create-auth-challenge" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "define-auth-challenge" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "verify-auth-challenge" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "post-confirmation" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "signup" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "verify-email" "$LAMBDA_DIR/auth" || true
-build_lambda "auth" "check-admin" "$LAMBDA_DIR/auth" || true
+build_lambda "auth" "pre-sign-up" "$LAMBDA_DIR/auth" "pre-sign-up.js"
+build_lambda "auth" "custom-message" "$LAMBDA_DIR/auth" "custom-message.js"
+build_lambda "auth" "create-auth-challenge" "$LAMBDA_DIR/auth" "create-auth-challenge.js"
+build_lambda "auth" "define-auth-challenge" "$LAMBDA_DIR/auth" "define-auth-challenge.js"
+build_lambda "auth" "verify-auth-challenge" "$LAMBDA_DIR/auth" "verify-auth-challenge.js"
+build_lambda "auth" "post-confirmation" "$LAMBDA_DIR/auth" "post-confirmation.js"
+build_lambda "auth" "signup" "$LAMBDA_DIR/auth" "signup.js"
+build_lambda "auth" "verify-email" "$LAMBDA_DIR/auth" "verify-email.js"
+build_lambda "auth" "check-admin" "$LAMBDA_DIR/auth" "define-auth-challenge.js"
 
 # Build Contact Lambda function
 echo "📋 Building Contact Lambda function..."
-build_lambda "contact" "contact" "$LAMBDA_DIR/contact" || true
+build_lambda "contact" "contact" "$LAMBDA_DIR/contact" "index.js"
 
-# Cleanup build directory
-rm -rf "$BUILD_DIR"
-
+# List uploaded files
 echo ""
 echo "═══════════════════════════════════════════════════"
 echo "✅ Lambda functions built and uploaded successfully!"
 echo "═══════════════════════════════════════════════════"
 echo ""
 echo "📦 Bucket: s3://$LAMBDA_BUCKET"
+echo "📁 Uploaded files:"
+aws s3 ls "s3://$LAMBDA_BUCKET/" --recursive --region "$REGION" 2>/dev/null | awk '{print "   - " $4}' || echo "   (no files listed)"
+echo ""
