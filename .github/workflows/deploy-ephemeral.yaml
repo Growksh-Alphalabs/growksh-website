@@ -101,7 +101,11 @@ jobs:
 
       - name: Upload frontend to S3
         run: |
-          ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME || needs.prepare.outputs.environment_name }}-assets"
+          ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME }}"
+          if [ -z "$ASSETS_BUCKET_NAME" ]; then
+            # Fallback if deploy output not available
+            ASSETS_BUCKET_NAME="${{ needs.prepare.outputs.environment_name }}"
+          fi
           aws s3 sync dist/ s3://$ASSETS_BUCKET_NAME/ --delete --cache-control "public, max-age=3600"
           echo "✅ Frontend uploaded to $ASSETS_BUCKET_NAME"
         env:
@@ -117,7 +121,10 @@ jobs:
           
           if [ -z "$CLOUDFRONT_DOMAIN" ] || [ "$CLOUDFRONT_DOMAIN" == "None" ]; then
             # Fallback: use assets bucket from deploy output
-            ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME || env.ENVIRONMENT }}-assets"
+            ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME }}"
+            if [ -z "$ASSETS_BUCKET_NAME" ]; then
+              ASSETS_BUCKET_NAME="${ENVIRONMENT}"
+            fi
             FRONTEND_URL="https://${ASSETS_BUCKET_NAME}.s3.amazonaws.com"
           else
             FRONTEND_URL="https://${CLOUDFRONT_DOMAIN}"
