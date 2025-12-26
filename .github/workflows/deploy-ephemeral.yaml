@@ -2,13 +2,9 @@ name: Deploy to Ephemeral Environment
 
 on:
   pull_request:
-    types: [opened, reopened]
-    branches:
-      - develop
+    types: [opened, reopened, synchronize]
   pull_request_target:
     types: [closed]
-    branches:
-      - develop
 
 permissions:
   id-token: write
