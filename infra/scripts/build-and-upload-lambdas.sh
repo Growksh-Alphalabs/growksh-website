@@ -92,10 +92,15 @@ build_lambda() {
   
   local max_retries=5
   local retry=0
+  local upload_output
+  
   while [ $retry -lt $max_retries ]; do
-    if aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
+    # Capture both stdout and stderr
+    upload_output=$(aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
       --region "$REGION" \
-      --sse AES256 2>&1 | grep -v "Completed"; then
+      --sse AES256 2>&1)
+    
+    if [ $? -eq 0 ]; then
       echo "✅ Uploaded: $s3_key"
       return 0
     fi
@@ -103,12 +108,14 @@ build_lambda() {
     retry=$((retry + 1))
     if [ $retry -lt $max_retries ]; then
       local wait_time=$((3 ** retry))  # 3, 9, 27, 81, 243 seconds
-      echo "⚠️  Upload failed, retrying in ${wait_time}s (attempt $((retry + 1))/$max_retries)..."
+      echo "⚠️  Upload failed: $upload_output" >&2
+      echo "⚠️  Retrying in ${wait_time}s (attempt $((retry + 1))/$max_retries)..."
       sleep $wait_time
     fi
   done
   
-  echo "❌ Failed to upload after $max_retries attempts: $s3_key"
+  echo "❌ Failed to upload after $max_retries attempts: $s3_key" >&2
+  echo "📋 Last error: $upload_output" >&2
   return 1
 }
 
