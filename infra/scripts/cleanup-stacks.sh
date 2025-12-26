@@ -39,25 +39,72 @@ for stack in $STACKS; do
 done
 echo ""
 
-# Check if storage-cdn stack is being deleted - if so, empty buckets first
+# Check if storage-cdn or lambda-code-bucket stacks are being deleted - if so, empty buckets first
 HAS_STORAGE_CDN=false
+HAS_LAMBDA_BUCKET=false
 for stack in $STACKS; do
   if [[ $stack == *"storage-cdn"* ]]; then
     HAS_STORAGE_CDN=true
-    break
+  fi
+  if [[ $stack == *"lambda-code-bucket"* ]]; then
+    HAS_LAMBDA_BUCKET=true
   fi
 done
 
-if [ "$HAS_STORAGE_CDN" = true ]; then
-  echo "🧹 Pre-cleanup: Emptying S3 buckets for storage-cdn stack..."
-  BUCKETS=$(aws s3 ls --region "$REGION" | grep "$ENVIRONMENT_PREFIX" | awk '{print $3}')
-  if [ -n "$BUCKETS" ]; then
-    for bucket in $BUCKETS; do
-      echo "  Emptying bucket: s3://$bucket"
-      aws s3 rm "s3://$bucket" --recursive --region "$REGION" 2>/dev/null || echo "  (bucket may already be empty or inaccessible)"
-    done
-    echo ""
+if [ "$HAS_STORAGE_CDN" = true ] || [ "$HAS_LAMBDA_BUCKET" = true ]; then
+  echo "🧹 Pre-cleanup: Emptying S3 buckets..."
+  
+  if [ "$HAS_STORAGE_CDN" = true ]; then
+    echo "  Emptying storage-cdn buckets..."
+    BUCKETS=$(aws s3 ls --region "$REGION" | grep "$ENVIRONMENT_PREFIX" | grep -v "lambda-code" | awk '{print $3}')
+    if [ -n "$BUCKETS" ]; then
+      for bucket in $BUCKETS; do
+        echo "    - s3://$bucket"
+        aws s3 rm "s3://$bucket" --recursive --region "$REGION" 2>/dev/null || echo "      (bucket may already be empty or inaccessible)"
+      done
+    fi
   fi
+  
+  if [ "$HAS_LAMBDA_BUCKET" = true ]; then
+    echo "  Emptying lambda-code-bucket..."
+    LAMBDA_BUCKETS=$(aws s3 ls --region "$REGION" | grep "$ENVIRONMENT_PREFIX" | grep "lambda-code" | awk '{print $3}')
+    if [ -n "$LAMBDA_BUCKETS" ]; then
+      for bucket in $LAMBDA_BUCKETS; do
+        echo "    - s3://$bucket"
+        # Delete all versions as well (in case versioning is enabled)
+        aws s3api list-object-versions \
+          --bucket "$bucket" \
+          --query 'Versions[].{Key:Key,VersionId:VersionId}' \
+          --output text \
+          --region "$REGION" | \
+        while read -r key version; do
+          if [ -n "$key" ]; then
+            aws s3api delete-object \
+              --bucket "$bucket" \
+              --key "$key" \
+              --version-id "$version" \
+              --region "$REGION" 2>/dev/null || true
+          fi
+        done
+        # Also delete delete markers
+        aws s3api list-object-versions \
+          --bucket "$bucket" \
+          --query 'DeleteMarkers[].{Key:Key,VersionId:VersionId}' \
+          --output text \
+          --region "$REGION" | \
+        while read -r key version; do
+          if [ -n "$key" ]; then
+            aws s3api delete-object \
+              --bucket "$bucket" \
+              --key "$key" \
+              --version-id "$version" \
+              --region "$REGION" 2>/dev/null || true
+          fi
+        done
+      done
+    fi
+  fi
+  echo ""
 fi
 
 # Simple delete function - let CloudFormation handle DeletionPolicy
@@ -117,7 +164,14 @@ for stack in $STACKS; do
   fi
 done
 
-echo "Stage 5️⃣: Delete Cognito"
+echo "Stage 5️⃣: Delete Lambda Code Bucket"
+for stack in $STACKS; do
+  if [[ $stack == *"lambda-code-bucket"* ]]; then
+    delete_stack "$stack"
+  fi
+done
+
+echo "Stage 6️⃣: Delete Cognito"
 for stack in $STACKS; do
   if [[ $stack == *"-cognito-"* ]] && [[ $stack != *"cognito-lambdas"* ]]; then
     delete_stack "$stack"
@@ -131,7 +185,14 @@ for stack in $STACKS; do
   fi
 done
 
-echo "Stage 7️⃣: Delete IAM"
+echo "Stage 8️⃣: Delete WAF"
+for stack in $STACKS; do
+  if [[ $stack == *"-waf-"* ]]; then
+    delete_stack "$stack"
+  fi
+done
+
+echo "Stage 9️⃣: Delete IAM"
 for stack in $STACKS; do
   if [[ $stack == *"-iam-"* ]]; then
     delete_stack "$stack"
