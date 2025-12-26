@@ -86,18 +86,30 @@ build_lambda() {
   
   cd "$PROJECT_ROOT"
   
-  # Upload to S3
+  # Upload to S3 with retry logic
   local s3_key="${func_type}/${func_name}-${ENVIRONMENT}.zip"
   echo "📤 Uploading: s3://$LAMBDA_BUCKET/$s3_key"
   
-  if ! aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
-    --region "$REGION" \
-    --sse AES256 2>&1; then
-    echo "❌ Failed to upload: $s3_key"
-    return 1
-  fi
+  local max_retries=3
+  local retry=0
+  while [ $retry -lt $max_retries ]; do
+    if aws s3 cp "$zip_path" "s3://$LAMBDA_BUCKET/$s3_key" \
+      --region "$REGION" \
+      --sse AES256 2>&1 | grep -v "Completed"; then
+      echo "✅ Uploaded: $s3_key"
+      return 0
+    fi
+    
+    retry=$((retry + 1))
+    if [ $retry -lt $max_retries ]; then
+      local wait_time=$((2 ** retry))
+      echo "⚠️  Upload failed, retrying in ${wait_time}s (attempt $((retry + 1))/$max_retries)..."
+      sleep $wait_time
+    fi
+  done
   
-  echo "✅ Uploaded: $s3_key"
+  echo "❌ Failed to upload after $max_retries attempts: $s3_key"
+  return 1
 }
 
 # Build Cognito Lambda functions from auth directory
