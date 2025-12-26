@@ -46,10 +46,28 @@ if [[ $IS_EPHEMERAL == "true" ]]; then
   echo ""
   
   # Create Lambda code bucket if it doesn't exist
+  echo "📦 Creating Lambda code bucket: $LAMBDA_BUCKET"
   if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
-    echo "📦 Creating Lambda code bucket: $LAMBDA_BUCKET"
-    aws s3 mb "s3://$LAMBDA_BUCKET" --region "$REGION"
+    echo "   → Bucket doesn't exist, creating..."
+    if ! aws s3 mb "s3://$LAMBDA_BUCKET" --region "$REGION" 2>&1; then
+      echo "❌ Failed to create Lambda code bucket" >&2
+      DEPLOYMENT_FAILED=true
+      exit 1
+    fi
+    
+    # Wait for bucket to be available (S3 eventual consistency)
+    echo "   → Waiting for bucket to be available..."
+    sleep 2
+    
+    # Verify bucket exists
+    if ! aws s3 ls "s3://$LAMBDA_BUCKET" --region "$REGION" 2>/dev/null; then
+      echo "❌ Bucket created but not accessible yet" >&2
+      DEPLOYMENT_FAILED=true
+      exit 1
+    fi
   fi
+  echo "✅ Lambda code bucket ready: s3://$LAMBDA_BUCKET"
+  echo ""
   
   # Build and upload Lambda functions
   if [ -f "infra/scripts/build-and-upload-lambdas.sh" ]; then
