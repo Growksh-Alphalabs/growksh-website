@@ -10,6 +10,15 @@ on:
       - 'src/**'
       - 'public/**'
       - 'package.json'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
 
 permissions:
   id-token: write
