@@ -5,7 +5,7 @@
     },
     {
         "ParameterKey": "BucketName",
-        "ParameterValue": "growksh-website-assets-prod"
+        "ParameterValue": "growksh-website-prod-assets"
     },
     {
         "ParameterKey": "DomainNames",
