@@ -100,15 +100,40 @@ empty_bucket() {
   # Empty the bucket (delete all versions and objects)
   aws s3 rm "s3://$bucket_name" --recursive --region "$REGION" 2>/dev/null || true
 
-  # If versioning is enabled, delete all object versions
-  aws s3api delete-objects \
+  # If versioning is enabled, delete all object versions and delete markers
+  # List all versions and delete them one by one
+  local version_ids=$(aws s3api list-object-versions \
     --bucket "$bucket_name" \
-    --delete "$(aws s3api list-object-versions \
-      --bucket "$bucket_name" \
-      --output=json \
-      --region "$REGION" \
-      --query='{Objects: [$.Versions,$.DeleteMarkers] | [] | .[] | map(select(true)) | .[] | {Key:.Key, VersionId:.VersionId}]}')" \
-    --region "$REGION" 2>/dev/null || true
+    --region "$REGION" \
+    --query 'Versions[*].[Key,VersionId]' \
+    --output text)
+
+  while read -r key version_id; do
+    if [ -n "$key" ] && [ -n "$version_id" ]; then
+      aws s3api delete-object \
+        --bucket "$bucket_name" \
+        --key "$key" \
+        --version-id "$version_id" \
+        --region "$REGION" 2>/dev/null || true
+    fi
+  done <<< "$version_ids"
+
+  # Delete markers (versions without VersionId)
+  local delete_markers=$(aws s3api list-object-versions \
+    --bucket "$bucket_name" \
+    --region "$REGION" \
+    --query 'DeleteMarkers[*].[Key,VersionId]' \
+    --output text)
+
+  while read -r key version_id; do
+    if [ -n "$key" ] && [ -n "$version_id" ]; then
+      aws s3api delete-object \
+        --bucket "$bucket_name" \
+        --key "$key" \
+        --version-id "$version_id" \
+        --region "$REGION" 2>/dev/null || true
+    fi
+  done <<< "$delete_markers"
 }
 
 delete_stack() {
