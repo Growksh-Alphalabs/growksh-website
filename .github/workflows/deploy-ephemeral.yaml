@@ -88,13 +88,17 @@ jobs:
 
       - name: Upload frontend to S3
         run: |
-          ASSETS_BUCKET_NAME="${{ steps.deploy.outputs.ASSETS_BUCKET_NAME }}"
-          if [ -z "$ASSETS_BUCKET_NAME" ]; then
-            # Fallback if deploy output not available
-            ASSETS_BUCKET_NAME="${{ needs.prepare.outputs.environment_name }}"
+          ENVIRONMENT=${{ needs.prepare.outputs.environment_name }}
+          # Get assets bucket from CloudFormation stack output
+          ASSETS_BUCKET=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-${ENVIRONMENT} --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text 2>/dev/null || echo "")
+
+          if [ -z "$ASSETS_BUCKET" ] || [ "$ASSETS_BUCKET" == "None" ]; then
+            echo "❌ Could not determine assets bucket name"
+            exit 1
           fi
-          aws s3 sync dist/ s3://$ASSETS_BUCKET_NAME/ --delete --cache-control "public, max-age=3600"
-          echo "✅ Frontend uploaded to $ASSETS_BUCKET_NAME"
+
+          aws s3 sync dist/ s3://$ASSETS_BUCKET/ --delete --cache-control "public, max-age=3600"
+          echo "✅ Frontend uploaded to $ASSETS_BUCKET"
         env:
           AWS_REGION: ap-south-1
 

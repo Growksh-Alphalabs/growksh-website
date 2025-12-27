@@ -72,8 +72,10 @@ jobs:
 
       - name: Upload frontend to S3
         run: |
-          aws s3 sync dist/ s3://growksh-website-assets-prod/ --delete --cache-control "public, max-age=86400"
-          echo "✅ Frontend uploaded to prod S3 bucket"
+          # Get the assets bucket name from CloudFormation stack output
+          ASSETS_BUCKET=$(aws cloudformation describe-stacks --stack-name growksh-website-storage-cdn-prod --query 'Stacks[0].Outputs[?OutputKey==`BucketName`].OutputValue' --output text)
+          aws s3 sync dist/ s3://$ASSETS_BUCKET/ --delete --cache-control "public, max-age=86400"
+          echo "✅ Frontend uploaded to prod S3 bucket: $ASSETS_BUCKET"
 
       - name: Invalidate CloudFront cache
         run: |
