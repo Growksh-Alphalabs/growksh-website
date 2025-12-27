@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 set -e
 
 # Build and upload Lambda functions to S3
@@ -22,7 +22,7 @@ BUILD_DIR="$PROJECT_ROOT/.build/lambda"
 
 echo "🔨 Building Lambda functions for environment: $ENVIRONMENT"
 echo "📦 Target bucket: $LAMBDA_BUCKET"
-echo "🏗️  Build directory: $BUILD_DIR"
+echo "📂  Build directory: $BUILD_DIR"
 echo ""
 
 # Clean and create build directory
@@ -137,11 +137,11 @@ build_lambda "contact" "contact" "$LAMBDA_DIR/contact" "index.js"
 
 # List uploaded files
 echo ""
-echo "═══════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════"
 echo "✅ Lambda functions built and uploaded successfully!"
-echo "═══════════════════════════════════════════════════"
+echo "═══════════════════════════════════════════════════════════"
 echo ""
 echo "📦 Bucket: s3://$LAMBDA_BUCKET"
-echo "📁 Uploaded files:"
+echo "📄 Uploaded files:"
 aws s3 ls "s3://$LAMBDA_BUCKET/" --recursive --region "$REGION" 2>/dev/null | awk '{print "   - " $4}' || echo "   (no files listed)"
 echo ""
