@@ -233,9 +233,11 @@ fi
 
 # Stage 6: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
 echo "Stage 6️⃣: Storage & CDN"
+PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-storage-cdn.json"
 deploy_stack \
   "growksh-website-storage-cdn-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/05-storage-cdn-stack.yaml"
+  "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
+  "$PARAM_FILE"
 
 # Stage 7: API Gateway (no dependencies)
 echo "Stage 7️⃣: API Gateway"
