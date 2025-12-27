@@ -1,0 +1,14 @@
+# Auto normalize line endings for all files
+* text=auto
+
+# Bash scripts must always use LF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# JSON and YAML must use LF
+*.json text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# PowerShell scripts can use CRLF on Windows
+*.ps1 text eol=crlf

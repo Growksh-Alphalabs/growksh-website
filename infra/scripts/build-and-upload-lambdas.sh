@@ -9,7 +9,7 @@ ENVIRONMENT=$1
 LAMBDA_BUCKET=$2
 
 if [ -z "$ENVIRONMENT" ] || [ -z "$LAMBDA_BUCKET" ]; then
-  echo "[ERROR] Environment and Lambda bucket name are required"
+  echo "❌ Error: Environment and Lambda bucket name are required"
   echo "Usage: $0 <environment> <lambda-bucket-name>"
   echo "Example: $0 dev growksh-website-lambda-code-dev"
   exit 1
@@ -20,9 +20,9 @@ PROJECT_ROOT=$(cd "$(dirname "$0")"/../.. && pwd)
 LAMBDA_DIR="$PROJECT_ROOT/aws-lambda"
 BUILD_DIR="$PROJECT_ROOT/.build/lambda"
 
-echo "[BUILD] Building Lambda functions for environment: $ENVIRONMENT"
-echo "[BUCKET] Target bucket: $LAMBDA_BUCKET"
-echo "[DIR] Build directory: $BUILD_DIR"
+echo "🔨 Building Lambda functions for environment: $ENVIRONMENT"
+echo "📦 Target bucket: $LAMBDA_BUCKET"
+echo "📂  Build directory: $BUILD_DIR"
 echo ""
 
 # Clean and create build directory
@@ -36,14 +36,14 @@ build_lambda() {
   local source_dir=$3
   local handler_file=$4
 
-  echo "[PACKAGE] Building: $func_name"
+  echo "📦 Building: $func_name"
 
   local artifact_dir="$BUILD_DIR/$func_type/$func_name"
   mkdir -p "$artifact_dir"
 
   # Copy handler file
   if [ ! -f "$source_dir/$handler_file" ]; then
-    echo "[WARN] Handler file not found: $source_dir/$handler_file (skipping)"
+    echo "⚠️  Warning: Handler file not found: $source_dir/$handler_file (skipping)"
     return 0
   fi
 
@@ -72,14 +72,14 @@ build_lambda() {
   # Create zip from artifact directory contents
   cd "$artifact_dir"
   zip -r -q "$zip_path" . || {
-    echo "[ERROR] Failed to create zip: $zip_name"
+    echo "❌ Failed to create zip: $zip_name"
     cd "$PROJECT_ROOT"
     return 1
   }
 
   # Verify zip was created
   if [ ! -f "$zip_path" ]; then
-    echo "[ERROR] Zip file not created: $zip_path"
+    echo "❌ Zip file not created: $zip_path"
     cd "$PROJECT_ROOT"
     return 1
   fi
@@ -88,7 +88,7 @@ build_lambda() {
 
   # Upload to S3 with retry logic
   local s3_key="${func_type}/${func_name}-${ENVIRONMENT}.zip"
-  echo "[UPLOAD] Uploading: s3://$LAMBDA_BUCKET/$s3_key"
+  echo "📤 Uploading: s3://$LAMBDA_BUCKET/$s3_key"
 
   local max_retries=5
   local retry=0
@@ -101,26 +101,26 @@ build_lambda() {
       --sse AES256 2>&1)
 
     if [ $? -eq 0 ]; then
-      echo "[OK] Uploaded: $s3_key"
+      echo "✅ Uploaded: $s3_key"
       return 0
     fi
 
     retry=$((retry + 1))
     if [ $retry -lt $max_retries ]; then
       local wait_time=$((3 ** retry))  # 3, 9, 27, 81, 243 seconds
-      echo "[WARN] Upload failed: $upload_output" >&2
-      echo "[WARN] Retrying in ${wait_time}s (attempt $((retry + 1))/$max_retries)..."
+      echo "⚠️  Upload failed: $upload_output" >&2
+      echo "⚠️  Retrying in ${wait_time}s (attempt $((retry + 1))/$max_retries)..."
       sleep $wait_time
     fi
   done
 
-  echo "[ERROR] Failed to upload after $max_retries attempts: $s3_key" >&2
-  echo "[ERROR] Last error: $upload_output" >&2
+  echo "❌ Failed to upload after $max_retries attempts: $s3_key" >&2
+  echo "📋 Last error: $upload_output" >&2
   return 1
 }
 
 # Build Cognito Lambda functions from auth directory
-echo "[SECTION] Building Cognito Lambda functions..."
+echo "📋 Building Cognito Lambda functions..."
 build_lambda "auth" "pre-sign-up" "$LAMBDA_DIR/auth" "pre-sign-up.js"
 build_lambda "auth" "custom-message" "$LAMBDA_DIR/auth" "custom-message.js"
 build_lambda "auth" "create-auth-challenge" "$LAMBDA_DIR/auth" "create-auth-challenge.js"
@@ -132,16 +132,16 @@ build_lambda "auth" "verify-email" "$LAMBDA_DIR/auth" "verify-email.js"
 build_lambda "auth" "check-admin" "$LAMBDA_DIR/auth" "define-auth-challenge.js"
 
 # Build Contact Lambda function
-echo "[SECTION] Building Contact Lambda function..."
+echo "📋 Building Contact Lambda function..."
 build_lambda "contact" "contact" "$LAMBDA_DIR/contact" "index.js"
 
 # List uploaded files
 echo ""
-echo "=========================================================="
-echo "[OK] Lambda functions built and uploaded successfully!"
-echo "=========================================================="
+echo "═══════════════════════════════════════════════════════════"
+echo "✅ Lambda functions built and uploaded successfully!"
+echo "═══════════════════════════════════════════════════════════"
 echo ""
-echo "[BUCKET] Bucket: s3://$LAMBDA_BUCKET"
-echo "[FILES] Uploaded files:"
+echo "📦 Bucket: s3://$LAMBDA_BUCKET"
+echo "📄 Uploaded files:"
 aws s3 ls "s3://$LAMBDA_BUCKET/" --recursive --region "$REGION" 2>/dev/null | awk '{print "   - " $4}' || echo "   (no files listed)"
 echo ""
