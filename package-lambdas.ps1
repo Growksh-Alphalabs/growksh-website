@@ -110,7 +110,9 @@ foreach ($name in $APILambdas.Keys) {
 Write-Host "`nUploading API Lambda ZIPs to S3" -ForegroundColor Cyan
 foreach ($item in $APIZips) {
     Write-Host "Uploading: $($item.Path)" -ForegroundColor Yellow
-    aws s3 cp $item.Path "s3://$S3Bucket/contact/$($item.Path)" --region $AWSRegion 2>&1 | Out-Null
+    # Contact Lambda goes to contact/ folder, auth Lambdas go to auth/ folder
+    $folder = if ($item.Name -eq "contact") { "contact" } else { "auth" }
+    aws s3 cp $item.Path "s3://$S3Bucket/$folder/$($item.Path)" --region $AWSRegion 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Uploaded successfully" -ForegroundColor Green
         Remove-Item $item.Path -Force
