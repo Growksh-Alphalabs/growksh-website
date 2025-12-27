@@ -21,17 +21,23 @@ Parameters:
     Type: String
     Default: ""
     Description: WAF Web ACL ARN for CloudFront protection (must be in us-east-1 region)
+  IsEphemeral:
+    Type: String
+    Default: "false"
+    AllowedValues: ["true", "false"]
+    Description: Whether this is an ephemeral environment (bucket deleted on stack deletion)
 
 Conditions:
   HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
   HasCertificate: !Not [!Equals [!Ref CertificateArn, ""]]
   HasWAF: !Not [!Equals [!Ref WAFArn, ""]]
+  IsEphemeralEnv: !Equals [!Ref IsEphemeral, "true"]
 
 Resources:
   AssetsBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
+    DeletionPolicy: !If [IsEphemeralEnv, Delete, Retain]
+    UpdateReplacePolicy: !If [IsEphemeralEnv, Delete, Retain]
     Properties:
       BucketName: !Ref BucketName
       PublicAccessBlockConfiguration:
