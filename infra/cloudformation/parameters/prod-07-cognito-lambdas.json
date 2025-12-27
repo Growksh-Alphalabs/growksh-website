@@ -4,6 +4,10 @@
         "ParameterValue": "prod"
     },
     {
+        "ParameterKey": "LambdaCodeBucketName",
+        "ParameterValue": "growksh-website-lambda-code-prod"
+    },
+    {
         "ParameterKey": "SESSourceEmail",
         "ParameterValue": "noreply@growksh.com"
     },
