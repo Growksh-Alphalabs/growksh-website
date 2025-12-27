@@ -14,9 +14,5 @@
     {
         "ParameterKey": "CertificateArn",
         "ParameterValue": "arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
-    },
-    {
-        "ParameterKey": "WAFArn",
-        "ParameterValue": "arn:aws:wafv2:us-east-1:720427058396:global/webacl/growksh-website-prod/a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     }
 ]
