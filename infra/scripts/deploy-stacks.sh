@@ -233,9 +233,40 @@ fi
 
 # Stage 6: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
 echo "Stage 6️⃣: Storage & CDN"
-deploy_stack \
-  "growksh-website-storage-cdn-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/05-storage-cdn-stack.yaml"
+PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-storage-cdn.json"
+
+# Get WAF ARN from WAF stack (deployed in us-east-1)
+echo "⏳ Retrieving WAF ARN from CloudFormation..."
+WAF_ARN=$(aws cloudformation describe-stacks \
+  --stack-name "growksh-website-waf-$ENVIRONMENT" \
+  --region us-east-1 \
+  --query 'Stacks[0].Outputs[?OutputKey==`WebACLArn`].OutputValue' \
+  --output text 2>/dev/null || echo "")
+
+# Build parameter overrides
+PARAM_OVERRIDES="file://$PARAM_FILE"
+if [ -n "$WAF_ARN" ] && [ "$WAF_ARN" != "None" ]; then
+  echo "✅ Found WAF ARN: $WAF_ARN"
+  PARAM_OVERRIDES="$PARAM_OVERRIDES WAFArn=$WAF_ARN"
+else
+  echo "⚠️  WAF stack not found or no WebACLArn output. Proceeding without WAF."
+fi
+
+# Deploy with WAF ARN parameter
+aws cloudformation deploy \
+  --template-file "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
+  --stack-name "growksh-website-storage-cdn-$ENVIRONMENT" \
+  --parameter-overrides $PARAM_OVERRIDES \
+  --capabilities CAPABILITY_NAMED_IAM \
+  --region "$REGION" \
+  --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-growksh-website-storage-cdn-$ENVIRONMENT.log" || {
+  echo "❌ Failed to deploy stack: growksh-website-storage-cdn-$ENVIRONMENT" >&2
+  cat "/tmp/deploy-growksh-website-storage-cdn-$ENVIRONMENT.log" >&2
+  DEPLOYMENT_FAILED=true
+}
+
+echo "✅ Stack deployed: growksh-website-storage-cdn-$ENVIRONMENT"
+echo ""
 
 # Stage 7: API Gateway (no dependencies)
 echo "Stage 7️⃣: API Gateway"
