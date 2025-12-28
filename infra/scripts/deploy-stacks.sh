@@ -234,48 +234,10 @@ fi
 # Stage 6: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
 echo "Stage 6️⃣: Storage & CDN"
 PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-storage-cdn.json"
-
-# Get WAF ARN from WAF stack (deployed in us-east-1)
-echo "⏳ Retrieving WAF ARN from CloudFormation..."
-WAF_ARN=$(aws cloudformation describe-stacks \
-  --stack-name "growksh-website-waf-$ENVIRONMENT" \
-  --region us-east-1 \
-  --query 'Stacks[0].Outputs[?OutputKey==`WebACLArn`].OutputValue' \
-  --output text 2>/dev/null || echo "")
-
-# Build parameter overrides based on environment
-if [ -f "$PARAM_FILE" ]; then
-  # Use parameter file if it exists (dev, prod)
-  PARAM_OVERRIDES="file://$PARAM_FILE"
-else
-  # For ephemeral environments, build parameters dynamically
-  echo "ℹ️  Parameter file not found. Building parameters dynamically for ephemeral environment..."
-  PARAM_OVERRIDES="Environment=$ENVIRONMENT BucketName=$ASSETS_BUCKET_NAME IsEphemeral=true"
-  PARAM_OVERRIDES="$PARAM_OVERRIDES DomainNames=growksh.com,www.growksh.com CertificateArn=arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
-fi
-
-if [ -n "$WAF_ARN" ] && [ "$WAF_ARN" != "None" ]; then
-  echo "✅ Found WAF ARN: $WAF_ARN"
-  PARAM_OVERRIDES="$PARAM_OVERRIDES WAFArn=$WAF_ARN"
-else
-  echo "⚠️  WAF stack not found or no WebACLArn output. Proceeding without WAF."
-fi
-
-# Deploy with parameters
-aws cloudformation deploy \
-  --template-file "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
-  --stack-name "growksh-website-storage-cdn-$ENVIRONMENT" \
-  --parameter-overrides $PARAM_OVERRIDES \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --region "$REGION" \
-  --no-fail-on-empty-changeset 2>&1 | tee -a "/tmp/deploy-growksh-website-storage-cdn-$ENVIRONMENT.log" || {
-  echo "❌ Failed to deploy stack: growksh-website-storage-cdn-$ENVIRONMENT" >&2
-  cat "/tmp/deploy-growksh-website-storage-cdn-$ENVIRONMENT.log" >&2
-  DEPLOYMENT_FAILED=true
-}
-
-echo "✅ Stack deployed: growksh-website-storage-cdn-$ENVIRONMENT"
-echo ""
+deploy_stack \
+  "growksh-website-storage-cdn-$ENVIRONMENT" \
+  "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
+  "$PARAM_FILE"
 
 # Stage 7: API Gateway (no dependencies)
 echo "Stage 7️⃣: API Gateway"
