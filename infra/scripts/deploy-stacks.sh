@@ -163,7 +163,11 @@ deploy_stack \
 
 # Stage 4: WAF (us-east-1, no dependencies, before CDN)
 echo "Stage 4️⃣: WAF (us-east-1)"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+if [[ $ENVIRONMENT == feature-* ]]; then
+  PARAM_FILE="$PARAM_DIR/ephemeral-03-waf-stack.json"
+else
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+fi
 deploy_stack \
   "growksh-website-waf-$ENVIRONMENT" \
   "$TEMPLATE_DIR/03-waf-stack.yaml" \
@@ -233,7 +237,13 @@ fi
 
 # Stage 6: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
 echo "Stage 6️⃣: Storage & CDN"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-storage-cdn.json"
+
+# Use appropriate parameter file based on environment type
+if [[ $ENVIRONMENT == feature-* ]]; then
+  PARAM_FILE="$PARAM_DIR/ephemeral-05-storage-cdn.json"
+else
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-05-storage-cdn.json"
+fi
 
 # Get WAF ARN from WAF stack (deployed in us-east-1)
 echo "⏳ Retrieving WAF ARN from CloudFormation..."
@@ -243,17 +253,17 @@ WAF_ARN=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`WebACLArn`].OutputValue' \
   --output text 2>/dev/null || echo "")
 
-# Build parameter overrides based on environment
-if [ -f "$PARAM_FILE" ]; then
-  # Use parameter file if it exists (dev, prod)
-  PARAM_OVERRIDES="file://$PARAM_FILE"
+# Build parameter overrides with bucket name and ephemeral flag
+PARAM_OVERRIDES="file://$PARAM_FILE BucketName=$ASSETS_BUCKET_NAME"
+
+# Add IsEphemeral flag for ephemeral environments
+if [[ $ENVIRONMENT == feature-* ]]; then
+  PARAM_OVERRIDES="$PARAM_OVERRIDES IsEphemeral=true"
 else
-  # For ephemeral environments, build parameters dynamically
-  echo "ℹ️  Parameter file not found. Building parameters dynamically for ephemeral environment..."
-  PARAM_OVERRIDES="Environment=$ENVIRONMENT BucketName=$ASSETS_BUCKET_NAME IsEphemeral=true"
-  PARAM_OVERRIDES="$PARAM_OVERRIDES DomainNames=growksh.com,www.growksh.com CertificateArn=arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
+  PARAM_OVERRIDES="$PARAM_OVERRIDES IsEphemeral=false"
 fi
 
+# Add WAF ARN if available
 if [ -n "$WAF_ARN" ] && [ "$WAF_ARN" != "None" ]; then
   echo "✅ Found WAF ARN: $WAF_ARN"
   PARAM_OVERRIDES="$PARAM_OVERRIDES WAFArn=$WAF_ARN"
@@ -285,7 +295,11 @@ deploy_stack \
 
 # Stage 8: Cognito Lambda Triggers (depends on Cognito, IAM, Database, Lambda code bucket)
 echo "Stage 8️⃣: Cognito Lambda Triggers"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-07-cognito-lambdas.json"
+if [[ $ENVIRONMENT == feature-* ]]; then
+  PARAM_FILE="$PARAM_DIR/ephemeral-07-cognito-lambdas.json"
+else
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-07-cognito-lambdas.json"
+fi
 deploy_stack \
   "growksh-website-cognito-lambdas-$ENVIRONMENT" \
   "$TEMPLATE_DIR/07-cognito-lambdas-stack.yaml" \
@@ -293,7 +307,11 @@ deploy_stack \
 
 # Stage 9: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database, Lambda code bucket)
 echo "Stage 9️⃣: API Lambda Functions"
-PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-08-api-lambdas.json"
+if [[ $ENVIRONMENT == feature-* ]]; then
+  PARAM_FILE="$PARAM_DIR/ephemeral-08-api-lambdas.json"
+else
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-08-api-lambdas.json"
+fi
 deploy_stack \
   "growksh-website-api-lambdas-$ENVIRONMENT" \
   "$TEMPLATE_DIR/08-api-lambdas-stack.yaml" \
