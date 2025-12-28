@@ -6,5 +6,9 @@
     {
         "ParameterKey": "CertificateArn",
         "ParameterValue": "arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
+    },
+    {
+        "ParameterKey": "IsEphemeral",
+        "ParameterValue": "true"
     }
 ]

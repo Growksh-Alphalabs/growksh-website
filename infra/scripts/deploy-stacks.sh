@@ -57,16 +57,53 @@ deploy_stack() {
 
   # If parameter file exists and is valid, use it
   if [ -n "$param_file" ] && [ -f "$param_file" ]; then
-    local param_overrides="file://$param_file"
+    # Load parameters from file into an array
+    local params_from_file=$(cat "$param_file" | jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' | tr '\n' ' ')
 
-    # Override parameters for ephemeral environments
-    if [[ $ENVIRONMENT == feature-* ]]; then
-      if [[ "$stack_name" == *"storage-cdn"* ]]; then
-        param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL BucketName=$ASSETS_BUCKET_NAME"
-      elif [[ "$stack_name" == *"database"* ]]; then
-        param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL"
-      elif [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
-        param_overrides="$param_overrides IsEphemeral=$IS_EPHEMERAL BucketName=$LAMBDA_BUCKET_NAME"
+    # Start with parameters from file
+    local param_overrides="$params_from_file"
+
+    # Add dynamic overrides for dynamic values (BucketName, WAFArn, etc.)
+    if [[ "$stack_name" == *"storage-cdn"* ]]; then
+      param_overrides="$param_overrides BucketName=$ASSETS_BUCKET_NAME"
+      # Get WAF ARN from CloudFormation if it's an ephemeral environment
+      if [[ $ENVIRONMENT == feature-* ]]; then
+        local waf_arn=$(aws cloudformation describe-stacks \
+          --stack-name "growksh-website-waf" \
+          --region us-east-1 \
+          --query 'Stacks[0].Outputs[?OutputKey==`WebACLArn`].OutputValue' \
+          --output text 2>/dev/null || echo "")
+        if [ -n "$waf_arn" ]; then
+          param_overrides="$param_overrides WAFArn=$waf_arn"
+        fi
+      fi
+    elif [[ "$stack_name" == *"lambda-code-bucket"* ]]; then
+      param_overrides="$param_overrides BucketName=$LAMBDA_BUCKET_NAME"
+    fi
+
+    # Add parameters for Lambda functions if not already in file
+    if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
+      if ! grep -q "LambdaCodeBucketName" "$param_file"; then
+        param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET_NAME"
+      fi
+      if ! grep -q "SESSourceEmail" "$param_file"; then
+        param_overrides="$param_overrides SESSourceEmail=noreply@growksh.com"
+      fi
+      if ! grep -q "VerifyBaseUrl" "$param_file"; then
+        param_overrides="$param_overrides VerifyBaseUrl=https://$ASSETS_BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
+      fi
+      if ! grep -q "DebugLogOTP" "$param_file"; then
+        param_overrides="$param_overrides DebugLogOTP=1"
+      fi
+    elif [[ "$stack_name" == *"api-lambdas"* ]]; then
+      if ! grep -q "LambdaCodeBucketName" "$param_file"; then
+        param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET_NAME"
+      fi
+      if ! grep -q "SESSourceEmail" "$param_file"; then
+        param_overrides="$param_overrides SESSourceEmail=noreply@growksh.com"
+      fi
+      if ! grep -q "VerifyBaseUrl" "$param_file"; then
+        param_overrides="$param_overrides VerifyBaseUrl=https://$ASSETS_BUCKET_NAME.s3.amazonaws.com/auth/verify-email"
       fi
     fi
 
