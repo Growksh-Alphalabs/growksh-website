@@ -245,6 +245,14 @@ WAF_ARN=$(aws cloudformation describe-stacks \
 
 # Build parameter overrides
 PARAM_OVERRIDES="file://$PARAM_FILE"
+
+# For ephemeral environments, add test domain names and certificate
+if [[ $ENVIRONMENT == feature-* ]]; then
+  echo "ℹ️  Adding test domain names and certificate for ephemeral environment"
+  # Use prod certificate and domain for testing CloudFront configuration
+  PARAM_OVERRIDES="$PARAM_OVERRIDES DomainNames=growksh.com,www.growksh.com CertificateArn=arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
+fi
+
 if [ -n "$WAF_ARN" ] && [ "$WAF_ARN" != "None" ]; then
   echo "✅ Found WAF ARN: $WAF_ARN"
   PARAM_OVERRIDES="$PARAM_OVERRIDES WAFArn=$WAF_ARN"
