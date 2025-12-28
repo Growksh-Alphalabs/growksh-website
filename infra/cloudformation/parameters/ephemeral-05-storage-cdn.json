@@ -1,9 +1,5 @@
 [
     {
-        "ParameterKey": "Environment",
-        "ParameterValue": "ephemeral"
-    },
-    {
         "ParameterKey": "DomainNames",
         "ParameterValue": "growksh.com,www.growksh.com"
     },

@@ -1,9 +1,5 @@
 [
     {
-        "ParameterKey": "Environment",
-        "ParameterValue": "ephemeral"
-    },
-    {
         "ParameterKey": "LambdaCodeBucketName",
         "ParameterValue": "growksh-website-lambda-code-ephemeral"
     },
