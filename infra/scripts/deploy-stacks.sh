@@ -243,13 +243,14 @@ WAF_ARN=$(aws cloudformation describe-stacks \
   --query 'Stacks[0].Outputs[?OutputKey==`WebACLArn`].OutputValue' \
   --output text 2>/dev/null || echo "")
 
-# Build parameter overrides
-PARAM_OVERRIDES="file://$PARAM_FILE"
-
-# For ephemeral environments, add test domain names and certificate
-if [[ $ENVIRONMENT == feature-* ]]; then
-  echo "ℹ️  Adding test domain names and certificate for ephemeral environment"
-  # Use prod certificate and domain for testing CloudFront configuration
+# Build parameter overrides based on environment
+if [ -f "$PARAM_FILE" ]; then
+  # Use parameter file if it exists (dev, prod)
+  PARAM_OVERRIDES="file://$PARAM_FILE"
+else
+  # For ephemeral environments, build parameters dynamically
+  echo "ℹ️  Parameter file not found. Building parameters dynamically for ephemeral environment..."
+  PARAM_OVERRIDES="Environment=$ENVIRONMENT BucketName=$ASSETS_BUCKET_NAME IsEphemeral=true"
   PARAM_OVERRIDES="$PARAM_OVERRIDES DomainNames=growksh.com,www.growksh.com CertificateArn=arn:aws:acm:us-east-1:720427058396:certificate/d805238c-fcc7-4d0f-a535-b87d8a8fad8d"
 fi
 
@@ -260,7 +261,7 @@ else
   echo "⚠️  WAF stack not found or no WebACLArn output. Proceeding without WAF."
 fi
 
-# Deploy with WAF ARN parameter
+# Deploy with parameters
 aws cloudformation deploy \
   --template-file "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
   --stack-name "growksh-website-storage-cdn-$ENVIRONMENT" \
