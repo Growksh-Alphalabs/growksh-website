@@ -60,8 +60,13 @@ deploy_stack() {
     # Load parameters from file into an array
     local params_from_file=$(cat "$param_file" | jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' | tr '\n' ' ')
 
-    # Start with parameters from file
-    local param_overrides="$params_from_file"
+    # Start with Environment parameter (always needed)
+    local param_overrides="Environment=$ENVIRONMENT"
+
+    # Add parameters from file if any
+    if [ -n "$params_from_file" ]; then
+      param_overrides="$param_overrides $params_from_file"
+    fi
 
     # Add dynamic overrides for dynamic values (BucketName, WAFArn, etc.)
     if [[ "$stack_name" == *"storage-cdn"* ]]; then
