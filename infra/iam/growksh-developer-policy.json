@@ -140,6 +140,19 @@
                 "logs:*"
             ],
             "Resource": "arn:aws:logs:*:720427058396:log-group:/aws/lambda/growksh-*"
+        },
+        {
+            "Sid": "Route53Operations",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetHostedZone",
+                "route53:ListResourceRecordSets",
+                "route53:ChangeResourceRecordSets",
+                "route53:GetChange",
+                "route53:ListHostedZones",
+                "route53:GetHostedZoneCount"
+            ],
+            "Resource": "*"
         }
     ]
 }
