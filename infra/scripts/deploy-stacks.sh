@@ -88,7 +88,10 @@ deploy_stack() {
 
     # Add parameters for Lambda functions if not already in file
     if [[ "$stack_name" == *"cognito-lambdas"* ]]; then
-      if ! grep -q "LambdaCodeBucketName" "$param_file"; then
+      # For ephemeral environments, always override bucket name to use the dynamic one
+      if [[ $ENVIRONMENT == feature-* ]]; then
+        param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET_NAME"
+      elif ! grep -q "LambdaCodeBucketName" "$param_file"; then
         param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET_NAME"
       fi
       if ! grep -q "SESSourceEmail" "$param_file"; then
@@ -101,7 +104,10 @@ deploy_stack() {
         param_overrides="$param_overrides DebugLogOTP=1"
       fi
     elif [[ "$stack_name" == *"api-lambdas"* ]]; then
-      if ! grep -q "LambdaCodeBucketName" "$param_file"; then
+      # For ephemeral environments, always override bucket name to use the dynamic one
+      if [[ $ENVIRONMENT == feature-* ]]; then
+        param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET_NAME"
+      elif ! grep -q "LambdaCodeBucketName" "$param_file"; then
         param_overrides="$param_overrides LambdaCodeBucketName=$LAMBDA_BUCKET_NAME"
       fi
       if ! grep -q "SESSourceEmail" "$param_file"; then
