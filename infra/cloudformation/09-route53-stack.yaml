@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Route53 DNS records for custom domains pointing to CloudFront
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name
+  HostedZoneId:
+    Type: String
+    Description: Route53 Hosted Zone ID for the domain
+  DomainNames:
+    Type: CommaDelimitedList
+    Default: ""
+    Description: Primary domain names to create records for (e.g., growksh.com)
+  CloudFrontDomainName:
+    Type: String
+    Description: CloudFront distribution domain name (from storage-cdn stack output)
+
+Conditions:
+  HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
+
+Resources:
+  # Primary domain A record (growksh.com)
+  PrimaryDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: HasDomainNames
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Select [0, !Ref DomainNames]
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront Hosted Zone ID (global)
+        EvaluateTargetHealth: false
+
+  # WWW subdomain record (www.growksh.com) if multiple domains provided
+  WWWDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: HasDomainNames
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Sub 'www.${AWS::StackName}'
+      Type: A
+      AliasTarget:
+        DNSName: !Ref CloudFrontDomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront Hosted Zone ID (global)
+        EvaluateTargetHealth: false
+
+Outputs:
+  PrimaryDomainName:
+    Condition: HasDomainNames
+    Description: Primary domain name
+    Value: !Select [0, !Ref DomainNames]
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-primary-domain'
+
+  CloudFrontDomainName:
+    Description: CloudFront domain name
+    Value: !Ref CloudFrontDomainName
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cdn-domain'

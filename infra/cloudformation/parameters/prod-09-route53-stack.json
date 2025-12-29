@@ -1,0 +1,14 @@
+[
+    {
+        "ParameterKey": "Environment",
+        "ParameterValue": "prod"
+    },
+    {
+        "ParameterKey": "HostedZoneId",
+        "ParameterValue": "Z07016261D66PUG8ZFY4M"
+    },
+    {
+        "ParameterKey": "DomainNames",
+        "ParameterValue": "growksh.com,www.growksh.com"
+    }
+]
