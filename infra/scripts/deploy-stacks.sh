@@ -128,7 +128,7 @@ deploy_stack() {
       echo "❌ Failed to deploy stack: $stack_name" >&2
       cat "/tmp/deploy-${stack_name}.log" >&2
       DEPLOYMENT_FAILED=true
-      return 0
+      return 1
     }
   else
     # Build dynamic parameters for ephemeral/non-standard environments
@@ -268,7 +268,8 @@ done
 echo ""
 
 # Stage 5.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Lambda stacks)
-if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]]; then
+# Always build for ephemeral/feature branches, or for dev/prod if explicitly requested via BUILD_LAMBDAS
+if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]] || [[ "$ENVIRONMENT" == "dev" ]] || [[ "$ENVIRONMENT" == "prod" ]]; then
   echo "🔨 Building and uploading Lambda functions..."
   if [ -f "infra/scripts/build-and-upload-lambdas.sh" ]; then
     chmod +x infra/scripts/build-and-upload-lambdas.sh
@@ -343,6 +344,126 @@ aws cloudformation describe-stacks \
   --output table || echo "⚠️  Could not retrieve stack status"
 
 echo ""
+
+# Check if deployment failed and exit with error code
+if [ "$DEPLOYMENT_FAILED" = true ]; then
+  echo "❌ Deployment failed for environment: $ENVIRONMENT"
+  echo "📦 Assets bucket: $ASSETS_BUCKET_NAME"
+  echo "📦 Lambda code bucket: $LAMBDA_BUCKET_NAME"
+  echo ""
+
+  # Capture detailed error information from all failed stacks
+  echo "📋 Detailed Error Information:"
+  echo "======================================"
+
+  failed_stacks=$(aws cloudformation describe-stacks \
+    --query "Stacks[?contains(StackName, '$ENVIRONMENT') && StackStatus like 'CREATE_FAILED|UPDATE_FAILED|ROLLBACK_COMPLETE|UPDATE_ROLLBACK_COMPLETE'].StackName" \
+    --region "$REGION" \
+    --output text)
+
+  error_captured=false
+
+  for stack in $failed_stacks; do
+    if [ -n "$stack" ]; then
+      echo ""
+      echo "📌 Stack: $stack"
+      echo "---"
+
+      # Get stack status reason
+      status_reason=$(aws cloudformation describe-stacks \
+        --stack-name "$stack" \
+        --region "$REGION" \
+        --query 'Stacks[0].StackStatusReason' \
+        --output text 2>/dev/null)
+
+      if [ -n "$status_reason" ] && [ "$status_reason" != "None" ]; then
+        echo "Status Reason: $status_reason"
+        error_captured=true
+      fi
+
+      # Get resource-level errors
+      echo ""
+      echo "Failed Resources:"
+      aws cloudformation describe-stack-resources \
+        --stack-name "$stack" \
+        --region "$REGION" \
+        --query "StackResources[?ResourceStatus like 'CREATE_FAILED|UPDATE_FAILED'].{LogicalId:LogicalResourceId,Type:ResourceType,Status:ResourceStatus,Reason:ResourceStatusReason}" \
+        --output text | while read line; do
+        if [ -n "$line" ]; then
+          echo "  - $line"
+          error_captured=true
+        fi
+      done
+
+      # Get stack events with errors
+      echo ""
+      echo "Recent Stack Events:"
+      aws cloudformation describe-stack-events \
+        --stack-name "$stack" \
+        --region "$REGION" \
+        --query "StackEvents[?contains(ResourceStatus, 'FAILED') || contains(ResourceStatus, 'IN_PROGRESS')].{Time:Timestamp,Resource:LogicalResourceId,Status:ResourceStatus,Reason:ResourceStatusReason}" \
+        --output text | head -20 | while read line; do
+        if [ -n "$line" ]; then
+          echo "  $line"
+        fi
+      done
+
+      # Get change set details if available
+      echo ""
+      echo "Change Set Details:"
+      changesets=$(aws cloudformation list-change-sets \
+        --stack-name "$stack" \
+        --region "$REGION" \
+        --query "Summaries[?Status=='FAILED'].ChangeSetId" \
+        --output text)
+
+      for changeset_id in $changesets; do
+        if [ -n "$changeset_id" ]; then
+          echo "  Changeset: $changeset_id"
+          aws cloudformation describe-change-set \
+            --stack-name "$stack" \
+            --change-set-name "$changeset_id" \
+            --region "$REGION" \
+            --query 'StatusReason' \
+            --output text 2>/dev/null | while read reason; do
+            if [ -n "$reason" ] && [ "$reason" != "None" ]; then
+              echo "  Reason: $reason"
+              error_captured=true
+            fi
+          done
+        fi
+      done
+    fi
+  done
+
+  echo ""
+  echo "======================================"
+  echo ""
+
+  # Only clean up stacks if we successfully captured error information
+  if [ "$error_captured" = true ]; then
+    echo "🧹 Cleaning up failed stacks (error information captured)..."
+    for stack in $failed_stacks; do
+      if [ -n "$stack" ]; then
+        echo "  - Deleting failed stack: $stack"
+        aws cloudformation delete-stack --stack-name "$stack" --region "$REGION" 2>/dev/null || true
+      fi
+    done
+    echo "✅ Cleanup initiated"
+  else
+    echo "⚠️  Could not capture detailed error information"
+    echo "❌ Stacks NOT deleted for manual inspection:"
+    for stack in $failed_stacks; do
+      if [ -n "$stack" ]; then
+        echo "  - $stack"
+      fi
+    done
+  fi
+  echo ""
+
+  exit 1
+fi
+
 echo "🎉 Deployment complete for environment: $ENVIRONMENT"
 echo "📦 Assets bucket: $ASSETS_BUCKET_NAME"
 echo "📦 Lambda code bucket: $LAMBDA_BUCKET_NAME"
