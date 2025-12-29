@@ -1,5 +1,8 @@
 name: Deploy to Ephemeral Environment
 
+run-name: |
+  ${{ github.event.action == 'closed' && '🧹 Cleanup' || '🚀 Deploy' }} Ephemeral - ${{ github.event.pull_request.title }}
+
 on:
   pull_request:
     types: [opened, reopened, synchronize, closed]

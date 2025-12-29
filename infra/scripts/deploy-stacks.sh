@@ -305,11 +305,8 @@ deploy_stack \
 # Stage 6.5: Route53 DNS Records (depends on storage-cdn for CloudFront domain)
 echo "Stage 6️⃣.5️⃣: Route53 DNS Records"
 if [[ "$ENVIRONMENT" != feature-* ]]; then
-  if [[ $ENVIRONMENT == feature-* ]]; then
-    PARAM_FILE="$PARAM_DIR/ephemeral-09-route53-stack.json"
-  else
-    PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-09-route53-stack.json"
-  fi
+  # Determine parameter file
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-09-route53-stack.json"
 
   # Only deploy Route53 if DomainNames are configured in parameter file
   if [ -f "$PARAM_FILE" ] && grep -q "DomainNames" "$PARAM_FILE"; then
