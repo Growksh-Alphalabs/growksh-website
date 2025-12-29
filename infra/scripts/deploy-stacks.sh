@@ -46,12 +46,13 @@ echo "📦 Lambda bucket: $LAMBDA_BUCKET_NAME"
 echo "⏱️  Timestamp: $(date)"
 echo ""
 
-# Function to deploy a stack
+# Function to deploy a stack with optional dynamic parameters
 deploy_stack() {
   local stack_name=$1
   local template_file=$2
   local param_file=$3
   local deploy_region=${4:-$REGION}  # Use provided region or default to REGION
+  local extra_params="$5"  # Additional parameters to append
 
   echo "📦 Deploying stack: $stack_name (region: $deploy_region)"
 
@@ -66,6 +67,11 @@ deploy_stack() {
     # Add parameters from file if any
     if [ -n "$params_from_file" ]; then
       param_overrides="$param_overrides $params_from_file"
+    fi
+
+    # Add extra parameters if provided
+    if [ -n "$extra_params" ]; then
+      param_overrides="$param_overrides $extra_params"
     fi
 
     # Add dynamic overrides for dynamic values (BucketName, WAFArn, etc.)
@@ -295,6 +301,40 @@ deploy_stack \
   "growksh-website-storage-cdn-$ENVIRONMENT" \
   "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
   "$PARAM_FILE"
+
+# Stage 6.5: Route53 DNS Records (depends on storage-cdn for CloudFront domain)
+echo "Stage 6️⃣.5️⃣: Route53 DNS Records"
+if [[ "$ENVIRONMENT" != feature-* ]]; then
+  if [[ $ENVIRONMENT == feature-* ]]; then
+    PARAM_FILE="$PARAM_DIR/ephemeral-09-route53-stack.json"
+  else
+    PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-09-route53-stack.json"
+  fi
+
+  # Only deploy Route53 if DomainNames are configured in parameter file
+  if [ -f "$PARAM_FILE" ] && grep -q "DomainNames" "$PARAM_FILE"; then
+    # Get CloudFront domain name from storage-cdn stack
+    CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
+      --stack-name "growksh-website-storage-cdn-$ENVIRONMENT" \
+      --region "$REGION" \
+      --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' \
+      --output text 2>/dev/null || echo "")
+
+    if [ -n "$CLOUDFRONT_DOMAIN" ] && [ "$CLOUDFRONT_DOMAIN" != "None" ]; then
+      deploy_stack \
+        "growksh-website-route53-$ENVIRONMENT" \
+        "$TEMPLATE_DIR/09-route53-stack.yaml" \
+        "$PARAM_FILE" \
+        "$REGION" \
+        "CloudFrontDomainName=$CLOUDFRONT_DOMAIN"
+    else
+      echo "⚠️  Could not get CloudFront domain name, skipping Route53 stack"
+    fi
+  else
+    echo "⏭️  Skipping Route53 stack (DomainNames not configured for this environment)"
+  fi
+  echo ""
+fi
 
 # Stage 7: API Gateway (no dependencies)
 echo "Stage 7️⃣: API Gateway"
