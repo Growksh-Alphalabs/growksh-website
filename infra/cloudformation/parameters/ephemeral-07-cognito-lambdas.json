@@ -1,11 +1,7 @@
 [
     {
-        "ParameterKey": "Environment",
-        "ParameterValue": "prod"
-    },
-    {
         "ParameterKey": "LambdaCodeBucketName",
-        "ParameterValue": "growksh-website-lambda-code-prod"
+        "ParameterValue": "growksh-website-lambda-code-ephemeral"
     },
     {
         "ParameterKey": "SESSourceEmail",
@@ -17,6 +13,6 @@
     },
     {
         "ParameterKey": "DebugLogOTP",
-        "ParameterValue": "0"
+        "ParameterValue": "1"
     }
 ]
