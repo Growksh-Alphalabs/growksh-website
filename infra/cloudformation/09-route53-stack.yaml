@@ -60,8 +60,9 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-primary-domain'
 
-  CloudFrontDomainName:
-    Description: CloudFront domain name
-    Value: !Ref CloudFrontDomainName
+  WWWDomainName:
+    Condition: HasDomainNames
+    Description: WWW subdomain name
+    Value: !Select [1, !Ref DomainNames]
     Export:
-      Name: !Sub 'growksh-website-${Environment}-cdn-domain'
+      Name: !Sub 'growksh-website-${Environment}-www-domain'
