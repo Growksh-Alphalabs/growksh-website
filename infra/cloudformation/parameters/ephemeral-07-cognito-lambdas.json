@@ -1,0 +1,18 @@
+[
+    {
+        "ParameterKey": "LambdaCodeBucketName",
+        "ParameterValue": "growksh-website-lambda-code-ephemeral"
+    },
+    {
+        "ParameterKey": "SESSourceEmail",
+        "ParameterValue": "noreply@growksh.com"
+    },
+    {
+        "ParameterKey": "VerifyBaseUrl",
+        "ParameterValue": "https://growksh.com/auth/verify-email"
+    },
+    {
+        "ParameterKey": "DebugLogOTP",
+        "ParameterValue": "1"
+    }
+]
