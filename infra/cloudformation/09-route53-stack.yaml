@@ -17,6 +17,11 @@ Parameters:
     Type: String
     Description: CloudFront distribution domain name (from storage-cdn stack output)
 
+Mappings:
+  CloudFront:
+    HostedZoneId:
+      Global: Z2FDTNDATAQYW2  # AWS CloudFront global hosted zone ID
+
 Conditions:
   HasDomainNames: !Not [!Equals [!Join ["", !Ref DomainNames], ""]]
 
@@ -31,20 +36,20 @@ Resources:
       Type: A
       AliasTarget:
         DNSName: !Ref CloudFrontDomainName
-        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront Hosted Zone ID (global)
+        HostedZoneId: !FindInMap [CloudFront, HostedZoneId, Global]
         EvaluateTargetHealth: false
 
-  # WWW subdomain record (www.growksh.com) if multiple domains provided
+  # WWW subdomain record (www.growksh.com) if provided in domain list
   WWWDomainRecord:
     Type: AWS::Route53::RecordSet
     Condition: HasDomainNames
     Properties:
       HostedZoneId: !Ref HostedZoneId
-      Name: !Sub 'www.${AWS::StackName}'
+      Name: !Select [1, !Ref DomainNames]
       Type: A
       AliasTarget:
         DNSName: !Ref CloudFrontDomainName
-        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront Hosted Zone ID (global)
+        HostedZoneId: !FindInMap [CloudFront, HostedZoneId, Global]
         EvaluateTargetHealth: false
 
 Outputs:
