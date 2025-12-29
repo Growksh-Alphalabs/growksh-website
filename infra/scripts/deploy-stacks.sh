@@ -318,17 +318,61 @@ if [[ "$ENVIRONMENT" != feature-* ]]; then
       --output text 2>/dev/null || echo "")
 
     if [ -n "$CLOUDFRONT_DOMAIN" ] && [ "$CLOUDFRONT_DOMAIN" != "None" ]; then
-      deploy_stack \
-        "growksh-website-route53-$ENVIRONMENT" \
-        "$TEMPLATE_DIR/09-route53-stack.yaml" \
-        "$PARAM_FILE" \
-        "$REGION" \
-        "CloudFrontDomainName=$CLOUDFRONT_DOMAIN"
+      # Get hosted zone and domain names from parameter file
+      HOSTED_ZONE_ID=$(cat "$PARAM_FILE" | jq -r '.[] | select(.ParameterKey=="HostedZoneId") | .ParameterValue')
+      DOMAIN_NAMES=$(cat "$PARAM_FILE" | jq -r '.[] | select(.ParameterKey=="DomainNames") | .ParameterValue' | tr ',' '\n' | xargs)
+
+      if [ -n "$HOSTED_ZONE_ID" ] && [ -n "$DOMAIN_NAMES" ]; then
+        # Update Route53 records using AWS CLI instead of CloudFormation
+        # This avoids issues with CloudFormation trying to create records that already exist
+        echo "  Updating Route53 records for CloudFront domain: $CLOUDFRONT_DOMAIN"
+
+        # Read domain names as array
+        read -ra DOMAINS <<< "$DOMAIN_NAMES"
+
+        for DOMAIN in "${DOMAINS[@]}"; do
+          echo "  - Updating A record for: $DOMAIN"
+
+          # Create a JSON change batch for this domain
+          CHANGE_BATCH=$(cat <<EOF
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "$DOMAIN",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z2FDTNDATAQYW2",
+          "DNSName": "$CLOUDFRONT_DOMAIN",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}
+EOF
+)
+
+          # Update the Route53 record
+          if aws route53 change-resource-record-sets \
+            --hosted-zone-id "$HOSTED_ZONE_ID" \
+            --change-batch "$CHANGE_BATCH" \
+            --region "$REGION" > /dev/null 2>&1; then
+            echo "    ✅ Successfully updated Route53 record for $DOMAIN"
+          else
+            echo "    ❌ Failed to update Route53 record for $DOMAIN"
+            DEPLOYMENT_FAILED=true
+          fi
+        done
+      else
+        echo "⚠️  Could not extract hosted zone or domain names from parameter file"
+      fi
     else
-      echo "⚠️  Could not get CloudFront domain name, skipping Route53 stack"
+      echo "⚠️  Could not get CloudFront domain name, skipping Route53 update"
     fi
   else
-    echo "⏭️  Skipping Route53 stack (DomainNames not configured for this environment)"
+    echo "⏭️  Skipping Route53 update (DomainNames not configured for this environment)"
   fi
   echo ""
 fi
