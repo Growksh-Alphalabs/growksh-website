@@ -6,6 +6,7 @@ run-name: |
 on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
+    branches: [develop]
 
 permissions:
   id-token: write
