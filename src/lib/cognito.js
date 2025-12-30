@@ -157,7 +157,7 @@ async function getUserPool() {
 export async function signup(userData) {
   try {
     // Support fake auth for testing without real API
-    if (isFakeAuthExplicitlyEnabled()) {
+    if (isFakeAuthEnabled()) {
       console.info('[Signup] Using FAKE AUTH - simulating signup');
       return {
         message: 'User created successfully (FAKE AUTH)',
