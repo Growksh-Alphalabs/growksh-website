@@ -20,20 +20,14 @@ const CLIENT_ID = (
   ''
 ).trim();
 const API_URL = (RUNTIME_CONFIG.VITE_API_URL || import.meta.env.VITE_API_URL || '').trim();
+
 const useFakeRaw = (RUNTIME_CONFIG.VITE_USE_FAKE_AUTH || import.meta.env.VITE_USE_FAKE_AUTH || '').toString();
-const USE_FAKE = useFakeRaw === '1' || useFakeRaw.toLowerCase() === 'true';
+const USE_FAKE_EXPLICIT = useFakeRaw === '1' || useFakeRaw.toLowerCase() === 'true';
 
 const IS_LOCALHOST =
   typeof window !== 'undefined' &&
   window.location &&
   ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
-
-function isFakeAuthEnabled() {
-  // If running locally and Cognito IDs aren't provided, fall back to fake auth
-  // so developers can test the full UI flow without AWS.
-  const autoFakeForLocal = IS_LOCALHOST && (!USER_POOL_ID || !CLIENT_ID);
-  return USE_FAKE || runtimeFakeOverride || autoFakeForLocal;
-}
 
 const REGION =
   (RUNTIME_CONFIG.VITE_AWS_REGION || import.meta.env.VITE_AWS_REGION) ||
@@ -44,6 +38,13 @@ const REGION =
 const cognitoIdpClient = new CognitoIdentityProviderClient({ region: REGION });
 
 let runtimeFakeOverride = false;
+
+function isFakeAuthEnabled() {
+  // Auto-fallback for localhost when Cognito IDs are missing.
+  // This keeps local testing working without AWS.
+  const autoFake = IS_LOCALHOST && (!USER_POOL_ID || !CLIENT_ID);
+  return USE_FAKE_EXPLICIT || runtimeFakeOverride || autoFake;
+}
 
 function clearCognitoLocalStorage() {
   try {
@@ -106,42 +107,19 @@ export async function signup(userData) {
       throw new Error('API_URL is not configured. Set VITE_API_URL in .env.local');
     }
 
-    let apiBase = API_URL.trim().replace(/\/+$/, '');
+    // Clean up API base URL - remove trailing slashes and /prod or /contact
+    let apiBase = API_URL.trim();
+    apiBase = apiBase.replace(/\/+$/, ''); // Remove trailing slashes
+    apiBase = apiBase.replace(/\/(prod|contact)$/, ''); // Remove /prod or /contact at end
 
-    const isLocalRelative = apiBase.startsWith('/api');
-    const isLocalAbsolute = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i.test(apiBase);
-    const isLocal = isLocalRelative || isLocalAbsolute;
-
-    // Local dev: support the included mock server (`npm run mock-auth`).
-    // It exposes POST /auth/register and does not use API Gateway stages.
-    if (isLocal) {
-      const signupUrl = `${apiBase}/auth/register`;
-      console.log('Calling signup endpoint (local):', signupUrl);
-
-      const response = await fetch(signupUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userData.email,
-          name: userData.name,
-          phone: userData.phone_number || '',
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || data.message || `Signup failed with status ${response.status}`);
+    // Ensure proper base structure (e.g., https://xxx.execute-api.region.amazonaws.com/prod)
+    if (!apiBase.includes('/prod')) {
+      // Add /prod if not present
+      if (apiBase.endsWith('/')) {
+        apiBase = apiBase + 'prod';
+      } else {
+        apiBase = apiBase + '/prod';
       }
-      return data;
-    }
-
-    // Production / real API Gateway: normalize stage handling.
-    // Clean up API base URL - remove trailing slashes and /contact.
-    apiBase = apiBase.replace(/\/(contact)$/i, '');
-
-    // Ensure proper stage exists (support either /Prod or /prod).
-    if (!/\/prod$/i.test(apiBase)) {
-      apiBase = `${apiBase}/Prod`;
     }
 
     const signupUrl = `${apiBase}/auth/signup`;
@@ -166,6 +144,42 @@ export async function signup(userData) {
     console.error('Signup error:', error);
     throw error;
   }
+}
+
+/**
+ * Check whether a user exists (via backend API), used by the login flow.
+ * Returns: { exists: boolean }
+ */
+export async function checkUserExists(email) {
+  if (isFakeAuthEnabled()) {
+    return { exists: true }
+  }
+
+  if (!API_URL) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  let apiBase = API_URL.trim().replace(/\/+$/, '')
+  apiBase = apiBase.replace(/\/(contact)$/i, '')
+  if (!/\/prod$/i.test(apiBase)) {
+    apiBase = `${apiBase}/Prod`
+  }
+
+  const url = `${apiBase}/auth/check-user`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `Check user failed with status ${response.status}`)
+  }
+
+  return data
 }
 
 /**
