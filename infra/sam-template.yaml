@@ -273,6 +273,7 @@ Resources:
         DefineAuthChallenge: !GetAtt DefineAuthChallengeFunction.Arn
         CreateAuthChallenge: !GetAtt CreateAuthChallengeFunction.Arn
         VerifyAuthChallengeResponse: !GetAtt VerifyAuthChallengeFunction.Arn
+        PostConfirmation: !GetAtt PostConfirmationFunction.Arn
 
   # Cognito User Pool Client
   CognitoUserPoolClient:

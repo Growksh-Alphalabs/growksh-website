@@ -234,3 +234,17 @@ Outputs:
     Value: !GetAtt VerifyAuthChallengeFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-verify-auth-challenge-arn'
+  PostConfirmationFunctionArn:
+    Value: !GetAtt PostConfirmationFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-post-confirmation-arn'
+
+  CustomMessageFunctionArn:
+    Value: !GetAtt CustomMessageFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-custom-message-arn'
+
+  DefineAuthChallengeFunctionArn:
+    Value: !GetAtt DefineAuthChallengeFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-define-auth-challenge-arn'
