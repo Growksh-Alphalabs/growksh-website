@@ -7,6 +7,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize, closed]
     branches: [develop]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '*.md'
 
 permissions:
   id-token: write

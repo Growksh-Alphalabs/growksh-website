@@ -2,40 +2,47 @@
 
 ## TL;DR - 5 Minute Setup
 
-### 1. Add GitHub Secrets (AWS Console)
-```
-AWS_ROLE_TO_ASSUME = arn:aws:iam::ACCOUNT:role/github-actions
-VERIFY_SECRET = $(openssl rand -hex 32)  # Generate long random string
-SES_SOURCE_EMAIL = noreply@growksh.com
-VERIFY_BASE_URL = https://growksh.com/auth/verify-email
-```
+### 1. GitHub Configuration
+- Repository already has GitHub OIDC configured
+- `GrowkshDeveloperRole` IAM role created in AWS
+- No additional secrets needed (OIDC-based authentication)
 
-### 2. Deploy Stack
+### 2. Deploy Infrastructure
 ```bash
-git push origin main  # Triggers GitHub Actions
-# Watch Actions tab for Deploy SAM Infra workflow
+# Push to develop branch - automatically deploys to dev
+git push origin develop
+
+# Or manually deploy
+./infra/scripts/deploy-stacks.sh dev
 ```
 
-### 3. Get Outputs
+### 3. Check Deployment Progress
+Go to: https://github.com/Growksh-Alphalabs/growksh-website/actions
+
+Watch the "Deploy to Development" workflow (takes 10-15 minutes)
+
+### 4. Get CloudFormation Outputs
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name growksh-infra \
+  --stack-name growksh-website-storage-cdn-dev \
   --query 'Stacks[0].Outputs' \
-  --output table
+  --region ap-south-1
 ```
 
-### 4. Update .env.local
+### 5. Update .env.local for Local Development
 ```
-VITE_COGNITO_USER_POOL_ID=<from outputs>
-VITE_COGNITO_CLIENT_ID=<from outputs>
-VITE_API_URL=<AuthApiEndpoint from outputs>
+VITE_COGNITO_USER_POOL_ID=<from Cognito stack output>
+VITE_COGNITO_CLIENT_ID=<from Cognito stack output>
+VITE_API_URL=<from API Gateway stack output>
 ```
 
-Note: `.env.local` is for local development only. In production (CloudFront/S3), Vite reads env vars at **build time**. The GitHub Actions workflow generates a `.env` during the build using CloudFormation outputs.
+Note: `.env.local` is for local development only. In production (CloudFront/S3), Vite reads env vars at **build time** from CloudFormation outputs captured during GitHub Actions workflow.
 
-### 5. Done! 🎉
-- Signup: http://localhost:5173/signup
-- Login: http://localhost:5173/login
+### 6. Done! 🎉
+- **Local Signup**: http://localhost:5173/signup
+- **Local Login**: http://localhost:5173/login
+- **Dev Deployment**: Check CloudFormation output for CloudFront domain
+- **Production**: Push to main branch for production deployment (with approval gate)
 
 ---
 

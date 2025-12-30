@@ -34,7 +34,7 @@ This runbook provides step-by-step instructions for deploying the Growksh Websit
 
 ## Architecture Overview
 
-The Growksh Website infrastructure consists of 7 CloudFormation stacks deployed in dependency order:
+The Growksh Website infrastructure consists of 9 CloudFormation stacks deployed in dependency order:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -58,33 +58,55 @@ The Growksh Website infrastructure consists of 7 CloudFormation stacks deployed 
 └─────────────────────────────────────────┘
            ↓
 ┌─────────────────────────────────────────┐
-│ Stage 3: Frontend & API (Parallel)      │
+│ Stage 3: Security & Asset Management    │
 ├─────────────────────────────────────────┤
-│ • 03-storage-cdn-stack.yaml             │
-│   - S3 Bucket (Assets)                  │
-│   - CloudFront Distribution             │
-│ • 04-api-gateway-stack.yaml             │
-│   - API Gateway                         │
-│   - REST Endpoints                      │
+│ • 03-waf-stack.yaml (us-east-1 region) │
+│   - AWS WAFv2 Web ACL                   │
+│   - DDoS and bot protection             │
+│ • 04-lambda-code-bucket-stack.yaml      │
+│   - S3 bucket for Lambda code           │
+│   - Lifecycle policies                  │
 └─────────────────────────────────────────┘
            ↓
 ┌─────────────────────────────────────────┐
-│ Stage 4: Lambda Functions               │
+│ Stage 4: Frontend & API (Parallel)      │
 ├─────────────────────────────────────────┤
-│ • 05-cognito-lambdas-stack.yaml         │
+│ • 05-storage-cdn-stack.yaml             │
+│   - S3 Bucket (Assets)                  │
+│   - CloudFront Distribution             │
+│   - SSL/TLS Certificate                 │
+│ • 06-api-gateway-stack.yaml             │
+│   - API Gateway                         │
+│   - REST Endpoints                      │
+│   - CloudWatch Logs                     │
+└─────────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────────┐
+│ Stage 5: Lambda Functions               │
+├─────────────────────────────────────────┤
+│ • 07-cognito-lambdas-stack.yaml         │
 │   - PreSignUpFunction                   │
 │   - CustomMessageFunction               │
-│   - AuthChallengeFunctions              │
-│   - PostConfirmationFunction            │
-│ • 06-api-lambdas-stack.yaml             │
-│   - ContactFunction                     │
+│   - CreateAuthChallengeFunction         │
+│   - VerifyAuthChallengeFunction         │
+│ • 08-api-lambdas-stack.yaml             │
 │   - SignupFunction                      │
 │   - VerifyEmailFunction                 │
+│   - ContactFunction                     │
 │   - CheckAdminFunction                  │
+└─────────────────────────────────────────┘
+           ↓
+┌─────────────────────────────────────────┐
+│ Stage 6: DNS Management (AWS CLI)       │
+├─────────────────────────────────────────┤
+│ • Route53 DNS Records (UPSERT)          │
+│   - Primary domain (growksh.com)        │
+│   - WWW subdomain (www.growksh.com)     │
+│   - CloudFront alias records            │
 └─────────────────────────────────────────┘
 ```
 
-**Total Resources**: ~40+ AWS resources (roles, tables, functions, API endpoints, etc.)
+**Total Resources**: ~50+ AWS resources (roles, tables, functions, API endpoints, WAF, CDN, DNS, etc.)
 
 ---
 
@@ -274,7 +296,8 @@ git push origin develop
 
 # 2. GitHub Actions automatically:
 #    ✓ Validates CloudFormation templates
-#    ✓ Deploys all 7 stacks
+#    ✓ Deploys all 9 stacks
+#    ✓ Updates Route53 DNS records
 #    ✓ Builds frontend
 #    ✓ Uploads to S3
 #    ✓ Invalidates CloudFront cache
@@ -307,7 +330,8 @@ git push origin main
 #    ✓ Validates CloudFormation templates
 #    ✓ Waits for manual approval
 #    ✓ (Manually approve in GitHub UI)
-#    ✓ Deploys all 7 stacks to prod
+#    ✓ Deploys all 9 stacks to prod
+#    ✓ Updates Route53 DNS records
 #    ✓ Builds frontend
 #    ✓ Uploads to S3
 #    ✓ Invalidates CloudFront cache

@@ -38,13 +38,14 @@ A full-stack React + Vite application with passwordless authentication powered b
 ## Architecture
 
 ### Frontend (React + Vite)
-- **Auth Pages:** Signup, Login (unified), OTP verification, Email verification
+- **Auth Pages:** Signup, Login (passwordless OTP), Email verification, Admin login
 - **Admin Panel:** Protected admin dashboard with role-based access control
 - **State Management:** AuthContext with Cognito integration
 - **Styling:** Tailwind CSS with custom theme
+- **Deployment:** S3 + CloudFront CDN with Route53 DNS management
 
 ### Backend (AWS Lambda + Cognito)
-- **9 Lambda Functions:**
+- **8 Lambda Functions:**
   - `pre-sign-up.js` - Auto-verify users on signup
   - `custom-message.js` - Customize Cognito emails
   - `define-auth-challenge.js` - Define CUSTOM_AUTH flow
@@ -53,10 +54,21 @@ A full-stack React + Vite application with passwordless authentication powered b
   - `signup.js` - Handle signup endpoint
   - `verify-email.js` - Verify email with HMAC tokens
   - `post-confirmation.js` - User post-signup setup
-  - `check-admin.js` - Verify admin group membership
 
-- **Database:** DynamoDB table for OTP storage (10-min TTL)
+- **Infrastructure:** 9 CloudFormation stacks
+  - 00-iam-stack: IAM roles and policies
+  - 01-database-stack: DynamoDB tables
+  - 02-cognito-stack: Cognito User Pool
+  - 03-waf-stack: AWS WAFv2 protection
+  - 04-lambda-code-bucket-stack: Lambda code S3 bucket
+  - 05-storage-cdn-stack: S3 + CloudFront + SSL
+  - 06-api-gateway-stack: REST API endpoints
+  - 07-cognito-lambdas-stack: Auth Lambdas
+  - 08-api-lambdas-stack: API Lambdas
+
+- **Database:** DynamoDB tables for OTP storage (10-min TTL) and contacts
 - **Email:** SES for OTP and verification email delivery
+- **DNS:** Route53 for custom domain management (AWS CLI UPSERT)
 
 ## Key Features
 
@@ -78,19 +90,44 @@ A full-stack React + Vite application with passwordless authentication powered b
 - `src/lib/cognito.js` - AWS Cognito integration
 - `src/components/Auth/` - Auth components (Signup, Login, AdminLogin, VerifyEmail)
 - `src/components/common/ProtectedRoute.jsx` - Route protection wrapper
-- `infra/sam-template.yaml` - AWS infrastructure as code
+- `infra/cloudformation/` - 9 modular CloudFormation templates
+- `infra/scripts/deploy-stacks.sh` - Deployment orchestration
 - `docs/` - Comprehensive documentation
 
 ## Deployment
 
-### Frontend (React)
-- Build artifacts deployed to S3 + CloudFront
-- GitHub Actions workflow: `.github/workflows/deploy-to-s3.yml`
+### Automated Deployment (GitHub Actions)
 
-### Backend (Lambda + Cognito)
-- Infrastructure managed by SAM template
-- GitHub Actions workflow: `.github/workflows/deploy-sam.yml`
-- Deploy with: `sam deploy` in `infra/` folder
+**Feature Branches** (`feature/*`)
+- Automatic deployment to ephemeral environment
+- Auto-cleanup on PR close
+- Workflow: `.github/workflows/deploy-ephemeral.yaml`
+
+**Development** (`develop` branch)
+- Automatic deployment to dev environment
+- Workflow: `.github/workflows/deploy-develop.yaml`
+- Duration: 10-15 minutes
+
+**Production** (`main` branch)
+- Requires manual approval in GitHub Actions
+- Workflow: `.github/workflows/deploy-prod.yaml`
+- Creates GitHub release on successful deployment
+- Duration: 10-15 minutes (after approval)
+
+### Manual Deployment
+
+```bash
+# Deploy to development
+./infra/scripts/deploy-stacks.sh dev
+
+# Deploy to production
+./infra/scripts/deploy-stacks.sh prod
+
+# Deploy ephemeral environment
+./infra/scripts/deploy-stacks.sh feature-branch-name
+```
+
+See `docs/DEPLOYMENT_RUNBOOK.md` for complete deployment guide.
 
 ## Documentation
 
