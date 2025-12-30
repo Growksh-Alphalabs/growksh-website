@@ -33,6 +33,20 @@ A full-stack React + Vite application with passwordless authentication powered b
    npm run dev
    ```
 
+## Localhost Testing (no AWS)
+
+You can test the login OTP UI flow without Cognito by enabling fake auth:
+
+- Set `VITE_USE_FAKE_AUTH=1` in `.env.local`
+- Run `npm run dev`
+- On the login page, submit an email; check the browser console for `[FAKE AUTH] Generated OTP: <code>`
+
+For testing signup locally, you can run the included mock server:
+
+- Set `VITE_API_URL=http://localhost:3000` (or `VITE_API_URL=/api` to use the Vite proxy)
+- Run `npm run mock-auth` (starts on `http://localhost:3000`)
+- Run `npm run dev`
+
 4. **Build for production:**
    ```bash
    npm run build

@@ -94,19 +94,42 @@ export async function signup(userData) {
       throw new Error('API_URL is not configured. Set VITE_API_URL in .env.local');
     }
 
-    // Clean up API base URL - remove trailing slashes and /prod or /contact
-    let apiBase = API_URL.trim();
-    apiBase = apiBase.replace(/\/+$/, ''); // Remove trailing slashes
-    apiBase = apiBase.replace(/\/(prod|contact)$/, ''); // Remove /prod or /contact at end
+    let apiBase = API_URL.trim().replace(/\/+$/, '');
 
-    // Ensure proper base structure (e.g., https://xxx.execute-api.region.amazonaws.com/prod)
-    if (!apiBase.includes('/prod')) {
-      // Add /prod if not present
-      if (apiBase.endsWith('/')) {
-        apiBase = apiBase + 'prod';
-      } else {
-        apiBase = apiBase + '/prod';
+    const isLocalRelative = apiBase.startsWith('/api');
+    const isLocalAbsolute = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?(\/.*)?$/i.test(apiBase);
+    const isLocal = isLocalRelative || isLocalAbsolute;
+
+    // Local dev: support the included mock server (`npm run mock-auth`).
+    // It exposes POST /auth/register and does not use API Gateway stages.
+    if (isLocal) {
+      const signupUrl = `${apiBase}/auth/register`;
+      console.log('Calling signup endpoint (local):', signupUrl);
+
+      const response = await fetch(signupUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userData.email,
+          name: userData.name,
+          phone: userData.phone_number || '',
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || data.message || `Signup failed with status ${response.status}`);
       }
+      return data;
+    }
+
+    // Production / real API Gateway: normalize stage handling.
+    // Clean up API base URL - remove trailing slashes and /contact.
+    apiBase = apiBase.replace(/\/(contact)$/i, '');
+
+    // Ensure proper stage exists (support either /Prod or /prod).
+    if (!/\/prod$/i.test(apiBase)) {
+      apiBase = `${apiBase}/Prod`;
     }
 
     const signupUrl = `${apiBase}/auth/signup`;

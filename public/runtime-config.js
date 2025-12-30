@@ -24,3 +24,10 @@ window.__GROWKSH_RUNTIME_CONFIG__ = {
   // Toggle fake local auth ("1" or "true" to enable)
   VITE_USE_FAKE_AUTH: '0',
 };
+
+// Debug: confirm the file loaded and keys exist.
+// (Values may be empty until you set them.)
+try {
+  // eslint-disable-next-line no-console
+  console.info('[Growksh] runtime-config loaded', Object.keys(window.__GROWKSH_RUNTIME_CONFIG__ || {}));
+} catch (e) {}
