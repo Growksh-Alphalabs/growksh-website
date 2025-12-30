@@ -23,6 +23,18 @@ const API_URL = (RUNTIME_CONFIG.VITE_API_URL || import.meta.env.VITE_API_URL || 
 const useFakeRaw = (RUNTIME_CONFIG.VITE_USE_FAKE_AUTH || import.meta.env.VITE_USE_FAKE_AUTH || '').toString();
 const USE_FAKE = useFakeRaw === '1' || useFakeRaw.toLowerCase() === 'true';
 
+const IS_LOCALHOST =
+  typeof window !== 'undefined' &&
+  window.location &&
+  ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
+
+function isFakeAuthEnabled() {
+  // If running locally and Cognito IDs aren't provided, fall back to fake auth
+  // so developers can test the full UI flow without AWS.
+  const autoFakeForLocal = IS_LOCALHOST && (!USER_POOL_ID || !CLIENT_ID);
+  return USE_FAKE || runtimeFakeOverride || autoFakeForLocal;
+}
+
 const REGION =
   (RUNTIME_CONFIG.VITE_AWS_REGION || import.meta.env.VITE_AWS_REGION) ||
   (USER_POOL_ID ? USER_POOL_ID.split('_')[0] : undefined) ||
@@ -65,7 +77,7 @@ async function getCognitoSDK() {
 }
 
 async function getUserPool() {
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
+  if (isFakeAuthEnabled() || !USER_POOL_ID || !CLIENT_ID) {
     return null;
   }
 
@@ -162,7 +174,7 @@ export async function signup(userData) {
  * @returns {Promise<Object>} Auth session object
  */
 export async function initiateAuth(email) {
-  if (USE_FAKE || runtimeFakeOverride) {
+  if (isFakeAuthEnabled()) {
     return new Promise((resolve) => {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const session = 'fake-session-' + Math.random().toString(36).substring(7);
@@ -215,7 +227,7 @@ export async function initiateAuth(email) {
  * @returns {Promise<Object>} Authentication result with tokens
  */
 export async function verifyOTP({ email, otp, session }) {
-  if (USE_FAKE || runtimeFakeOverride) {
+  if (isFakeAuthEnabled()) {
     return new Promise((resolve, reject) => {
       const stored = pending.get(email);
       if (stored && otp === stored.otp) {
@@ -277,7 +289,7 @@ export async function verifyOTP({ email, otp, session }) {
  * @returns {Promise<Object|null>} User object or null if not authenticated
  */
 export async function getCurrentUser() {
-  if (USE_FAKE || runtimeFakeOverride) {
+  if (isFakeAuthEnabled()) {
     const token = localStorage.getItem('idToken')
     if (token && token.startsWith('fake-id-token')) {
       return { email: localStorage.getItem('userEmail'), isAuthenticated: true }
@@ -315,7 +327,7 @@ export async function getUserAttributes() {
   if (!user) return null;
 
   return new Promise((resolve, reject) => {
-    if (USE_FAKE) {
+    if (isFakeAuthEnabled()) {
       resolve({
         email: localStorage.getItem('userEmail'),
         name: localStorage.getItem('userName') || '',
@@ -376,7 +388,7 @@ export async function getIdToken() {
  * @returns {Promise<Object>} New session
  */
 export async function refreshTokens() {
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
+  if (isFakeAuthEnabled() || !USER_POOL_ID || !CLIENT_ID) {
     throw new Error('Token refresh not available in fake auth mode');
   }
 
@@ -418,7 +430,7 @@ export async function signOut() {
 
   clearCognitoLocalStorage()
 
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
+  if (isFakeAuthEnabled() || !USER_POOL_ID || !CLIENT_ID) {
     return;
   }
 
