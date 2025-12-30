@@ -1,25 +1,48 @@
-# Project Structure - Passwordless Auth Implementation
+# Project Structure - Complete Infrastructure Implementation
 
 ```
 growksh-website/
-├── 📄 IMPLEMENTATION_SUMMARY.md     ⭐ Start here! Overview of everything
+├── 📄 IMPLEMENTATION_COMPLETE.md     ⭐ Start here! Complete feature overview
 ├── 📄 QUICKSTART.md                 ⭐ 5-minute quick reference
-├── 📄 SETUP_CHECKLIST.md            ⭐ Step-by-step deployment guide
+├── 📄 DEPLOYMENT_RUNBOOK.md         ⭐ Step-by-step deployment guide
 ├── 📄 AUTH_IMPLEMENTATION.md        📖 Detailed technical documentation
 ├── 📄 CONFIG_REFERENCE.md           📖 Configuration options & reference
 │
 ├── .github/
 │   └── workflows/
-│       └── 🔄 deploy-sam.yml        ✅ UPDATED - CI/CD pipeline for SAM deployment
+│       ├── deploy-ephemeral.yaml    🚀 Feature branch deployments
+│       ├── deploy-develop.yaml      🚀 Development environment
+│       └── deploy-prod.yaml         🚀 Production environment (manual approval)
 │
 ├── infra/
 │   ├── 📄 README.md
-│   └── 🔄 sam-template.yaml         ✅ UPDATED - Complete IaC with all AWS services
-│                                      - Cognito User Pool + Client
-│                                      - 6 Lambda functions
-│                                      - 2 DynamoDB tables
-│                                      - API Gateway endpoints
-│                                      - SES integration
+│   │
+│   ├── cloudformation/              ✨ NEW - 9 modular CloudFormation stacks
+│   │   ├── 00-iam-stack.yaml        - IAM roles and policies
+│   │   ├── 01-database-stack.yaml   - DynamoDB tables
+│   │   ├── 02-cognito-stack.yaml    - Cognito User Pool
+│   │   ├── 03-waf-stack.yaml        - AWS WAFv2 for CloudFront
+│   │   ├── 04-lambda-code-bucket-stack.yaml - Lambda code S3 bucket
+│   │   ├── 05-storage-cdn-stack.yaml - S3 + CloudFront
+│   │   ├── 06-api-gateway-stack.yaml - REST API Gateway
+│   │   ├── 07-cognito-lambdas-stack.yaml - Auth Lambda functions
+│   │   ├── 08-api-lambdas-stack.yaml - API Lambda functions
+│   │   └── parameters/              - Environment-specific parameters
+│   │       ├── dev-*.json
+│   │       ├── prod-*.json
+│   │       └── ephemeral-*.json
+│   │
+│   ├── scripts/                     ✨ NEW - Deployment automation
+│   │   ├── deploy-stacks.sh         - Deploy all stacks in order
+│   │   ├── validate-templates.sh    - Validate CloudFormation templates
+│   │   └── cleanup-stacks.sh        - Delete ephemeral stacks
+│   │
+│   ├── iam/                         - IAM policy templates
+│   │   ├── growksh-developer-policy.json
+│   │   ├── developer-read-only-policy.json
+│   │   └── trust-policy.json
+│   │
+│   └── [archived] sam-template.yaml - DEPRECATED - See cloudformation/ for new structure
 │
 ├── aws-lambda/
 │   ├── contact/
@@ -27,17 +50,16 @@ growksh-website/
 │   │   ├── Makefile
 │   │   └── package.json
 │   │
-│   └── auth/                        ✨ NEW - Passwordless auth functions
-│       ├── 🆕 pre-sign-up.js        - Auto-confirm users in Cognito
-│       ├── 🆕 custom-message.js     - Send verification email
-│       ├── 🆕 create-auth-challenge.js - Generate & send OTP
-│       ├── 🆕 verify-auth-challenge.js - Validate OTP from user
-       ├── 🆕 define-auth-challenge.js - Orchestrate auth challenge flow
-       ├── 🆕 post-confirmation.js  - Post-signup hook
-       ├── 🆕 signup.js             - Create user endpoint
-       ├── 🆕 verify-email.js       - Verify email with magic link
-       ├── 🆕 check-user.js         - Check if email exists (NEW)
-│       └── 🆕 package.json          - Dependencies
+│   └── auth/                        - Passwordless auth functions
+│       ├── pre-sign-up.js           - Auto-confirm users in Cognito
+│       ├── custom-message.js        - Send verification email
+│       ├── create-auth-challenge.js - Generate & send OTP
+│       ├── verify-auth-challenge.js - Validate OTP from user
+│       ├── define-auth-challenge.js - Orchestrate auth challenge flow
+│       ├── post-confirmation.js     - Post-signup hook
+│       ├── signup.js                - Create user endpoint
+│       ├── verify-email.js          - Verify email with magic link
+│       └── package.json             - Dependencies
 │
 ├── src/
 │   ├── 🔄 App.jsx                  ✅ UPDATED - Added auth routes & AuthProvider
@@ -47,12 +69,14 @@ growksh-website/
 │   │   │   ├── 🔄 Login.jsx         ✅ UPDATED - Passwordless OTP login
 │   │   │   ├── 🔄 Signup.jsx        ✅ UPDATED - Registration form with validation
 │   │   │   ├── 🆕 VerifyEmail.jsx   - Email verification page
+│   │   │   ├── AdminLogin.jsx       - Admin OTP login
 │   │   │   └── OidcTrigger.jsx
 │   │   │
 │   │   ├── common/
 │   │   │   ├── Button.jsx
 │   │   │   ├── Layout.jsx
 │   │   │   ├── Navbar.jsx
+│   │   │   ├── ProtectedRoute.jsx   - Auth guard component
 │   │   │   ├── PurpleClouds.jsx
 │   │   │   └── ScrollToTop.jsx
 │   │   │
@@ -66,6 +90,7 @@ growksh-website/
 │   │       - logout()
 │   │       - getIdToken()
 │   │       - refreshToken()
+│   │       - getCurrentUser()
 │   │
 │   ├── lib/
 │   │   ├── 🔄 cognito.js            ✅ UPDATED - Complete auth API
@@ -86,6 +111,7 @@ growksh-website/
 │   │   ├── Home.jsx
 │   │   ├── About.jsx
 │   │   ├── Contact.jsx
+│   │   ├── AdminDashboard.jsx       - Admin panel (protected)
 │   │   ├── Alphalabs/
 │   │   ├── Insights/
 │   │   ├── Ventures/
@@ -115,6 +141,7 @@ Legend:
   ✨ NEW     - Newly created
   ✅ UPDATED - Modified from original
   🔄         - Auto-managed/generated
+  🚀         - Deployment pipeline
   ⭐         - Important! Start here
   📖         - Reference documentation
   📄         - Document/Config file
@@ -125,17 +152,34 @@ Legend:
 ## Key Files Explained
 
 ### 1. Core Infrastructure
-**`infra/sam-template.yaml`** (600+ lines)
-- Complete AWS infrastructure definition
-- Cognito User Pool configuration with 8 triggers
-- 9 Lambda functions defined
-- DynamoDB tables
-- API Gateway endpoints
-- IAM roles and permissions
-- CloudFormation outputs
+**`infra/cloudformation/`** - 9 modular CloudFormation stacks
 
-### 2. Lambda Functions (Backend)
-**`aws-lambda/auth/`** - 9 serverless functions
+| Stack | File | Resources |
+|-------|------|-----------|
+| **Stage 1** | `00-iam-stack.yaml` | IAM roles, policies |
+| **Stage 2** | `01-database-stack.yaml` | DynamoDB tables |
+| **Stage 2** | `02-cognito-stack.yaml` | Cognito User Pool + Client |
+| **Stage 3** | `03-waf-stack.yaml` | AWS WAFv2 Web ACL (us-east-1) |
+| **Stage 3** | `04-lambda-code-bucket-stack.yaml` | S3 bucket for Lambda code |
+| **Stage 4** | `05-storage-cdn-stack.yaml` | S3 + CloudFront + SSL |
+| **Stage 4** | `06-api-gateway-stack.yaml` | REST API endpoints |
+| **Stage 5** | `07-cognito-lambdas-stack.yaml` | Auth Lambda functions |
+| **Stage 5** | `08-api-lambdas-stack.yaml` | API Lambda functions |
+
+**Total Resources**: ~50+ AWS resources across all stacks
+
+### 2. Deployment Scripts
+**`infra/scripts/deploy-stacks.sh`** - Orchestrates all stack deployments
+
+```bash
+./infra/scripts/deploy-stacks.sh <environment>
+# Deploys all 9 stacks in dependency order
+# Updates Route53 DNS records if configured
+# Validates templates before deployment
+```
+
+### 3. Lambda Functions (Backend)
+**`aws-lambda/auth/`** - 8 serverless authentication functions
 
 | File | Purpose | Trigger | Language |
 |------|---------|---------|----------|
@@ -147,9 +191,8 @@ Legend:
 | `post-confirmation.js` | Post-signup hook | Cognito PostConfirmation | Node.js |
 | `signup.js` | Create user endpoint | API Gateway POST | Node.js |
 | `verify-email.js` | Verify email link | API Gateway GET | Node.js |
-| `check-user.js` | Check if email exists | API Gateway POST | Node.js |
 
-### 3. Frontend Components
+### 4. Frontend Components
 **`src/components/Auth/`** - React authentication UI
 
 | Component | Purpose | Routes |
@@ -157,8 +200,9 @@ Legend:
 | `Signup.jsx` | Registration form | `/signup` |
 | `Login.jsx` | OTP login flow | `/login` |
 | `VerifyEmail.jsx` | Email verification | `/auth/verify-email` |
+| `AdminLogin.jsx` | Admin OTP login | `/admin/login` |
 
-### 4. Auth Library
+### 5. Auth Library
 **`src/lib/cognito.js`** (350+ lines)
 - Complete Cognito SDK wrapper
 - All auth functions
@@ -166,20 +210,22 @@ Legend:
 - Fake auth for testing
 - Error handling
 
-### 5. State Management
+### 6. State Management
 **`src/context/AuthContext.jsx`** (200+ lines)
 - Global auth state
 - `useAuth()` custom hook
 - Auth methods (signup, login, logout, etc.)
 - Loading and error states
+- Admin status tracking
 
-### 6. CI/CD Pipeline
-**`.github/workflows/deploy-sam.yml`**
-- Automated deployment on push
-- SAM build and deploy
-- Lambda dependency installation
-- Stack outputs retrieval
-- OIDC or static key authentication
+### 7. CI/CD Workflows
+**`.github/workflows/`** - Three automated deployment pipelines
+
+| Workflow | Trigger | Target | Approval |
+|----------|---------|--------|----------|
+| `deploy-ephemeral.yaml` | Push to `feature/*` | Ephemeral stack | None (auto) |
+| `deploy-develop.yaml` | Merge to `develop` | Dev environment | None (auto) |
+| `deploy-prod.yaml` | Merge to `main` | Prod environment | Manual (required) |
 
 ---
 
@@ -350,28 +396,50 @@ dist/                      ← Built frontend
 
 ## Deployment Order
 
-1. **Infrastructure First**
-   ```bash
-   sam build
-   sam deploy  # Creates all AWS resources
-   ```
+The deploy script automatically handles this sequence:
 
-2. **Get Stack Outputs**
-   ```bash
-   aws cloudformation describe-stacks --stack-name growksh-infra
-   ```
+```
+Stage 1: Core Infrastructure
+  └─ 00-iam-stack.yaml (IAM roles & policies)
+  └─ 01-database-stack.yaml (DynamoDB tables)
+  └─ 02-cognito-stack.yaml (Cognito User Pool)
 
-3. **Update Frontend Config**
-   ```bash
-   # Add outputs to .env.local
-   npm install
-   npm run dev
-   ```
+Stage 2: Security & Storage
+  └─ 03-waf-stack.yaml (WAF - us-east-1 only)
+  └─ 04-lambda-code-bucket-stack.yaml (Lambda S3 bucket)
 
-4. **Test All Flows**
-   ```
-   Test signup → Check email → Verify → Test login → Test OTP
-   ```
+Stage 3: Frontend & API (Parallel)
+  └─ 05-storage-cdn-stack.yaml (S3 + CloudFront)
+  └─ 06-api-gateway-stack.yaml (REST API)
+
+Stage 4: Lambda Functions
+  └─ 07-cognito-lambdas-stack.yaml (Auth lambdas)
+  └─ 08-api-lambdas-stack.yaml (API lambdas)
+
+Stage 5: DNS Management (AWS CLI)
+  └─ Route53 UPSERT for domains (if configured)
+```
+
+### Automated Deployment Commands
+
+**Development:**
+```bash
+git push origin develop  # Automatic deployment via GitHub Actions
+# Or manually:
+./infra/scripts/deploy-stacks.sh dev
+```
+
+**Production:**
+```bash
+git push origin main     # Automatic deployment with manual approval
+# Requires approval in GitHub UI
+```
+
+**Feature/Ephemeral:**
+```bash
+git push origin feature/my-feature  # Automatic deployment
+# Auto-cleanup on PR merge/close
+```
 
 ---
 
@@ -432,6 +500,7 @@ dist/                      ← Built frontend
 
 ---
 
-**Last Updated**: December 22, 2025
-**Total Implementation Time**: ~4 hours
-**Ready for Production**: ✅ Yes (with security review)
+**Last Updated**: December 30, 2025
+**Total Implementation Time**: ~6 days (Dec 24-30)
+**Infrastructure**: 9 CloudFormation stacks + AWS CLI DNS management
+**Ready for Production**: ✅ Yes (fully tested with Route53 DNS)
