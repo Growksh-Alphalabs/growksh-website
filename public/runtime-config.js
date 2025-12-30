@@ -18,8 +18,8 @@ window.__GROWKSH_RUNTIME_CONFIG__ = {
 
   // Backend API base URL (API Gateway invoke URL)
   // AUTO-POPULATED by deployment script from CloudFormation exports
-  // For local dev, this falls back to .env.local VITE_API_URL
-  VITE_API_URL: 'https://b5230xgtzl.execute-api.ap-south-1.amazonaws.com/Prod',
+  // Starts empty - filled by update-runtime-config.sh after CloudFormation deployment
+  VITE_API_URL: '',
 
   // Optional: AWS region override
   VITE_AWS_REGION: 'ap-south-1',
