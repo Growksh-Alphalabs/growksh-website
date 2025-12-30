@@ -5,10 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/Ventures Logo.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Growksh</title>
+    <script
+      src="%BASE_URL%runtime-config.js"
+      onerror="console.error('[Growksh] Failed to load runtime-config.js (check S3 key / CloudFront invalidation)')"
+    ></script>
   </head>
   <body>
     <div id="root"></div>
-    <script src="%BASE_URL%runtime-config.js"></script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

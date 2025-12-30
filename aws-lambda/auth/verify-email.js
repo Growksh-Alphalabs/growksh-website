@@ -3,7 +3,7 @@
  * Handles verification of email via magic link
  */
 
-const crypto = require('crypto');
+const nodeCrypto = require('crypto');
 const { CognitoIdentityProviderClient, AdminUpdateUserAttributesCommand } = require('@aws-sdk/client-cognito-identity-provider');
 
 const corsHeaders = {
@@ -45,7 +45,7 @@ exports.handler = async (event) => {
 
     // Verify token signature
     const secret = process.env.VERIFY_SECRET;
-    const expectedToken = crypto
+    const expectedToken = nodeCrypto
       .createHmac('sha256', secret)
       .update(`${email}:${t}`)
       .digest('hex');

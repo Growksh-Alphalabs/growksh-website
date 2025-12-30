@@ -3,7 +3,7 @@
  * Sends signup verification link via email
  */
 
-const crypto = require('crypto');
+const nodeCrypto = require('crypto');
 
 exports.handler = async (event) => {
   console.log('CustomMessage event:', JSON.stringify(event, null, 2));
@@ -17,7 +17,7 @@ exports.handler = async (event) => {
     const timestamp = Math.floor(Date.now() / 1000);
 
     // Create HMAC signature for token
-    const token = crypto
+    const token = nodeCrypto
       .createHmac('sha256', secret)
       .update(`${email}:${timestamp}`)
       .digest('hex');

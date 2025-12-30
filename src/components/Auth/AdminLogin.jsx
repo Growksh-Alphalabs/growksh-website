@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { initiateAuth, verifyOTP } from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
@@ -14,7 +14,6 @@ export default function AdminLogin() {
   const [session, setSession] = useState('')
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [searchParams] = useSearchParams()
 
   // If already authenticated as admin, redirect to dashboard
   useEffect(() => {

@@ -43,6 +43,18 @@ export default function Login() {
         return
       }
 
+      // If the backend supports it, check whether the email is registered.
+      // If the endpoint is not deployed, we silently skip and proceed with Cognito initiateAuth.
+      try {
+        const existsRes = await checkUserExists(email)
+        if (existsRes && existsRes.exists === false) {
+          navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
+          return
+        }
+      } catch {
+        // Ignore missing endpoint / deployment differences.
+      }
+
       console.log('Initiating auth for:', email)
       const result = await initiateAuth(email)
       console.log('Auth initiated:', result)

@@ -5,7 +5,7 @@
 
 const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
-const crypto = require('crypto');
+const nodeCrypto = require('crypto');
 
 let cognito = null;
 let ses = null;
@@ -55,7 +55,7 @@ async function sendVerificationEmail({ email, name }) {
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const token = crypto
+  const token = nodeCrypto
     .createHmac('sha256', secret)
     .update(`${email}:${timestamp}`)
     .digest('hex');

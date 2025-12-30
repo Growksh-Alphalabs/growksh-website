@@ -8,7 +8,7 @@ export default function OidcTrigger() {
     const onSignIn = () => {
       try {
         auth.signinRedirect()
-      } catch (e) {
+      } catch {
         // ignore
       }
     }

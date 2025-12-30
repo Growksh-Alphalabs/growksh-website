@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk')
-const crypto = require('crypto')
+const nodeCrypto = require('crypto')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()
 const TABLE = process.env.CONTACTS_TABLE
@@ -41,7 +41,7 @@ exports.handler = async (event) => {
       return response(400, { error: 'Missing required fields: name, email, message' })
     }
 
-    const id = crypto.randomBytes(8).toString('hex')
+    const id = nodeCrypto.randomBytes(8).toString('hex')
     const item = {
       id,
       name,
