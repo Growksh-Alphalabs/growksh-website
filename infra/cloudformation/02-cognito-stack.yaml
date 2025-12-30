@@ -74,6 +74,12 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-pool-id'
 
+  UserPoolIdForRuntime:
+    Description: Cognito User Pool ID (for runtime-config)
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cognito-user-pool-id'
+
   UserPoolArn:
     Description: Cognito User Pool ARN
     Value: !GetAtt UserPool.Arn
@@ -85,3 +91,9 @@ Outputs:
     Value: !Ref UserPoolClient
     Export:
       Name: !Sub 'growksh-website-client-${Environment}-id'
+
+  UserPoolClientIdForRuntime:
+    Description: Cognito User Pool Client ID (for runtime-config)
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cognito-client-id'

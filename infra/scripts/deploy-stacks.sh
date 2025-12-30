@@ -418,6 +418,19 @@ else
   echo "═══════════════════════════════════════════════════"
 fi
 echo ""
+
+# Post-deployment: Update runtime configuration with deployment-specific values
+echo "🔄 Post-deployment: Updating runtime configuration..."
+if [ -f "infra/scripts/update-runtime-config.sh" ]; then
+  chmod +x infra/scripts/update-runtime-config.sh
+  ./infra/scripts/update-runtime-config.sh "$ENVIRONMENT" || {
+    echo "⚠️  Warning: Runtime configuration update failed, but deployment completed"
+    echo "   You may need to manually update public/runtime-config.js and invalidate CloudFront"
+  }
+else
+  echo "⚠️  Runtime config update script not found, skipping"
+fi
+echo ""
 echo "📊 Stack Status:"
 aws cloudformation describe-stacks \
   --query "Stacks[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
