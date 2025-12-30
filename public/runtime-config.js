@@ -18,10 +18,11 @@ window.__GROWKSH_RUNTIME_CONFIG__ = {
 
   // Backend API base URL (API Gateway invoke URL)
   // AUTO-POPULATED by deployment script from CloudFormation exports
-  VITE_API_URL: '',
+  // For local dev, this falls back to .env.local VITE_API_URL
+  VITE_API_URL: 'https://b5230xgtzl.execute-api.ap-south-1.amazonaws.com/Prod',
 
   // Optional: AWS region override
-  VITE_AWS_REGION: '',
+  VITE_AWS_REGION: 'ap-south-1',
 
   // Toggle fake auth ("1" or "true" to enable)
   VITE_USE_FAKE_AUTH: '0',
