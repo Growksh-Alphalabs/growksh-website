@@ -25,6 +25,9 @@ A full-stack React + Vite application with passwordless authentication powered b
    VITE_AWS_REGION=ap-south-1
    ```
 
+   For deployed environments (S3/CloudFront), the app also supports runtime config via `public/runtime-config.js`.
+   You can update that file after each deployment (e.g., from CloudFormation outputs) without rebuilding the frontend bundle.
+
 3. **Run development server:**
    ```bash
    npm run dev

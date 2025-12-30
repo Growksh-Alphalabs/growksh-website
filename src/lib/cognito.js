@@ -4,13 +4,27 @@ import {
   RespondToAuthChallengeCommand,
 } from '@aws-sdk/client-cognito-identity-provider';
 
-const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID;
-const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID;
-const API_URL = import.meta.env.VITE_API_URL || '';
-const USE_FAKE = import.meta.env.VITE_USE_FAKE_AUTH === '1' || import.meta.env.VITE_USE_FAKE_AUTH === 'true';
+const RUNTIME_CONFIG =
+  typeof window !== 'undefined' && window.__GROWKSH_RUNTIME_CONFIG__
+    ? window.__GROWKSH_RUNTIME_CONFIG__
+    : {};
+
+const USER_POOL_ID = (
+  RUNTIME_CONFIG.VITE_COGNITO_USER_POOL_ID ||
+  import.meta.env.VITE_COGNITO_USER_POOL_ID ||
+  ''
+).trim();
+const CLIENT_ID = (
+  RUNTIME_CONFIG.VITE_COGNITO_CLIENT_ID ||
+  import.meta.env.VITE_COGNITO_CLIENT_ID ||
+  ''
+).trim();
+const API_URL = (RUNTIME_CONFIG.VITE_API_URL || import.meta.env.VITE_API_URL || '').trim();
+const useFakeRaw = (RUNTIME_CONFIG.VITE_USE_FAKE_AUTH || import.meta.env.VITE_USE_FAKE_AUTH || '').toString();
+const USE_FAKE = useFakeRaw === '1' || useFakeRaw.toLowerCase() === 'true';
 
 const REGION =
-  import.meta.env.VITE_AWS_REGION ||
+  (RUNTIME_CONFIG.VITE_AWS_REGION || import.meta.env.VITE_AWS_REGION) ||
   (USER_POOL_ID ? USER_POOL_ID.split('_')[0] : undefined) ||
   'ap-south-1';
 
@@ -34,7 +48,7 @@ function clearCognitoLocalStorage() {
 
 // Provide a helpful error when env vars are missing
 const missingMsg =
-  'Cognito UserPoolId and ClientId are not configured. Set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID in .env.local or enable VITE_USE_FAKE_AUTH=1 for local testing.';
+  'Cognito UserPoolId and ClientId are not configured. Set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID (either in .env.local for dev or in public/runtime-config.js for deployments), then refresh/restart. For local testing without AWS, set VITE_USE_FAKE_AUTH=1.';
 
 // Mock implementation for fake auth
 const pending = new Map(); // email -> { otp, session }
