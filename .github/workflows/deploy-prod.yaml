@@ -122,8 +122,10 @@ jobs:
             - growksh-website-iam-prod
             - growksh-website-database-prod
             - growksh-website-cognito-prod
+            - growksh-website-waf-prod
+            - growksh-website-lambda-code-bucket-prod
             - growksh-website-storage-cdn-prod
-            - growksh-website-api-prod
+            - growksh-website-api-gateway-prod
             - growksh-website-cognito-lambdas-prod
             - growksh-website-api-lambdas-prod
           draft: false

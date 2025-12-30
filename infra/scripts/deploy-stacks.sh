@@ -46,12 +46,13 @@ echo "📦 Lambda bucket: $LAMBDA_BUCKET_NAME"
 echo "⏱️  Timestamp: $(date)"
 echo ""
 
-# Function to deploy a stack
+# Function to deploy a stack with optional dynamic parameters
 deploy_stack() {
   local stack_name=$1
   local template_file=$2
   local param_file=$3
   local deploy_region=${4:-$REGION}  # Use provided region or default to REGION
+  local extra_params="$5"  # Additional parameters to append
 
   echo "📦 Deploying stack: $stack_name (region: $deploy_region)"
 
@@ -66,6 +67,11 @@ deploy_stack() {
     # Add parameters from file if any
     if [ -n "$params_from_file" ]; then
       param_overrides="$param_overrides $params_from_file"
+    fi
+
+    # Add extra parameters if provided
+    if [ -n "$extra_params" ]; then
+      param_overrides="$param_overrides $extra_params"
     fi
 
     # Add dynamic overrides for dynamic values (BucketName, WAFArn, etc.)
@@ -308,8 +314,83 @@ deploy_stack \
   "$TEMPLATE_DIR/05-storage-cdn-stack.yaml" \
   "$PARAM_FILE"
 
-# Stage 9: API Gateway (no dependencies)
-echo "Stage 9️⃣: API Gateway"
+# Stage 6.5: Route53 DNS Records (depends on storage-cdn for CloudFront domain)
+echo "Stage 6️⃣.5️⃣: Route53 DNS Records"
+if [[ "$ENVIRONMENT" != feature-* ]]; then
+  # Determine parameter file
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-09-route53-stack.json"
+
+  # Only deploy Route53 if DomainNames are configured in parameter file
+  if [ -f "$PARAM_FILE" ] && grep -q "DomainNames" "$PARAM_FILE"; then
+    # Get CloudFront domain name from storage-cdn stack
+    CLOUDFRONT_DOMAIN=$(aws cloudformation describe-stacks \
+      --stack-name "growksh-website-storage-cdn-$ENVIRONMENT" \
+      --region "$REGION" \
+      --query 'Stacks[0].Outputs[?OutputKey==`CloudFrontDomainName`].OutputValue' \
+      --output text 2>/dev/null || echo "")
+
+    if [ -n "$CLOUDFRONT_DOMAIN" ] && [ "$CLOUDFRONT_DOMAIN" != "None" ]; then
+      # Get hosted zone and domain names from parameter file
+      HOSTED_ZONE_ID=$(cat "$PARAM_FILE" | jq -r '.[] | select(.ParameterKey=="HostedZoneId") | .ParameterValue')
+      DOMAIN_NAMES=$(cat "$PARAM_FILE" | jq -r '.[] | select(.ParameterKey=="DomainNames") | .ParameterValue' | tr ',' '\n' | xargs)
+
+      if [ -n "$HOSTED_ZONE_ID" ] && [ -n "$DOMAIN_NAMES" ]; then
+        # Update Route53 records using AWS CLI instead of CloudFormation
+        # This avoids issues with CloudFormation trying to create records that already exist
+        echo "  Updating Route53 records for CloudFront domain: $CLOUDFRONT_DOMAIN"
+
+        # Read domain names as array
+        read -ra DOMAINS <<< "$DOMAIN_NAMES"
+
+        for DOMAIN in "${DOMAINS[@]}"; do
+          echo "  - Updating A record for: $DOMAIN"
+
+          # Create a JSON change batch for this domain
+          CHANGE_BATCH=$(cat <<EOF
+{
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "$DOMAIN",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "Z2FDTNDATAQYW2",
+          "DNSName": "$CLOUDFRONT_DOMAIN",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}
+EOF
+)
+
+          # Update the Route53 record
+          if aws route53 change-resource-record-sets \
+            --hosted-zone-id "$HOSTED_ZONE_ID" \
+            --change-batch "$CHANGE_BATCH" \
+            --region "$REGION" > /dev/null 2>&1; then
+            echo "    ✅ Successfully updated Route53 record for $DOMAIN"
+          else
+            echo "    ❌ Failed to update Route53 record for $DOMAIN"
+            DEPLOYMENT_FAILED=true
+          fi
+        done
+      else
+        echo "⚠️  Could not extract hosted zone or domain names from parameter file"
+      fi
+    else
+      echo "⚠️  Could not get CloudFront domain name, skipping Route53 update"
+    fi
+  else
+    echo "⏭️  Skipping Route53 update (DomainNames not configured for this environment)"
+  fi
+  echo ""
+fi
+
+# Stage 7: API Gateway (no dependencies)
+echo "Stage 7️⃣: API Gateway"
 deploy_stack \
   "growksh-website-api-$ENVIRONMENT" \
   "$TEMPLATE_DIR/06-api-gateway-stack.yaml"

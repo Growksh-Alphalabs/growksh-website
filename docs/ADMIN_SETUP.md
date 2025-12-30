@@ -28,13 +28,21 @@ AWS Cognito User Pool
 ```
 Admin visits /admin/login
     ↓
-Enters: Email + Password
+Enters: Email
     ↓
-Frontend: adminLogin(email, password)
+Frontend: initiateAuth(email)
     ↓
-Lambda: USER_PASSWORD_AUTH flow
+Lambda: CUSTOM_AUTH flow (OTP-based)
     ↓
-Cognito: Validates credentials
+Cognito CreateAuthChallenge trigger fires
+    ↓
+OTP generated and sent via SES email
+    ↓
+Admin enters OTP
+    ↓
+Frontend: verifyOTP(otp, session)
+    ↓
+Cognito: Validates OTP and returns tokens
     ↓
 Returns: ID Token (contains cognito:groups)
     ↓
