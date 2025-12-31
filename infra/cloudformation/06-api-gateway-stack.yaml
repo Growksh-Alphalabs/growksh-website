@@ -227,7 +227,7 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
-  Outputs:
+Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint
     Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
