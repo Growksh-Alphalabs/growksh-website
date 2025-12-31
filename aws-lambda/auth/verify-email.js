@@ -7,7 +7,7 @@ const nodeCrypto = require('crypto');
 const { CognitoIdentityProviderClient, AdminUpdateUserAttributesCommand } = require('@aws-sdk/client-cognito-identity-provider');
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://d2eipj1xhqte5b.cloudfront.net',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'OPTIONS,GET',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   'Content-Type': 'application/json',
@@ -45,6 +45,9 @@ exports.handler = async (event) => {
 
     // Verify token signature
     const secret = process.env.VERIFY_SECRET;
+    if (!secret) {
+      return response(500, { error: 'VERIFY_SECRET is not configured' });
+    }
     const expectedToken = nodeCrypto
       .createHmac('sha256', secret)
       .update(`${email}:${t}`)

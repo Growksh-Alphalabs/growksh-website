@@ -11,7 +11,7 @@ let cognito = null;
 let ses = null;
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://d2eipj1xhqte5b.cloudfront.net',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   'Content-Type': 'application/json'
@@ -38,6 +38,26 @@ function getSes() {
     ses = new SESClient({ region: process.env.AWS_REGION });
   }
   return ses;
+}
+
+function parseJsonBody(event) {
+  if (!event || event.body == null) return {};
+
+  let raw = event.body;
+  if (event.isBase64Encoded && typeof raw === 'string') {
+    raw = Buffer.from(raw, 'base64').toString('utf8');
+  }
+
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      throw new Error('Invalid JSON body');
+    }
+  }
+
+  if (typeof raw === 'object') return raw;
+  return {};
 }
 
 function isE164(phone) {
@@ -93,7 +113,14 @@ exports.handler = async (event) => {
     }
 
     const cognitoClient = getCognito();
-    const body = JSON.parse(event.body || '{}');
+
+    let body;
+    try {
+      body = parseJsonBody(event);
+    } catch (e) {
+      return response(400, { error: e.message || 'Invalid request body' });
+    }
+
     const { email, name, phone_number } = body;
 
     if (!email || !name) {
