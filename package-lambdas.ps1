@@ -5,28 +5,6 @@ $S3Bucket = "growksh-website-lambda-code-dev"
 $AWSRegion = "ap-south-1"
 $Environment = "dev"
 
-# Safety guard: require explicit AWS_PROFILE and correct AWS account
-$RequiredAwsAccountId = if ($env:REQUIRED_AWS_ACCOUNT_ID) { $env:REQUIRED_AWS_ACCOUNT_ID } else { '720427058396' }
-if (-not $env:AWS_PROFILE) {
-    Write-Host "❌ Refusing to run without AWS_PROFILE." -ForegroundColor Red
-    Write-Host "   Set AWS_PROFILE to a role/profile in account $RequiredAwsAccountId." -ForegroundColor Yellow
-    exit 1
-}
-
-try {
-    $caller = aws sts get-caller-identity --region $AWSRegion | ConvertFrom-Json
-} catch {
-    Write-Host "❌ Unable to determine active AWS account (sts get-caller-identity failed)." -ForegroundColor Red
-    exit 1
-}
-
-if (-not $caller.Account -or $caller.Account -ne $RequiredAwsAccountId) {
-    Write-Host "❌ Refusing to run: AWS account mismatch." -ForegroundColor Red
-    Write-Host "   Active:   $($caller.Account)" -ForegroundColor Yellow
-    Write-Host "   Required: $RequiredAwsAccountId" -ForegroundColor Yellow
-    exit 1
-}
-
 Write-Host "Lambda Packaging and Upload Script" -ForegroundColor Cyan
 
 # API Lambda functions to package

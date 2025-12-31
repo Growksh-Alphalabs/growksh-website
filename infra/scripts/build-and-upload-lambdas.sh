@@ -20,26 +20,6 @@ PROJECT_ROOT=$(cd "$(dirname "$0")"/../.. && pwd)
 LAMBDA_DIR="$PROJECT_ROOT/aws-lambda"
 BUILD_DIR="$PROJECT_ROOT/.build/lambda"
 
-# Safety guard: require explicit AWS_PROFILE and correct AWS account
-REQUIRED_AWS_ACCOUNT_ID=${REQUIRED_AWS_ACCOUNT_ID:-720427058396}
-if [ -z "${AWS_PROFILE:-}" ]; then
-  echo "❌ Refusing to run without AWS_PROFILE." >&2
-  echo "   Set AWS_PROFILE to a role/profile in account ${REQUIRED_AWS_ACCOUNT_ID}." >&2
-  exit 1
-fi
-
-ACTIVE_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --region "$REGION" 2>/dev/null || echo "")
-if [ -z "$ACTIVE_ACCOUNT_ID" ]; then
-  echo "❌ Unable to determine active AWS account (sts get-caller-identity failed)." >&2
-  exit 1
-fi
-if [ "$ACTIVE_ACCOUNT_ID" != "$REQUIRED_AWS_ACCOUNT_ID" ]; then
-  echo "❌ Refusing to run: AWS account mismatch." >&2
-  echo "   Active:   $ACTIVE_ACCOUNT_ID" >&2
-  echo "   Required: $REQUIRED_AWS_ACCOUNT_ID" >&2
-  exit 1
-fi
-
 echo "🔨 Building Lambda functions for environment: $ENVIRONMENT"
 echo "📦 Target bucket: $LAMBDA_BUCKET"
 echo "📂  Build directory: $BUILD_DIR"
