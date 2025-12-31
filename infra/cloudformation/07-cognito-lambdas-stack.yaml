@@ -19,6 +19,11 @@ Parameters:
     Type: String
     Description: Frontend URL for email verification
     Default: https://dev.growksh.com/auth/verify-email
+
+  VerifySecret:
+    Type: String
+    Description: Secret used to sign verification links (HMAC). Must match API Lambdas.
+    Default: ''
   DebugLogOTP:
     Type: String
     Default: '0'
@@ -58,6 +63,8 @@ Resources:
       Environment:
         Variables:
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
+          VERIFY_SECRET: !Ref VerifySecret
+          DEBUG_LOG: !Ref DebugLogOTP
       Tags:
         - Key: App
           Value: Website

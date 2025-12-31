@@ -10,11 +10,11 @@
 window.__GROWKSH_RUNTIME_CONFIG__ = {
   // Cognito User Pool (example: ap-south-1_AbCdEfGhI)
   // Auto-updated by deployment script from CloudFormation exports
-  VITE_COGNITO_USER_POOL_ID: 'ap-south-1_eZJJn3M9A',
+  VITE_COGNITO_USER_POOL_ID: 'ap-south-1_KjzKKZVDm',
 
   // Cognito App Client ID (no secret)
   // Auto-updated by deployment script from CloudFormation exports
-  VITE_COGNITO_CLIENT_ID: '2uaba43qlqlnach4jdbk3mm29p',
+  VITE_COGNITO_CLIENT_ID: '2idkk2pafuhbrcfr62uanh3mt8',
 
   // Backend API base URL (API Gateway invoke URL)
   // AUTO-POPULATED by deployment script from CloudFormation exports
