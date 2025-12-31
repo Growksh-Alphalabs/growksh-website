@@ -10,16 +10,16 @@
 window.__GROWKSH_RUNTIME_CONFIG__ = {
   // Cognito User Pool (example: ap-south-1_AbCdEfGhI)
   // Auto-updated by deployment script from CloudFormation exports
-  VITE_COGNITO_USER_POOL_ID: 'ap-south-1_KjzKKZVDm',
+  VITE_COGNITO_USER_POOL_ID: 'ap-south-1_NiqhNWvf8',
 
   // Cognito App Client ID (no secret)
   // Auto-updated by deployment script from CloudFormation exports
-  VITE_COGNITO_CLIENT_ID: '2idkk2pafuhbrcfr62uanh3mt8',
+  VITE_COGNITO_CLIENT_ID: '3cviqovg35pjt8n9e90gp8pum4',
 
   // Backend API base URL (API Gateway invoke URL)
   // AUTO-POPULATED by deployment script from CloudFormation exports
   // Starts empty - filled by update-runtime-config.sh after CloudFormation deployment
-  VITE_API_URL: 'https://dfinny76s0.execute-api.ap-south-1.amazonaws.com/feature-77d07ae1',
+  VITE_API_URL: 'https://8hz8oz0aef.execute-api.ap-south-1.amazonaws.com/feature-77d07ae1',
 
   // Optional: AWS region override
   VITE_AWS_REGION: 'ap-south-1',
