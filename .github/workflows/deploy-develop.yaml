@@ -51,6 +51,25 @@ jobs:
         env:
           AWS_REGION: ap-south-1
 
+      - name: Get API Endpoint from CloudFormation
+        id: api-config
+        run: |
+          API_ENDPOINT=$(aws cloudformation describe-stacks --stack-name growksh-website-api-dev --query 'Stacks[0].Outputs[?OutputKey==`ApiEndpoint`].OutputValue' --output text)
+          if [ -z "$API_ENDPOINT" ] || [ "$API_ENDPOINT" == "None" ]; then
+            echo "⚠️  API endpoint not found, using fallback"
+          else
+            echo "api_endpoint=$API_ENDPOINT" >> $GITHUB_OUTPUT
+            echo "✅ API Endpoint retrieved: $API_ENDPOINT"
+          fi
+
+      - name: Update runtime-config.js with API URL
+        if: steps.api-config.outputs.api_endpoint != ''
+        run: |
+          # Update public/runtime-config.js with the actual API endpoint
+          sed -i "s|VITE_API_URL: ''|VITE_API_URL: '${{ steps.api-config.outputs.api_endpoint }}'|g" public/runtime-config.js
+          echo "✅ Updated runtime-config.js with API URL"
+          grep "VITE_API_URL" public/runtime-config.js
+
       - name: Build frontend
         run: npm run build
 

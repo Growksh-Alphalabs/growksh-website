@@ -25,7 +25,7 @@ window.__GROWKSH_RUNTIME_CONFIG__ = {
   VITE_AWS_REGION: 'ap-south-1',
 
   // Toggle fake auth ("1" or "true" to enable)
-  VITE_USE_FAKE_AUTH: '1',
+  VITE_USE_FAKE_AUTH: '0',
 };
 
 try {

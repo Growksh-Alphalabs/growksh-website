@@ -2,6 +2,8 @@
 // It typically expects SigV4 credentials, while Cognito User Pool auth flows from the browser are
 // designed to work without AWS credentials (as used by amazon-cognito-identity-js).
 
+import { getApiUrl as getApiUrlAsync } from './configLoader'
+
 const IS_LOCALHOST =
   typeof window !== 'undefined' &&
   window.location &&
@@ -28,7 +30,13 @@ function getClientId() {
 }
 
 function getApiUrl() {
-  return getConfigValue('VITE_API_URL')
+  const configValue = getConfigValue('VITE_API_URL')
+  if (configValue) {
+    return configValue
+  }
+  // If sync value is empty, caller should use getApiUrlAsync() from configLoader
+  // This maintains backward compatibility
+  return ''
 }
 
 function getRegion() {
@@ -72,10 +80,13 @@ async function cognitoIdpRequest(target, payload) {
 }
 
 function normalizeApiGatewayBase(apiUrl) {
+  // Remove trailing slashes
   let apiBase = (apiUrl || '').trim().replace(/\/+$/, '')
-  apiBase = apiBase.replace(/\/(contact)$/i, '')
-  apiBase = apiBase.replace(/\/(prod)$/i, '')
-  return `${apiBase}/Prod`
+  
+  // The API URL from CloudFormation already includes the stage (e.g., /feature-77d07ae1)
+  // So we should NOT add /Prod or any other stage
+  // Just return the URL as-is
+  return apiBase
 }
 
 let runtimeFakeOverride = false;
@@ -166,7 +177,13 @@ export async function signup(userData) {
       };
     }
 
-    const apiUrl = getApiUrl()
+    // Try sync config first, then async fallback
+    let apiUrl = getApiUrl()
+    if (!apiUrl) {
+      console.warn('[Signup] API URL not in sync config, attempting async load...')
+      apiUrl = await getApiUrlAsync()
+    }
+
     if (!apiUrl) {
       throw new Error(
         'API_URL is not configured. For deployments, set VITE_API_URL in public/runtime-config.js (and invalidate CloudFront for runtime-config.js + index.html).'
@@ -207,7 +224,13 @@ export async function checkUserExists(email) {
     return { exists: true }
   }
 
-  const apiUrl = getApiUrl()
+  // Try sync config first, then async fallback
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    console.warn('[CheckUser] API URL not in sync config, attempting async load...')
+    apiUrl = await getApiUrlAsync()
+  }
+
   if (!apiUrl) {
     throw new Error(
       'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
