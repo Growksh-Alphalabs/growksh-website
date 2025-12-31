@@ -90,8 +90,10 @@ Deletes all CloudFormation stacks matching an environment prefix. Used for clean
 To deploy locally:
 
 ```bash
-# Set AWS credentials (via AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, or AWS profile)
-export AWS_PROFILE=default
+# Safety: scripts require an explicit AWS_PROFILE and will refuse to run
+# unless the active AWS account matches REQUIRED_AWS_ACCOUNT_ID (default: 720427058396)
+export AWS_PROFILE=<your-deploy-role-profile>
+export REQUIRED_AWS_ACCOUNT_ID=720427058396
 
 # Deploy to development
 ./infra/scripts/deploy-stacks.sh dev

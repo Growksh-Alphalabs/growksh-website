@@ -15,6 +15,27 @@ REGION=${AWS_REGION:-ap-south-1}
 RUNTIME_CONFIG_FILE="public/runtime-config.js"
 TEMP_CONFIG="/tmp/runtime-config-$$.js"
 
+# Safety guard: require explicit AWS_PROFILE and correct AWS account
+REQUIRED_AWS_ACCOUNT_ID=${REQUIRED_AWS_ACCOUNT_ID:-720427058396}
+if [ -z "${AWS_PROFILE:-}" ]; then
+  echo "❌ Refusing to run without AWS_PROFILE." >&2
+  echo "   Set AWS_PROFILE to a role/profile in account ${REQUIRED_AWS_ACCOUNT_ID}." >&2
+  exit 1
+fi
+
+ACTIVE_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --region "$REGION" 2>/dev/null || echo "")
+if [ -z "$ACTIVE_ACCOUNT_ID" ]; then
+  echo "❌ Unable to determine active AWS account (sts get-caller-identity failed)." >&2
+  exit 1
+fi
+if [ "$ACTIVE_ACCOUNT_ID" != "$REQUIRED_AWS_ACCOUNT_ID" ]; then
+  echo "❌ Refusing to run: AWS account mismatch." >&2
+  echo "   Active:   $ACTIVE_ACCOUNT_ID" >&2
+  echo "   Required: $REQUIRED_AWS_ACCOUNT_ID" >&2
+  echo "   Hint: export AWS_PROFILE=<role-in-${REQUIRED_AWS_ACCOUNT_ID}>" >&2
+  exit 1
+fi
+
 if [ -z "$ENVIRONMENT" ]; then
   echo "❌ Error: Environment name is required"
   echo "Usage: $0 <environment>"
