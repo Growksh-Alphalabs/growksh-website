@@ -31,9 +31,8 @@ export default function VerifyEmail() {
         }
 
         let apiBase = apiUrl.replace(/\/+$/, '')
-        apiBase = apiBase.replace(/\/(contact)$/i, '')
-        apiBase = apiBase.replace(/\/(prod)$/i, '')
-        apiBase = `${apiBase}/Prod`
+        // CloudFormation exports already include the complete URL with stage
+        // So we should NOT add /Prod or any other stage
 
         const response = await fetch(
           `${apiBase}/auth/verify-email?email=${encodeURIComponent(
