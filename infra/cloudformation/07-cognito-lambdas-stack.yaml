@@ -167,6 +167,8 @@ Resources:
         Variables:
           OTP_TABLE: !ImportValue
             Fn::Sub: 'growksh-website-${Environment}-auth-otp-table'
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
       Tags:
         - Key: App
           Value: Website
