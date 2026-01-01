@@ -152,15 +152,18 @@ Resources:
   SendOTPResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
-      ParentId: !ImportValue !Sub 'growksh-website-${Environment}-api-root-resource-id'
+      RestApiId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-id'
+      ParentId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-root-resource-id'
       PathPart: send-otp
 
   # API Gateway POST Method for Send OTP
   SendOTPMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      RestApiId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-id'
       ResourceId: !Ref SendOTPResource
       HttpMethod: POST
       AuthorizationType: NONE
@@ -173,15 +176,18 @@ Resources:
   VerifyOTPResource:
     Type: AWS::ApiGateway::Resource
     Properties:
-      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
-      ParentId: !ImportValue !Sub 'growksh-website-${Environment}-api-root-resource-id'
+      RestApiId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-id'
+      ParentId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-root-resource-id'
       PathPart: verify-otp
 
   # API Gateway POST Method for Verify OTP
   VerifyOTPMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      RestApiId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-id'
       ResourceId: !Ref VerifyOTPResource
       HttpMethod: POST
       AuthorizationType: NONE
@@ -197,7 +203,8 @@ Resources:
       - SendOTPMethod
       - VerifyOTPMethod
     Properties:
-      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      RestApiId: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-api-id'
       StageName: !Ref Environment
 
 Outputs:

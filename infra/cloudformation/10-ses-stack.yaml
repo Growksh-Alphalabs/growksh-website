@@ -23,9 +23,9 @@ Parameters:
 Resources:
   # Email Identity for Growksh
   VerifiedEmailIdentity:
-    Type: AWS::SES::EmailIdentity
+    Type: AWS::SES::VerifiedEmailIdentity
     Properties:
-      Identity: !Ref FromEmailAddress
+      EmailAddress: !Ref FromEmailAddress
 
   # Configuration Set for Email Delivery Tracking
   SESConfigurationSet:
@@ -45,8 +45,11 @@ Resources:
           - bounce
           - complaint
         CloudWatchDestination:
-          IAMRoleARN: !GetAtt SESCloudWatchRole.Arn
-          LogGroupName: !Ref SESBounceLogGroup
+          IAMRoleArn: !GetAtt SESCloudWatchRole.Arn
+          DimensionConfigurations:
+            - DimensionName: Configuration Set
+              DimensionValueSource: MessageTag
+              DefaultDimensionValue: default
 
   # CloudWatch Log Group for Email Bounces
   SESBounceLogGroup:
@@ -54,28 +57,6 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/ses/growksh/${Environment}/bounces'
       RetentionInDays: 30
-
-  # IAM Role for SES to write to CloudWatch
-  SESCloudWatchRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ses.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: SESCloudWatchPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:PutLogEvents
-                  - logs:CreateLogStream
-                Resource: !GetAtt SESBounceLogGroup.Arn
 
   # SNS Topic for Email Delivery Notifications
   SESNotificationTopic:
