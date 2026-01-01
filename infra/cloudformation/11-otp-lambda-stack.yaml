@@ -31,6 +31,11 @@ Parameters:
     Description: Cognito User Pool ID (optional, for email verification)
     Default: ''
 
+  FromEmailAddress:
+    Type: String
+    Description: Verified SES sender email address (must be verified in SES)
+    AllowedPattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
 Conditions:
   HasCognitoUserPool: !Not [!Equals [!Ref CognitoUserPoolId, '']]
 
@@ -65,7 +70,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-send-otp-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: send-otp.handler
       Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/growksh-website-auth-lambda-${Environment}'
       Timeout: 30
@@ -75,13 +80,12 @@ Resources:
         S3Key: !Sub 'send-otp${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
-          FROM_EMAIL: !Sub '{{resolve:secretsmanager:growksh/${Environment}/ses:SecureString:FromEmail}}'
+          FROM_EMAIL: !Ref FromEmailAddress
           OTP_TEMPLATE_NAME: !Sub 'growksh-${Environment}-otp-verification'
           OTP_LENGTH: '6'
           OTP_EXPIRY_MINUTES: '5'
           OTP_TABLE_NAME: !Ref OTPVerificationTable
           ENVIRONMENT: !Ref Environment
-          AWS_REGION: !Ref 'AWS::Region'
       Tags:
         - Key: App
           Value: Website
@@ -95,7 +99,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub 'growksh-verify-otp-${Environment}'
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Handler: verify-otp.handler
       Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/growksh-website-auth-lambda-${Environment}'
       Timeout: 30
@@ -107,7 +111,6 @@ Resources:
         Variables:
           OTP_TABLE_NAME: !Ref OTPVerificationTable
           COGNITO_USER_POOL_ID: !If [HasCognitoUserPool, !Ref CognitoUserPoolId, '']
-          AWS_REGION: !Ref 'AWS::Region'
       Tags:
         - Key: App
           Value: Website

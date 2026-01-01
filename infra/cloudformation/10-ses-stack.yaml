@@ -23,9 +23,9 @@ Parameters:
 Resources:
   # Email Identity for Growksh
   VerifiedEmailIdentity:
-    Type: AWS::SES::VerifiedEmailIdentity
+    Type: AWS::SES::EmailIdentity
     Properties:
-      EmailAddress: !Ref FromEmailAddress
+      EmailIdentity: !Ref FromEmailAddress
 
   # Configuration Set for Email Delivery Tracking
   SESConfigurationSet:
@@ -45,10 +45,9 @@ Resources:
           - bounce
           - complaint
         CloudWatchDestination:
-          IAMRoleArn: !GetAtt SESCloudWatchRole.Arn
           DimensionConfigurations:
-            - DimensionName: Configuration Set
-              DimensionValueSource: MessageTag
+            - DimensionName: configuration_set
+              DimensionValueSource: messageTag
               DefaultDimensionValue: default
 
   # CloudWatch Log Group for Email Bounces
