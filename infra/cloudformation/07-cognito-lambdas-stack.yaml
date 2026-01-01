@@ -10,7 +10,7 @@ Parameters:
   LambdaCodeBucketName:
     Type: String
     Description: S3 bucket name containing Lambda function code
-    Default: growksh-website-lambda-code-720427058396
+    Default: ''
   SESSourceEmail:
     Type: String
     Description: Verified SES email for sending OTPs
