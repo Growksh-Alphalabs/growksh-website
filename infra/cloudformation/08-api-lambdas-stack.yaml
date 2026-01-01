@@ -239,8 +239,3 @@ Outputs:
     Value: !GetAtt CheckAdminFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-check-admin-lambda-arn'
-
-  CheckAdminFunctionArn:
-    Value: !GetAtt CheckAdminFunction.Arn
-    Export:
-      Name: !Sub 'growksh-website-${Environment}-check-admin-lambda-arn'
