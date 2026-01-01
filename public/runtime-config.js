@@ -14,7 +14,7 @@ window.__GROWKSH_RUNTIME_CONFIG__ = {
 
   // Cognito App Client ID (no secret)
   // Auto-updated by deployment script from CloudFormation exports
-  VITE_COGNITO_CLIENT_ID: '3cviqovg35pjt8n9e90gp8pum4',
+  VITE_COGNITO_CLIENT_ID: '20dfoctnhk57qi7c2mj2bm2fcq',
 
   // Backend API base URL (API Gateway invoke URL)
   // AUTO-POPULATED by deployment script from CloudFormation exports
