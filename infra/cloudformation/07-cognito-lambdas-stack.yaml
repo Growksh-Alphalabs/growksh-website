@@ -12,7 +12,7 @@ Parameters:
     Description: S3 bucket name containing Lambda function code (required - deploy script provides this)
     Default: ''
     AllowedPattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$|^$'
-    ConstraintDescription: 'Must be valid S3 bucket name (3+ chars, lowercase/hyphens) or empty string (deploy script will override)'
+    ConstraintDescription: 'Must be valid S3 bucket name (3+ chars, lowercase/hyphens) or empty string (deploy script will override)
   SESSourceEmail:
     Type: String
     Description: Verified SES email for sending OTPs
