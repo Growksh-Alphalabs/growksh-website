@@ -9,8 +9,11 @@ Parameters:
     Description: Environment name
   LambdaCodeBucketName:
     Type: String
-    Description: S3 bucket name containing Lambda function code
+    Description: S3 bucket name containing Lambda function code (required - passed by deploy script)
     Default: ''
+    MinLength: 3
+    AllowedPattern: '^[a-z0-9][a-z0-9-]*[a-z0-9]$|^$'
+    ConstraintDescription: 'Bucket name must be 3+ characters, lowercase alphanumeric and hyphens, or empty (deploy script will provide)'
   SESSourceEmail:
     Type: String
     Description: Verified SES email for sending OTPs
