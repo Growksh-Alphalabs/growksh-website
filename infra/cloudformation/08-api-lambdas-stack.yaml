@@ -36,6 +36,7 @@ Resources:
     Properties:
       BucketName: !Sub 'growksh-website-lambda-code-${AWS::AccountId}-${Environment}-${AWS::Region}'
     DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   ContactFunction:
     Type: AWS::Lambda::Function
     Properties:
