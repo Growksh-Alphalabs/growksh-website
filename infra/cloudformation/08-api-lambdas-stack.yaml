@@ -208,6 +208,43 @@ Resources:
       Action: lambda:InvokeFunction
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/auth/resend-verification'
 
+  ListUsersFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-website-list-users-${Environment}'
+      Runtime: nodejs22.x
+      Handler: list-users.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/list-users-${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
+          COGNITO_CLIENT_ID: !ImportValue
+            Fn::Sub: 'growksh-website-client-${Environment}-id'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  ListUsersFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ListUsersFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/auth/list-users'
+
   VerifyEmailFunctionApiPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -277,6 +314,11 @@ Outputs:
     Value: !GetAtt ResendVerificationFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-resend-verification-lambda-arn'
+
+  ListUsersFunctionArn:
+    Value: !GetAtt ListUsersFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-list-users-lambda-arn'
 
   CheckAdminFunctionArn:
     Value: !GetAtt CheckAdminFunction.Arn

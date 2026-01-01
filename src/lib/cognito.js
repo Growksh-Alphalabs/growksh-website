@@ -291,6 +291,54 @@ export async function resendVerificationLink(email) {
 }
 
 /**
+ * Admin-only: list users from Cognito via backend.
+ * @param {Object} options
+ * @param {string} options.idToken - Cognito id token
+ * @param {number} [options.limit]
+ */
+export async function listUsers({ idToken, limit = 25 }) {
+  if (isFakeAuthEnabled()) {
+    return {
+      users: [
+        { username: 'fake-1', email: 'admin@example.com', email_verified: 'true', enabled: true, status: 'CONFIRMED' },
+        { username: 'fake-2', email: 'user@example.com', email_verified: 'false', enabled: true, status: 'CONFIRMED' },
+      ],
+    }
+  }
+
+  if (!idToken) {
+    throw new Error('Missing id token')
+  }
+
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    console.warn('[ListUsers] API URL not in sync config, attempting async load...')
+    apiUrl = await getApiUrlAsync()
+  }
+
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+  const url = `${apiBase}/auth/list-users?limit=${encodeURIComponent(String(limit))}`
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${idToken}`,
+    },
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `List users failed with status ${response.status}`)
+  }
+  return data
+}
+
+/**
  * Initiate passwordless authentication (sends OTP)
  * @param {string} email - User's email
  * @returns {Promise<Object>} Auth session object
