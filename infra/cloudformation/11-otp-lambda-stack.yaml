@@ -238,9 +238,9 @@ Outputs:
       Name: !Sub 'growksh-${Environment}-verify-otp-lambda-name'
 
   SendOTPEndpoint:
-    Description: API Gateway endpoint for Send OTP
-    Value: !Sub 'https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/send-otp'
+    Description: API Gateway endpoint for Send OTP (replace api-id with your API Gateway ID)
+    Value: !Sub 'https://<api-id>.execute-api.${AWS::Region}.amazonaws.com/${Environment}/send-otp'
 
   VerifyOTPEndpoint:
-    Description: API Gateway endpoint for Verify OTP
-    Value: !Sub 'https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/verify-otp'
+    Description: API Gateway endpoint for Verify OTP (replace api-id with your API Gateway ID)
+    Value: !Sub 'https://<api-id>.execute-api.${AWS::Region}.amazonaws.com/${Environment}/verify-otp'

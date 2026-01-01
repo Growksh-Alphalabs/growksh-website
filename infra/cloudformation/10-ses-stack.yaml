@@ -20,17 +20,12 @@ Parameters:
     Description: Verified sender email address for Growksh
     AllowedPattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 
-  DomainName:
-    Type: String
-    Description: Domain name for SES DKIM verification (optional, leave empty if not using domain identity)
-    Default: ''
-
 Resources:
   # Email Identity for Growksh
   VerifiedEmailIdentity:
     Type: AWS::SES::EmailIdentity
     Properties:
-      EmailAddress: !Ref FromEmailAddress
+      Identity: !Ref FromEmailAddress
 
   # Configuration Set for Email Delivery Tracking
   SESConfigurationSet:
@@ -50,7 +45,7 @@ Resources:
           - bounce
           - complaint
         CloudWatchDestination:
-          IamRoleArn: !GetAtt SESCloudWatchRole.Arn
+          IAMRoleARN: !GetAtt SESCloudWatchRole.Arn
           LogGroupName: !Ref SESBounceLogGroup
 
   # CloudWatch Log Group for Email Bounces
