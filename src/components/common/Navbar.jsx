@@ -22,6 +22,7 @@ export default function Navbar() {
   const displayName = (user && (user.name || user.email)) || ''
   const displayEmail = (user && user.email) || ''
   const avatarText = (displayName || displayEmail || 'U').trim().charAt(0).toUpperCase()
+  const isEmailVerified = user && user.email_verified === 'true'
 
   const handleLogout = async () => {
     const ok = window.confirm('Logout now?')
@@ -352,8 +353,14 @@ export default function Navbar() {
                         aria-expanded={profileOpen}
                         className="inline-flex items-center gap-2 px-2 py-1.5 rounded-full border border-slate-200 hover:bg-slate-50"
                       >
-                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-semibold">
+                        <span className="relative inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-100 text-slate-700 font-semibold">
                           {avatarText}
+                          {isEmailVerified && (
+                            <span
+                              aria-label="Email verified"
+                              className="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 rounded-full bg-green-600 ring-2 ring-white"
+                            />
+                          )}
                         </span>
                         <span className="max-w-40 truncate text-sm text-slate-700">
                           {displayName || displayEmail}

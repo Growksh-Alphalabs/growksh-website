@@ -129,6 +129,8 @@ build_lambda "auth" "verify-auth-challenge" "$LAMBDA_DIR/auth" "verify-auth-chal
 build_lambda "auth" "post-confirmation" "$LAMBDA_DIR/auth" "post-confirmation.js"
 build_lambda "auth" "signup" "$LAMBDA_DIR/auth" "signup.js"
 build_lambda "auth" "verify-email" "$LAMBDA_DIR/auth" "verify-email.js"
+build_lambda "auth" "check-user" "$LAMBDA_DIR/auth" "check-user.js"
+build_lambda "auth" "resend-verification" "$LAMBDA_DIR/auth" "resend-verification.js"
 build_lambda "auth" "check-admin" "$LAMBDA_DIR/auth" "define-auth-challenge.js"
 
 # Build Contact Lambda function

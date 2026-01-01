@@ -221,7 +221,7 @@ export async function signup(userData) {
  */
 export async function checkUserExists(email) {
   if (isFakeAuthEnabled()) {
-    return { exists: true }
+    return { exists: true, email_verified: 'true' }
   }
 
   // Try sync config first, then async fallback
@@ -251,6 +251,42 @@ export async function checkUserExists(email) {
     throw new Error(data.error || data.message || `Check user failed with status ${response.status}`)
   }
 
+  return data
+}
+
+/**
+ * Resend verification magic link (via backend API)
+ * Returns: { sent: boolean, exists: boolean, email_verified: 'true'|'false', message?: string }
+ */
+export async function resendVerificationLink(email) {
+  if (isFakeAuthEnabled()) {
+    return { sent: true, exists: true, email_verified: 'true', message: 'FAKE AUTH: verification link sent' }
+  }
+
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    console.warn('[ResendVerification] API URL not in sync config, attempting async load...')
+    apiUrl = await getApiUrlAsync()
+  }
+
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+  const url = `${apiBase}/auth/resend-verification`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `Resend verification failed with status ${response.status}`)
+  }
   return data
 }
 
