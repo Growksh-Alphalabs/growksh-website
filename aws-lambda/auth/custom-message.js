@@ -1,33 +1,20 @@
 /**
  * Custom Message Lambda Trigger
- * Sends signup verification link via email using Amazon SES
- * Triggered on SignUp and AdminCreateUser events
+ * Produces a magic-link verification email.
+ * Cognito sends the email using the configured email provider.
  */
 
 const nodeCrypto = require('crypto');
-const { SESClient, SendTemplatedEmailCommand } = require('@aws-sdk/client-ses');
 
-const sesClient = new SESClient({ region: process.env.AWS_REGION });
+function buildMagicLink(email, verifyBaseUrl, verifySecret) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const token = nodeCrypto
+    .createHmac('sha256', verifySecret)
+    .update(`${email}:${timestamp}`)
+    .digest('hex');
 
-async function sendEmailViaSES(email, templateName, templateData) {
-  try {
-    const command = new SendTemplatedEmailCommand({
-      Source: process.env.FROM_EMAIL,
-      Destination: {
-        ToAddresses: [email],
-      },
-      Template: templateName,
-      TemplateData: JSON.stringify(templateData),
-      ConfigurationSetName: process.env.SES_CONFIG_SET || undefined,
-    });
-
-    const response = await sesClient.send(command);
-    console.log('Email sent successfully:', response.MessageId);
-    return { success: true, messageId: response.MessageId };
-  } catch (error) {
-    console.error('Error sending email via SES:', error);
-    throw error;
-  }
+  const verificationLink = `${verifyBaseUrl}?email=${encodeURIComponent(email)}&token=${token}&t=${timestamp}`;
+  return verificationLink;
 }
 
 exports.handler = async (event) => {
@@ -36,53 +23,49 @@ exports.handler = async (event) => {
   const { triggerSource, request, response } = event;
 
   try {
-    if (triggerSource === 'CustomMessage_SignUp' || triggerSource === 'CustomMessage_AdminCreateUser') {
-      // Generate email verification link for signup
-      const email = request.userAttributes.email;
-      const username = request.userAttributes.name || request.userAttributes.email.split('@')[0];
-      const secret = process.env.VERIFY_SECRET;
-      const timestamp = Math.floor(Date.now() / 1000);
+    const shouldSendMagicLink =
+      triggerSource === 'CustomMessage_SignUp' ||
+      triggerSource === 'CustomMessage_AdminCreateUser' ||
+      triggerSource === 'CustomMessage_ResendCode';
 
-      if (!secret) {
-        throw new Error('VERIFY_SECRET is not configured');
-      }
+    if (!shouldSendMagicLink) {
+      return event;
+    }
 
-      // Create HMAC signature for token
-      const token = nodeCrypto
-        .createHmac('sha256', secret)
-        .update(`${email}:${timestamp}`)
-        .digest('hex');
+    const email = request?.userAttributes?.email;
+    const username = request?.userAttributes?.name || (email ? email.split('@')[0] : 'User');
+    const verifyBaseUrl = process.env.VERIFY_BASE_URL;
+    const verifySecret = process.env.VERIFY_SECRET;
 
-      const verificationLink = `${process.env.VERIFY_BASE_URL}?email=${encodeURIComponent(
-        email
-      )}&token=${token}&t=${timestamp}`;
+    if (!email) {
+      console.error('CustomMessage: missing userAttributes.email');
+      return event;
+    }
 
-      if (process.env.DEBUG_LOG === '1') {
-        console.log('Email:', email);
-        console.log('Username:', username);
-        console.log('Verification Link:', verificationLink);
-      }
+    if (!verifyBaseUrl || !verifySecret) {
+      console.error('CustomMessage: VERIFY_BASE_URL / VERIFY_SECRET not configured; falling back to code message');
+      response.emailSubject = 'Your verification code for Growksh';
+      response.emailMessage = `
+Hello ${username},
 
-      // Get template name from environment or use default
-      const templateName = process.env.MAGIC_LINK_TEMPLATE_NAME || 
-        `growksh-${process.env.ENVIRONMENT}-magic-link-verification`;
+Your verification code is: ${request.codeParameter || '<<code>>'}
 
-      // Send email using SES template
-      if (process.env.USE_SES === '1') {
-        const templateData = {
-          username: username,
-          verification_link: verificationLink,
-        };
+Best regards,
+Growksh Team
+      `;
+      return event;
+    }
 
-        await sendEmailViaSES(email, templateName, templateData);
+    const verificationLink = buildMagicLink(email, verifyBaseUrl, verifySecret);
 
-        // Update response to indicate email was sent via SES
-        response.autoConfirmUser = false;
-        response.autoVerifyPhone = false;
-      } else {
-        // Fallback to Cognito's built-in email sending (non-production)
-        response.emailSubject = 'Verify your email for Growksh';
-        response.emailMessage = `
+    if (process.env.DEBUG_LOG === '1') {
+      console.log('Email:', email);
+      console.log('Username:', username);
+      console.log('Verification Link:', verificationLink);
+    }
+
+    response.emailSubject = 'Verify your email for Growksh';
+    response.emailMessage = `
 Hello ${username},
 
 Welcome to Growksh! To complete your signup, please click the link below to verify your email:
@@ -93,13 +76,14 @@ This link will expire in 24 hours.
 
 Best regards,
 Growksh Team
-        `;
-      }
-    }
+    `;
   } catch (error) {
     console.error('Error in custom message handler:', error);
-    // Don't throw - let Cognito proceed but log the error
-    // In production, you might want to handle this differently
+    // Always try to provide *some* message so Cognito can still send an email.
+    try {
+      response.emailSubject = 'Your verification code for Growksh';
+      response.emailMessage = `Your verification code is: ${event?.request?.codeParameter || '<<code>>'}`;
+    } catch {}
   }
 
   return event;
