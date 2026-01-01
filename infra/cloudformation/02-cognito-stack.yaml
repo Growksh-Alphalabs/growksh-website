@@ -10,7 +10,7 @@ Parameters:
 
   EnableTriggers:
     Type: String
-    Default: 'false'
+    Default: 'true'
     AllowedValues: ['true', 'false']
     Description: Whether to attach custom auth Lambda triggers to the user pool (requires cognito-lambdas stack exports)
 

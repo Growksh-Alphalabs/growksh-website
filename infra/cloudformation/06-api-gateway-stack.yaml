@@ -72,7 +72,11 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-contact-${Environment}/invocations'
+        Uri:
+          Fn::Sub:
+            - 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn: !ImportValue
+                Fn::Sub: 'growksh-website-${Environment}-contact-lambda-arn'
 
   ContactOptionsMethod:
     Type: AWS::ApiGateway::Method
@@ -123,7 +127,11 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-signup-${Environment}/invocations'
+        Uri:
+          Fn::Sub:
+            - 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn: !ImportValue
+                Fn::Sub: 'growksh-website-${Environment}-signup-lambda-arn'
 
   CheckUserResource:
     Type: AWS::ApiGateway::Resource
@@ -142,7 +150,11 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-check-user-${Environment}/invocations'
+        Uri:
+          Fn::Sub:
+            - 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn: !ImportValue
+                Fn::Sub: 'growksh-website-${Environment}-check-user-lambda-arn'
 
   CheckUserOptionsMethod:
     Type: AWS::ApiGateway::Method
@@ -213,7 +225,11 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-verify-email-${Environment}/invocations'
+        Uri:
+          Fn::Sub:
+            - 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn: !ImportValue
+                Fn::Sub: 'growksh-website-${Environment}-verify-email-lambda-arn'
 
   VerifyEmailOptionsMethod:
     Type: AWS::ApiGateway::Method
@@ -258,7 +274,11 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:growksh-website-check-admin-${Environment}/invocations'
+        Uri:
+          Fn::Sub:
+            - 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn: !ImportValue
+                Fn::Sub: 'growksh-website-${Environment}-check-admin-lambda-arn'
 
   CheckAdminOptionsMethod:
     Type: AWS::ApiGateway::Method

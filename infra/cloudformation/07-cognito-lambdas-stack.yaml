@@ -7,6 +7,10 @@ Parameters:
     Default: dev
 
     Description: Environment name
+  LambdaCodeSourceEnv:
+    Type: String
+    Default: dev
+    Description: Environment suffix used when packaging Lambda code (e.g., dev or feature-77d07ae1)
   LambdaCodeBucketName:
     Type: String
     Description: S3 bucket name containing Lambda function code (optional). If empty, the stack will create one.
@@ -38,7 +42,7 @@ Resources:
     Condition: CreateLambdaCodeBucket
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'growksh-website-lambda-code-${AWS::AccountId}-${Environment}-${AWS::Region}'
+      BucketName: !Sub 'growksh-website-lambda-code-${Environment}-${AWS::Region}'
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
   PreSignUpFunction:
@@ -55,7 +59,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/pre-sign-up-${Environment}.zip'
+        S3Key: !Sub 'auth/pre-sign-up-${LambdaCodeSourceEnv}.zip'
       Tags:
         - Key: App
           Value: Website
@@ -78,7 +82,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/custom-message-${Environment}.zip'
+        S3Key: !Sub 'auth/custom-message-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
@@ -106,7 +110,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/define-auth-challenge-${Environment}.zip'
+        S3Key: !Sub 'auth/define-auth-challenge-${LambdaCodeSourceEnv}.zip'
       Tags:
         - Key: App
           Value: Website
@@ -129,7 +133,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/create-auth-challenge-${Environment}.zip'
+        S3Key: !Sub 'auth/create-auth-challenge-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           OTP_TABLE: !ImportValue
@@ -158,7 +162,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/verify-auth-challenge-${Environment}.zip'
+        S3Key: !Sub 'auth/verify-auth-challenge-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           OTP_TABLE: !ImportValue
@@ -185,7 +189,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/post-confirmation-${Environment}.zip'
+        S3Key: !Sub 'auth/post-confirmation-${LambdaCodeSourceEnv}.zip'
       Tags:
         - Key: App
           Value: Website

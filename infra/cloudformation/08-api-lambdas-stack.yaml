@@ -7,6 +7,10 @@ Parameters:
     Default: dev
 
     Description: Environment name
+  LambdaCodeSourceEnv:
+    Type: String
+    Default: dev
+    Description: Environment suffix used when packaging Lambda code (e.g., dev or feature-77d07ae1)
   LambdaCodeBucketName:
     Type: String
     Description: S3 bucket name containing Lambda function code (optional). If empty, the stack will create one.
@@ -34,7 +38,7 @@ Resources:
     Condition: CreateLambdaCodeBucket
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'growksh-website-lambda-code-${AWS::AccountId}-${Environment}-${AWS::Region}'
+      BucketName: !Sub 'growksh-website-lambda-code-${Environment}-${AWS::Region}'
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
   ContactFunction:
@@ -51,7 +55,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'contact/contact-${Environment}.zip'
+        S3Key: !Sub 'contact/contact-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           CONTACTS_TABLE: !ImportValue
@@ -86,7 +90,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/signup-${Environment}.zip'
+        S3Key: !Sub 'auth/signup-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
@@ -124,7 +128,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/verify-email-${Environment}.zip'
+        S3Key: !Sub 'auth/verify-email-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
@@ -145,7 +149,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/check-user-${Environment}.zip'
+        S3Key: !Sub 'auth/check-user-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
@@ -188,7 +192,7 @@ Resources:
             - UseProvidedBucket
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
-        S3Key: !Sub 'auth/check-admin-${Environment}.zip'
+        S3Key: !Sub 'auth/check-admin-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
@@ -225,6 +229,16 @@ Outputs:
     Value: !GetAtt VerifyEmailFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-verify-email-lambda-arn'
+
+  CheckUserFunctionArn:
+    Value: !GetAtt CheckUserFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-check-user-lambda-arn'
+
+  CheckAdminFunctionArn:
+    Value: !GetAtt CheckAdminFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-check-admin-lambda-arn'
 
   CheckAdminFunctionArn:
     Value: !GetAtt CheckAdminFunction.Arn

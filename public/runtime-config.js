@@ -10,7 +10,7 @@
 window.__GROWKSH_RUNTIME_CONFIG__ = {
   // Cognito User Pool (example: ap-south-1_AbCdEfGhI)
   // Auto-updated by deployment script from CloudFormation exports
-  VITE_COGNITO_USER_POOL_ID: 'ap-south-1_NiqhNWvf8',
+  VITE_COGNITO_USER_POOL_ID: 'ap-south-1_J0S26HesM',
 
   // Cognito App Client ID (no secret)
   // Auto-updated by deployment script from CloudFormation exports
