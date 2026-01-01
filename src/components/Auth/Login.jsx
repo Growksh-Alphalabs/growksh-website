@@ -57,6 +57,8 @@ export default function Login() {
 
       console.log('Initiating auth for:', email)
       const result = await initiateAuth(email)
+      console.log({result});
+      
       console.log('Auth initiated:', result)
 
       setSession(result.session)
