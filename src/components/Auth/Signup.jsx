@@ -263,9 +263,7 @@ export default function Signup() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Stored as: {formData.phone_number ? `${countryCode}${formData.phone_number}` : `${countryCode}`}
-              </p>
+             
             </div>
 
             {/* Error Message */}

@@ -1,0 +1,246 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  OTP and Email Verification Lambda Functions for Growksh
+  - Send OTP Lambda function
+  - Verify OTP Lambda function
+  - OTP storage DynamoDB table
+  - API Gateway integration for OTP endpoints
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment name (dev, staging, prod)
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Default: dev
+
+  LambdaCodeBucketName:
+    Type: String
+    Description: S3 bucket name containing Lambda code packages
+    Default: growksh-lambda-code-dev
+
+  LambdaCodeSourceEnv:
+    Type: String
+    Description: Environment suffix for Lambda code in S3 (e.g., -dev, -prod)
+    Default: -dev
+
+  CognitoUserPoolId:
+    Type: String
+    Description: Cognito User Pool ID (optional, for email verification)
+    Default: ''
+
+Conditions:
+  HasCognitoUserPool: !Not [!Equals [!Ref CognitoUserPoolId, '']]
+
+Resources:
+  # DynamoDB Table for OTP Storage
+  OTPVerificationTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'growksh-otp-verification-${Environment}'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiryTime
+        Enabled: true
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  # Send OTP Lambda Function
+  SendOTPFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-send-otp-${Environment}'
+      Runtime: nodejs18.x
+      Handler: send-otp.handler
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/growksh-website-auth-lambda-${Environment}'
+      Timeout: 30
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucketName
+        S3Key: !Sub 'send-otp${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          FROM_EMAIL: !Sub '{{resolve:secretsmanager:growksh/${Environment}/ses:SecureString:FromEmail}}'
+          OTP_TEMPLATE_NAME: !Sub 'growksh-${Environment}-otp-verification'
+          OTP_LENGTH: '6'
+          OTP_EXPIRY_MINUTES: '5'
+          OTP_TABLE_NAME: !Ref OTPVerificationTable
+          ENVIRONMENT: !Ref Environment
+          AWS_REGION: !Ref 'AWS::Region'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  # Verify OTP Lambda Function
+  VerifyOTPFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-verify-otp-${Environment}'
+      Runtime: nodejs18.x
+      Handler: verify-otp.handler
+      Role: !Sub 'arn:aws:iam::${AWS::AccountId}:role/growksh-website-auth-lambda-${Environment}'
+      Timeout: 30
+      MemorySize: 256
+      Code:
+        S3Bucket: !Ref LambdaCodeBucketName
+        S3Key: !Sub 'verify-otp${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          OTP_TABLE_NAME: !Ref OTPVerificationTable
+          COGNITO_USER_POOL_ID: !If [HasCognitoUserPool, !Ref CognitoUserPoolId, '']
+          AWS_REGION: !Ref 'AWS::Region'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  # CloudWatch Log Group for Send OTP
+  SendOTPLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/growksh-send-otp-${Environment}'
+      RetentionInDays: 14
+
+  # CloudWatch Log Group for Verify OTP
+  VerifyOTPLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/growksh-verify-otp-${Environment}'
+      RetentionInDays: 14
+
+  # Lambda Permission for API Gateway (Send OTP)
+  SendOTPApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref SendOTPFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*'
+
+  # Lambda Permission for API Gateway (Verify OTP)
+  VerifyOTPApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref VerifyOTPFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*'
+
+  # API Gateway Resource for Send OTP
+  SendOTPResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      ParentId: !ImportValue !Sub 'growksh-website-${Environment}-api-root-resource-id'
+      PathPart: send-otp
+
+  # API Gateway POST Method for Send OTP
+  SendOTPMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      ResourceId: !Ref SendOTPResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SendOTPFunction.Arn}/invocations'
+
+  # API Gateway Resource for Verify OTP
+  VerifyOTPResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      ParentId: !ImportValue !Sub 'growksh-website-${Environment}-api-root-resource-id'
+      PathPart: verify-otp
+
+  # API Gateway POST Method for Verify OTP
+  VerifyOTPMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      ResourceId: !Ref VerifyOTPResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${VerifyOTPFunction.Arn}/invocations'
+
+  # API Gateway Deployment
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - SendOTPMethod
+      - VerifyOTPMethod
+    Properties:
+      RestApiId: !ImportValue !Sub 'growksh-website-${Environment}-api-id'
+      StageName: !Ref Environment
+
+Outputs:
+  OTPVerificationTableName:
+    Description: DynamoDB table name for OTP storage
+    Value: !Ref OTPVerificationTable
+    Export:
+      Name: !Sub 'growksh-${Environment}-otp-table-name'
+
+  OTPVerificationTableArn:
+    Description: DynamoDB table ARN for OTP storage
+    Value: !GetAtt OTPVerificationTable.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-otp-table-arn'
+
+  SendOTPFunctionArn:
+    Description: ARN of Send OTP Lambda function
+    Value: !GetAtt SendOTPFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-send-otp-lambda-arn'
+
+  SendOTPFunctionName:
+    Description: Name of Send OTP Lambda function
+    Value: !Ref SendOTPFunction
+    Export:
+      Name: !Sub 'growksh-${Environment}-send-otp-lambda-name'
+
+  VerifyOTPFunctionArn:
+    Description: ARN of Verify OTP Lambda function
+    Value: !GetAtt VerifyOTPFunction.Arn
+    Export:
+      Name: !Sub 'growksh-${Environment}-verify-otp-lambda-arn'
+
+  VerifyOTPFunctionName:
+    Description: Name of Verify OTP Lambda function
+    Value: !Ref VerifyOTPFunction
+    Export:
+      Name: !Sub 'growksh-${Environment}-verify-otp-lambda-name'
+
+  SendOTPEndpoint:
+    Description: API Gateway endpoint for Send OTP
+    Value: !Sub 'https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/send-otp'
+
+  VerifyOTPEndpoint:
+    Description: API Gateway endpoint for Verify OTP
+    Value: !Sub 'https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/verify-otp'
