@@ -5,13 +5,13 @@
 
 const { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
-const crypto = require('crypto');
+const nodeCrypto = require('crypto');
 
 let cognito = null;
 let ses = null;
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://d2eipj1xhqte5b.cloudfront.net',
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   'Content-Type': 'application/json'
@@ -40,6 +40,26 @@ function getSes() {
   return ses;
 }
 
+function parseJsonBody(event) {
+  if (!event || event.body == null) return {};
+
+  let raw = event.body;
+  if (event.isBase64Encoded && typeof raw === 'string') {
+    raw = Buffer.from(raw, 'base64').toString('utf8');
+  }
+
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      throw new Error('Invalid JSON body');
+    }
+  }
+
+  if (typeof raw === 'object') return raw;
+  return {};
+}
+
 function isE164(phone) {
   return typeof phone === 'string' && /^\+[1-9]\d{1,14}$/.test(phone.trim());
 }
@@ -55,7 +75,7 @@ async function sendVerificationEmail({ email, name }) {
   }
 
   const timestamp = Math.floor(Date.now() / 1000);
-  const token = crypto
+  const token = nodeCrypto
     .createHmac('sha256', secret)
     .update(`${email}:${timestamp}`)
     .digest('hex');
@@ -93,7 +113,14 @@ exports.handler = async (event) => {
     }
 
     const cognitoClient = getCognito();
-    const body = JSON.parse(event.body || '{}');
+
+    let body;
+    try {
+      body = parseJsonBody(event);
+    } catch (e) {
+      return response(400, { error: e.message || 'Invalid request body' });
+    }
+
     const { email, name, phone_number } = body;
 
     if (!email || !name) {

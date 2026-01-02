@@ -7,10 +7,14 @@ Parameters:
     Default: dev
 
     Description: Environment name
+  LambdaCodeSourceEnv:
+    Type: String
+    Default: dev
+    Description: Environment suffix used when packaging Lambda code (e.g., dev or feature-77d07ae1)
   LambdaCodeBucketName:
     Type: String
-    Description: S3 bucket name containing Lambda function code
-    Default: growksh-website-lambda-code-720427058396
+    Description: S3 bucket name containing Lambda function code (optional). If empty, the stack will create one.
+    Default: ''
   SESSourceEmail:
     Type: String
     Description: Verified SES email for sending OTPs
@@ -19,12 +23,28 @@ Parameters:
     Type: String
     Description: Frontend URL for email verification
     Default: https://dev.growksh.com/auth/verify-email
+
+  VerifySecret:
+    Type: String
+    Description: Secret used to sign verification links (HMAC). Must match API Lambdas.
+    Default: ''
   DebugLogOTP:
     Type: String
     Default: '0'
     Description: Enable OTP debug logging
 
+Conditions:
+  UseProvidedBucket: !Not [ !Equals [ !Ref LambdaCodeBucketName, '' ] ]
+  CreateLambdaCodeBucket: !Equals [ !Ref LambdaCodeBucketName, '' ]
+
 Resources:
+  LambdaCodeBucket:
+    Condition: CreateLambdaCodeBucket
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'growksh-website-lambda-code-${Environment}-${AWS::Region}'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   PreSignUpFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -34,8 +54,12 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/pre-sign-up-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/pre-sign-up-${LambdaCodeSourceEnv}.zip'
       Tags:
         - Key: App
           Value: Website
@@ -53,11 +77,17 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/custom-message-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/custom-message-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
+          VERIFY_SECRET: !Ref VerifySecret
+          DEBUG_LOG: !Ref DebugLogOTP
       Tags:
         - Key: App
           Value: Website
@@ -75,8 +105,16 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/define-auth-challenge-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/define-auth-challenge-${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
       Tags:
         - Key: App
           Value: Website
@@ -94,8 +132,12 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/create-auth-challenge-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/create-auth-challenge-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           OTP_TABLE: !ImportValue
@@ -119,12 +161,18 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/verify-auth-challenge-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/verify-auth-challenge-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           OTP_TABLE: !ImportValue
             Fn::Sub: 'growksh-website-${Environment}-auth-otp-table'
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
       Tags:
         - Key: App
           Value: Website
@@ -142,8 +190,12 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/post-confirmation-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/post-confirmation-${LambdaCodeSourceEnv}.zip'
       Tags:
         - Key: App
           Value: Website
@@ -234,3 +286,17 @@ Outputs:
     Value: !GetAtt VerifyAuthChallengeFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-verify-auth-challenge-arn'
+  PostConfirmationFunctionArn:
+    Value: !GetAtt PostConfirmationFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-post-confirmation-arn'
+
+  CustomMessageFunctionArn:
+    Value: !GetAtt CustomMessageFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-custom-message-arn'
+
+  DefineAuthChallengeFunctionArn:
+    Value: !GetAtt DefineAuthChallengeFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-define-auth-challenge-arn'

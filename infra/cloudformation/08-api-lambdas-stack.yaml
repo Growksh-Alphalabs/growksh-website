@@ -7,10 +7,14 @@ Parameters:
     Default: dev
 
     Description: Environment name
+  LambdaCodeSourceEnv:
+    Type: String
+    Default: dev
+    Description: Environment suffix used when packaging Lambda code (e.g., dev or feature-77d07ae1)
   LambdaCodeBucketName:
     Type: String
-    Description: S3 bucket name containing Lambda function code
-    Default: growksh-website-lambda-code-720427058396
+    Description: S3 bucket name containing Lambda function code (optional). If empty, the stack will create one.
+    Default: ''
   SESSourceEmail:
     Type: String
     Description: Verified SES email address
@@ -20,7 +24,23 @@ Parameters:
     Description: Frontend URL for email verification
     Default: https://dev.growksh.com/auth/verify-email
 
+  VerifySecret:
+    Type: String
+    Description: Secret used to sign verification links (HMAC). Set to a long random value.
+    Default: ''
+
+Conditions:
+  UseProvidedBucket: !Not [ !Equals [ !Ref LambdaCodeBucketName, '' ] ]
+  CreateLambdaCodeBucket: !Equals [ !Ref LambdaCodeBucketName, '' ]
+
 Resources:
+  LambdaCodeBucket:
+    Condition: CreateLambdaCodeBucket
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'growksh-website-lambda-code-${Environment}-${AWS::Region}'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
   ContactFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -30,8 +50,12 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-contact-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'contact/contact-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'contact/contact-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           CONTACTS_TABLE: !ImportValue
@@ -61,14 +85,19 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/signup-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/signup-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
             Fn::Sub: 'growksh-website-${Environment}-pool-id'
           SES_SOURCE_EMAIL: !Ref SESSourceEmail
           VERIFY_BASE_URL: !Ref VerifyBaseUrl
+          VERIFY_SECRET: !Ref VerifySecret
       Tags:
         - Key: App
           Value: Website
@@ -94,8 +123,33 @@ Resources:
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/verify-email-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/verify-email-${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
+          VERIFY_SECRET: !Ref VerifySecret
+
+  CheckUserFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-website-check-user-${Environment}'
+      Runtime: nodejs22.x
+      Handler: check-user.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/check-user-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
@@ -107,6 +161,14 @@ Resources:
           Value: Growksh
         - Key: Env
           Value: !Ref Environment
+
+  CheckUserFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref CheckUserFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/auth/check-user'
 
   VerifyEmailFunctionApiPermission:
     Type: AWS::Lambda::Permission
@@ -121,12 +183,16 @@ Resources:
     Properties:
       FunctionName: !Sub 'growksh-website-check-admin-${Environment}'
       Runtime: nodejs22.x
-      Handler: define-auth-challenge.handler
+      Handler: check-admin.handler
       Role: !ImportValue
         Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
       Code:
-        S3Bucket: !Ref LambdaCodeBucketName
-        S3Key: !Sub 'auth/check-admin-${Environment}.zip'
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/check-admin-${LambdaCodeSourceEnv}.zip'
       Environment:
         Variables:
           COGNITO_USER_POOL_ID: !ImportValue
@@ -147,6 +213,110 @@ Resources:
       Action: lambda:InvokeFunction
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/auth/check-admin'
 
+  UserStatusFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-website-user-status-${Environment}'
+      Runtime: nodejs22.x
+      Handler: user-status.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/user-status-${LambdaCodeSourceEnv}.zip'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  UserStatusFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UserStatusFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/auth/user-status'
+
+  UserDetailsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-website-user-details-${Environment}'
+      Runtime: nodejs22.x
+      Handler: user-details.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/user-details-${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  UserDetailsFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UserDetailsFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/auth/user-details'
+
+  ResendVerificationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-website-resend-verification-${Environment}'
+      Runtime: nodejs22.x
+      Handler: resend-verification.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/resend-verification-${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
+          SES_SOURCE_EMAIL: !Ref SESSourceEmail
+          VERIFY_BASE_URL: !Ref VerifyBaseUrl
+          VERIFY_SECRET: !Ref VerifySecret
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  ResendVerificationFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ResendVerificationFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/auth/resend-verification'
+
 
 Outputs:
   ContactFunctionArn:
@@ -164,7 +334,27 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-verify-email-lambda-arn'
 
+  CheckUserFunctionArn:
+    Value: !GetAtt CheckUserFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-check-user-lambda-arn'
+
   CheckAdminFunctionArn:
     Value: !GetAtt CheckAdminFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-check-admin-lambda-arn'
+
+  UserStatusFunctionArn:
+    Value: !GetAtt UserStatusFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-user-status-lambda-arn'
+
+  UserDetailsFunctionArn:
+    Value: !GetAtt UserDetailsFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-user-details-lambda-arn'
+
+  ResendVerificationFunctionArn:
+    Value: !GetAtt ResendVerificationFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-resend-verification-lambda-arn'

@@ -1,23 +1,104 @@
-import {
-  CognitoIdentityProviderClient,
-  InitiateAuthCommand,
-  RespondToAuthChallengeCommand,
-} from '@aws-sdk/client-cognito-identity-provider';
+// NOTE: We intentionally avoid using the AWS SDK v3 CognitoIdentityProviderClient in the browser.
+// It typically expects SigV4 credentials, while Cognito User Pool auth flows from the browser are
+// designed to work without AWS credentials (as used by amazon-cognito-identity-js).
 
-const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID;
-const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID;
-const API_URL = import.meta.env.VITE_API_URL || '';
-const USE_FAKE = import.meta.env.VITE_USE_FAKE_AUTH === '1' || import.meta.env.VITE_USE_FAKE_AUTH === 'true';
+import { getApiUrl as getApiUrlAsync } from './configLoader'
 
-const REGION =
-  import.meta.env.VITE_AWS_REGION ||
-  (USER_POOL_ID ? USER_POOL_ID.split('_')[0] : undefined) ||
-  'ap-south-1';
+const IS_LOCALHOST =
+  typeof window !== 'undefined' &&
+  window.location &&
+  ['localhost', '127.0.0.1', '0.0.0.0'].includes(window.location.hostname);
 
-// For CUSTOM_AUTH, using the AWS SDK keeps session handling explicit and reliable.
-const cognitoIdpClient = new CognitoIdentityProviderClient({ region: REGION });
+function getRuntimeConfig() {
+  if (typeof window === 'undefined') return {}
+  return window.__GROWKSH_RUNTIME_CONFIG__ || {}
+}
+
+function getConfigValue(key) {
+  const runtime = getRuntimeConfig()
+  const value = runtime && Object.prototype.hasOwnProperty.call(runtime, key) ? runtime[key] : undefined
+  const fallback = import.meta.env ? import.meta.env[key] : undefined
+  return (value ?? fallback ?? '').toString().trim()
+}
+
+function getUserPoolId() {
+  return getConfigValue('VITE_COGNITO_USER_POOL_ID')
+}
+
+function getClientId() {
+  return getConfigValue('VITE_COGNITO_CLIENT_ID')
+}
+
+function getApiUrl() {
+  const configValue = getConfigValue('VITE_API_URL')
+  if (configValue) {
+    return configValue
+  }
+  // If sync value is empty, caller should use getApiUrlAsync() from configLoader
+  // This maintains backward compatibility
+  return ''
+}
+
+function getRegion() {
+  const explicit = getConfigValue('VITE_AWS_REGION')
+  if (explicit) return explicit
+  const userPoolId = getUserPoolId()
+  return (userPoolId ? userPoolId.split('_')[0] : undefined) || 'ap-south-1'
+}
+
+function isFakeAuthExplicitlyEnabled() {
+  const raw = getConfigValue('VITE_USE_FAKE_AUTH')
+  return raw === '1' || raw.toLowerCase() === 'true'
+}
+
+async function cognitoIdpRequest(target, payload) {
+  const region = getRegion()
+  const url = `https://cognito-idp.${region}.amazonaws.com/`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-amz-json-1.1',
+      'X-Amz-Target': `AWSCognitoIdentityProviderService.${target}`,
+    },
+    body: JSON.stringify(payload),
+  })
+
+  const text = await response.text()
+  const data = text ? (() => { try { return JSON.parse(text) } catch { return {} } })() : {}
+
+  if (!response.ok) {
+    const message =
+      data.message ||
+      data.Message ||
+      data.error ||
+      (data.__type ? `${data.__type}` : '') ||
+      `Cognito request failed (${response.status})`
+    throw new Error(message)
+  }
+
+  return data
+}
+
+function normalizeApiGatewayBase(apiUrl) {
+  // Remove trailing slashes
+  let apiBase = (apiUrl || '').trim().replace(/\/+$/, '')
+  
+  // The API URL from CloudFormation already includes the stage (e.g., /feature-77d07ae1)
+  // So we should NOT add /Prod or any other stage
+  // Just return the URL as-is
+  return apiBase
+}
 
 let runtimeFakeOverride = false;
+
+function isFakeAuthEnabled() {
+  // Auto-fallback for localhost when Cognito IDs are missing.
+  // This keeps local testing working without AWS.
+  const userPoolId = getUserPoolId()
+  const clientId = getClientId()
+  const autoFake = IS_LOCALHOST && (!userPoolId || !clientId);
+  return isFakeAuthExplicitlyEnabled() || runtimeFakeOverride || autoFake;
+}
 
 function clearCognitoLocalStorage() {
   try {
@@ -29,12 +110,12 @@ function clearCognitoLocalStorage() {
       }
     }
     keysToRemove.forEach((k) => localStorage.removeItem(k))
-  } catch (e) {}
+  } catch {}
 }
 
 // Provide a helpful error when env vars are missing
 const missingMsg =
-  'Cognito UserPoolId and ClientId are not configured. Set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID in .env.local or enable VITE_USE_FAKE_AUTH=1 for local testing.';
+  'Cognito UserPoolId and ClientId are not configured. For deployments, set VITE_COGNITO_USER_POOL_ID and VITE_COGNITO_CLIENT_ID in runtime-config.js and invalidate CloudFront cache for runtime-config.js + index.html.';
 
 // Mock implementation for fake auth
 const pending = new Map(); // email -> { otp, session }
@@ -42,6 +123,7 @@ const pending = new Map(); // email -> { otp, session }
 // Lazy-loaded Cognito SDK and user pool
 let cognitoSdk = null;
 let userPoolInstance = null;
+let userPoolKey = '';
 
 async function getCognitoSDK() {
   if (!cognitoSdk) {
@@ -51,16 +133,25 @@ async function getCognitoSDK() {
 }
 
 async function getUserPool() {
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
+  const userPoolId = getUserPoolId()
+  const clientId = getClientId()
+
+  if (isFakeAuthEnabled() || !userPoolId || !clientId) {
     return null;
+  }
+
+  const nextKey = `${userPoolId}::${clientId}`
+  if (userPoolInstance && userPoolKey && userPoolKey !== nextKey) {
+    userPoolInstance = null
   }
 
   if (!userPoolInstance) {
     const { CognitoUserPool } = await getCognitoSDK();
     userPoolInstance = new CognitoUserPool({
-      UserPoolId: USER_POOL_ID,
-      ClientId: CLIENT_ID,
+      UserPoolId: userPoolId,
+      ClientId: clientId,
     });
+    userPoolKey = nextKey
   }
 
   return userPoolInstance;
@@ -76,25 +167,30 @@ async function getUserPool() {
  */
 export async function signup(userData) {
   try {
-    if (!API_URL) {
-      throw new Error('API_URL is not configured. Set VITE_API_URL in .env.local');
+    // Support fake auth for testing without real API
+    if (isFakeAuthEnabled()) {
+      console.info('[Signup] Using FAKE AUTH - simulating signup');
+      return {
+        message: 'User created successfully (FAKE AUTH)',
+        email: userData.email,
+        userSub: 'fake-user-' + Math.random().toString(36).substring(7),
+      };
     }
 
-    // Clean up API base URL - remove trailing slashes and /prod or /contact
-    let apiBase = API_URL.trim();
-    apiBase = apiBase.replace(/\/+$/, ''); // Remove trailing slashes
-    apiBase = apiBase.replace(/\/(prod|contact)$/, ''); // Remove /prod or /contact at end
-
-    // Ensure proper base structure (e.g., https://xxx.execute-api.region.amazonaws.com/prod)
-    if (!apiBase.includes('/prod')) {
-      // Add /prod if not present
-      if (apiBase.endsWith('/')) {
-        apiBase = apiBase + 'prod';
-      } else {
-        apiBase = apiBase + '/prod';
-      }
+    // Try sync config first, then async fallback
+    let apiUrl = getApiUrl()
+    if (!apiUrl) {
+      console.warn('[Signup] API URL not in sync config, attempting async load...')
+      apiUrl = await getApiUrlAsync()
     }
 
+    if (!apiUrl) {
+      throw new Error(
+        'API_URL is not configured. For deployments, set VITE_API_URL in public/runtime-config.js (and invalidate CloudFront for runtime-config.js + index.html).'
+      );
+    }
+
+    const apiBase = normalizeApiGatewayBase(apiUrl)
     const signupUrl = `${apiBase}/auth/signup`;
     console.log('Calling signup endpoint:', signupUrl);
 
@@ -120,17 +216,169 @@ export async function signup(userData) {
 }
 
 /**
+ * Check whether a user exists (via backend API), used by the login flow.
+ * Returns: { exists: boolean }
+ */
+export async function checkUserExists(email) {
+  console.info('[cognito.checkUserExists] Checking if user exists:', email);
+  
+  if (isFakeAuthEnabled()) {
+    console.info('[cognito.checkUserExists] Using FAKE AUTH mode, returning exists=true');
+    return { exists: true }
+  }
+
+  // Try sync config first, then async fallback
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    console.warn('[cognito.checkUserExists] API URL not in sync config, attempting async load...')
+    apiUrl = await getApiUrlAsync()
+  }
+
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+
+  const url = `${apiBase}/auth/check-user`
+  console.info('[cognito.checkUserExists] Calling endpoint:', url);
+  
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  
+  console.info('[cognito.checkUserExists] Response status:', response.status, 'data:', data);
+  
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `Check user failed with status ${response.status}`)
+  }
+
+  return data
+}
+
+/**
+ * Get the current user's verification status at runtime.
+ * Requires an AccessToken (stored in localStorage after login).
+ * Returns: { authenticated: boolean, email?: string, email_verified?: string }
+ */
+export async function getUserStatus() {
+  console.info('[cognito.getUserStatus] Fetching runtime user status...');
+  
+  if (isFakeAuthEnabled()) {
+    console.info('[cognito.getUserStatus] Using FAKE AUTH mode, returning email_verified=true');
+    return { authenticated: true, email_verified: 'true' }
+  }
+
+  const accessToken = (typeof localStorage !== 'undefined' && localStorage.getItem('accessToken')) || ''
+  if (!accessToken) {
+    console.warn('[cognito.getUserStatus] No accessToken found in localStorage');
+    return { authenticated: false }
+  }
+
+  console.info('[cognito.getUserStatus] Found accessToken, calling /auth/user-status...');
+
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    apiUrl = await getApiUrlAsync()
+  }
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+  const url = `${apiBase}/auth/user-status`
+
+  console.info('[cognito.getUserStatus] Calling endpoint:', url);
+  
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  const data = await response.json().catch(() => ({}))
+  
+  console.info('[cognito.getUserStatus] Response status:', response.status, 'data:', data);
+  
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `User status failed with status ${response.status}`)
+  }
+  return data
+}
+
+/**
+ * Resend magic-link verification email for an unverified user.
+ * Returns: { ok: boolean, sent?: boolean, alreadyVerified?: boolean }
+ */
+export async function resendVerification(email) {
+  console.info('[cognito.resendVerification] Attempting to resend verification for:', email);
+  
+  if (isFakeAuthEnabled()) {
+    console.info('[cognito.resendVerification] Using FAKE AUTH mode, returning sent=true');
+    return { ok: true, sent: true }
+  }
+
+  const safeEmail = (email || '').toString().trim()
+  if (!safeEmail) {
+    throw new Error('Email is required')
+  }
+
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    apiUrl = await getApiUrlAsync()
+  }
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+  const url = `${apiBase}/auth/resend-verification`
+
+  console.info('[cognito.resendVerification] Calling endpoint:', url);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: safeEmail }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  
+  console.info('[cognito.resendVerification] Response status:', response.status, 'data:', data);
+  
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `Resend verification failed with status ${response.status}`)
+  }
+
+  return data
+}
+
+/**
  * Initiate passwordless authentication (sends OTP)
  * @param {string} email - User's email
  * @returns {Promise<Object>} Auth session object
  */
 export async function initiateAuth(email) {
-  if (USE_FAKE || runtimeFakeOverride) {
+  console.info('[cognito.initiateAuth] Starting for email:', email);
+  
+  if (isFakeAuthEnabled()) {
+    console.info('[cognito.initiateAuth] Using FAKE AUTH mode');
     return new Promise((resolve) => {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const session = 'fake-session-' + Math.random().toString(36).substring(7);
       pending.set(email, { otp, session });
-      console.log('[FAKE AUTH] Generated OTP:', otp);
+      console.info('[cognito.initiateAuth] [FAKE AUTH] Generated OTP:', otp);
       resolve({
         challenge: true,
         session,
@@ -139,28 +387,31 @@ export async function initiateAuth(email) {
     });
   }
 
-  if (!USER_POOL_ID || !CLIENT_ID) {
+  const clientId = getClientId()
+  if (!getUserPoolId() || !clientId) {
+    console.error('[cognito.initiateAuth] Missing userPoolId or clientId');
     return Promise.reject(new Error(missingMsg));
   }
 
-  const cmd = new InitiateAuthCommand({
+  console.info('[cognito.initiateAuth] Calling Cognito InitiateAuth...');
+  const res = await cognitoIdpRequest('InitiateAuth', {
     AuthFlow: 'CUSTOM_AUTH',
-    ClientId: CLIENT_ID,
-    AuthParameters: {
-      USERNAME: email,
-    },
-  });
+    ClientId: clientId,
+    AuthParameters: { USERNAME: email },
+  })
 
-  const res = await cognitoIdpClient.send(cmd);
+  console.info('[cognito.initiateAuth] InitiateAuth response:', res);
 
   // If Cognito ever decides to return tokens immediately, support that too.
   if (res.AuthenticationResult) {
+    console.info('[cognito.initiateAuth] Got tokens immediately');
     return {
       success: true,
       AuthenticationResult: res.AuthenticationResult,
     };
   }
 
+  console.info('[cognito.initiateAuth] Challenge required, session:', res.Session);
   return {
     challenge: true,
     session: res.Session || '',
@@ -178,11 +429,15 @@ export async function initiateAuth(email) {
  * @returns {Promise<Object>} Authentication result with tokens
  */
 export async function verifyOTP({ email, otp, session }) {
-  if (USE_FAKE || runtimeFakeOverride) {
+  console.info('[cognito.verifyOTP] Starting OTP verification for:', email);
+  
+  if (isFakeAuthEnabled()) {
+    console.info('[cognito.verifyOTP] Using FAKE AUTH mode');
     return new Promise((resolve, reject) => {
       const stored = pending.get(email);
       if (stored && otp === stored.otp) {
         pending.delete(email);
+        console.info('[cognito.verifyOTP] [FAKE AUTH] OTP verified successfully');
         resolve({
           success: true,
           AuthenticationResult: {
@@ -192,34 +447,37 @@ export async function verifyOTP({ email, otp, session }) {
           },
         });
       } else {
+        console.error('[cognito.verifyOTP] [FAKE AUTH] Invalid OTP');
         reject(new Error('Invalid OTP'));
       }
     });
   }
 
-  if (!USER_POOL_ID || !CLIENT_ID) {
+  const clientId = getClientId()
+  if (!getUserPoolId() || !clientId) {
+    console.error('[cognito.verifyOTP] Missing userPoolId or clientId');
     return Promise.reject(new Error(missingMsg));
   }
 
   if (!session) {
+    console.error('[cognito.verifyOTP] Missing session');
     throw new Error(
       'Missing Cognito session. Call initiateAuth(email) first and pass its returned session into verifyOTP.'
     );
   }
 
-  const cmd = new RespondToAuthChallengeCommand({
+  console.info('[cognito.verifyOTP] Calling Cognito RespondToAuthChallenge...');
+  const res = await cognitoIdpRequest('RespondToAuthChallenge', {
     ChallengeName: 'CUSTOM_CHALLENGE',
-    ClientId: CLIENT_ID,
+    ClientId: clientId,
     Session: session,
-    ChallengeResponses: {
-      USERNAME: email,
-      ANSWER: otp,
-    },
-  });
+    ChallengeResponses: { USERNAME: email, ANSWER: otp },
+  })
 
-  const res = await cognitoIdpClient.send(cmd);
+  console.info('[cognito.verifyOTP] RespondToAuthChallenge response:', res);
 
   if (res.AuthenticationResult) {
+    console.info('[cognito.verifyOTP] Authentication successful, tokens received');
     return {
       success: true,
       AuthenticationResult: res.AuthenticationResult,
@@ -227,6 +485,7 @@ export async function verifyOTP({ email, otp, session }) {
   }
 
   // If Cognito wants another round of challenge, propagate the new session.
+  console.info('[cognito.verifyOTP] Challenge not complete, another round required');
   return {
     challenge: true,
     session: res.Session || '',
@@ -240,7 +499,7 @@ export async function verifyOTP({ email, otp, session }) {
  * @returns {Promise<Object|null>} User object or null if not authenticated
  */
 export async function getCurrentUser() {
-  if (USE_FAKE || runtimeFakeOverride) {
+  if (isFakeAuthEnabled()) {
     const token = localStorage.getItem('idToken')
     if (token && token.startsWith('fake-id-token')) {
       return { email: localStorage.getItem('userEmail'), isAuthenticated: true }
@@ -248,7 +507,7 @@ export async function getCurrentUser() {
     return null
   }
 
-  if (!USER_POOL_ID || !CLIENT_ID) return null;
+  if (!getUserPoolId() || !getClientId()) return null;
 
   const userPool = await getUserPool();
   if (!userPool) return null;
@@ -278,7 +537,7 @@ export async function getUserAttributes() {
   if (!user) return null;
 
   return new Promise((resolve, reject) => {
-    if (USE_FAKE) {
+    if (isFakeAuthEnabled()) {
       resolve({
         email: localStorage.getItem('userEmail'),
         name: localStorage.getItem('userName') || '',
@@ -339,7 +598,7 @@ export async function getIdToken() {
  * @returns {Promise<Object>} New session
  */
 export async function refreshTokens() {
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
+  if (isFakeAuthEnabled() || !getUserPoolId() || !getClientId()) {
     throw new Error('Token refresh not available in fake auth mode');
   }
 
@@ -381,7 +640,7 @@ export async function signOut() {
 
   clearCognitoLocalStorage()
 
-  if (USE_FAKE || !USER_POOL_ID || !CLIENT_ID) {
+  if (isFakeAuthEnabled() || !getUserPoolId() || !getClientId()) {
     return;
   }
 
@@ -399,7 +658,7 @@ export async function startAuth(email) {
   return initiateAuth(email);
 }
 
-export async function respondToChallenge(email, answer) {
+export async function respondToChallenge(_email, _answer) {
   throw new Error(
     'respondToChallenge(email, answer) is deprecated. Use verifyOTP({ email, otp: answer, session }) with the Session returned by initiateAuth(email).'
   );

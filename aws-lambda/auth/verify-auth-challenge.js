@@ -5,14 +5,45 @@
 
 const { DynamoDBClient, DeleteItemCommand } = require("@aws-sdk/client-dynamodb");
 const { marshall } = require("@aws-sdk/util-dynamodb");
+const {
+  CognitoIdentityProviderClient,
+  AdminUpdateUserAttributesCommand,
+} = require("@aws-sdk/client-cognito-identity-provider");
 
 let dynamodbClient = null;
+let cognitoClient = null;
 
 function getDynamoDBClient() {
   if (!dynamodbClient) {
     dynamodbClient = new DynamoDBClient({ region: process.env.AWS_REGION });
   }
   return dynamodbClient;
+}
+
+function getCognitoClient() {
+  if (!cognitoClient) {
+    cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
+  }
+  return cognitoClient;
+}
+
+async function tryMarkEmailVerified(email) {
+  const userPoolId = process.env.COGNITO_USER_POOL_ID;
+  if (!userPoolId) return;
+
+  try {
+    const cognito = getCognitoClient();
+    await cognito.send(
+      new AdminUpdateUserAttributesCommand({
+        UserPoolId: userPoolId,
+        Username: email,
+        UserAttributes: [{ Name: "email_verified", Value: "true" }],
+      })
+    );
+    console.log("Marked email_verified=true for:", email);
+  } catch (error) {
+    console.error("Failed to mark email_verified (non-fatal):", error);
+  }
 }
 
 exports.handler = async (event) => {
@@ -32,6 +63,9 @@ exports.handler = async (event) => {
   if (userAnswer.trim() === expectedOtp.trim()) {
     response.answerCorrect = true;
     console.log('OTP verified successfully for:', email);
+
+    // Treat successful email OTP as email verification (best-effort)
+    await tryMarkEmailVerified(email);
 
     // Clean up OTP from DynamoDB
     try {

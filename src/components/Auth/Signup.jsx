@@ -10,6 +10,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [countryCode, setCountryCode] = useState('+91')
 
   const [formData, setFormData] = useState({
     name: '',
@@ -21,8 +22,24 @@ export default function Signup() {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === 'phone_number' ? value.replace(/[^\d]/g, '') : value,
     }))
+  }
+
+  const handleCountryCodeChange = (e) => {
+    const raw = e.target.value
+    const digits = raw.replace(/[^\d]/g, '')
+    if (!digits) {
+      setCountryCode(raw.startsWith('+') ? '+' : '')
+      return
+    }
+    setCountryCode(`+${digits}`)
+  }
+
+  const handleCountryCodeBlur = () => {
+    if (!countryCode || countryCode === '+') {
+      setCountryCode('+91')
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -55,7 +72,9 @@ export default function Signup() {
       const response = await signup({
         name: formData.name,
         email: formData.email,
-        phone_number: formData.phone_number,
+        phone_number: formData.phone_number
+          ? `${countryCode}${formData.phone_number}`
+          : '',
       })
 
       console.log('Signup response:', response)
@@ -208,15 +227,43 @@ export default function Signup() {
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                 Phone Number (Optional)
               </label>
-              <input
-                id="phone"
-                name="phone_number"
-                type="tel"
-                value={formData.phone_number}
-                onChange={handleChange}
-                placeholder="Enter your phone number"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
-              />
+              <div className="flex gap-2">
+                <div className="shrink-0 w-28">
+                  <input
+                    aria-label="Country code"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel-country-code"
+                    list="country-codes"
+                    value={countryCode}
+                    onChange={handleCountryCodeChange}
+                    onBlur={handleCountryCodeBlur}
+                    placeholder="+91"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
+                  />
+                  <datalist id="country-codes">
+                    <option value="+91" label="IN" />
+                    <option value="+1" label="US" />
+                    <option value="+44" label="UK" />
+                    <option value="+971" label="UAE" />
+                    <option value="+65" label="SG" />
+                    <option value="+61" label="AU" />
+                  </datalist>
+                </div>
+
+                <input
+                  id="phone"
+                  name="phone_number"
+                  type="tel"
+                  inputMode="numeric"
+                  autoComplete="tel-national"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  placeholder="Enter phone number"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00674F] focus:border-transparent transition-colors"
+                />
+              </div>
+             
             </div>
 
             {/* Error Message */}

@@ -188,12 +188,12 @@ deploy_stack() {
 echo "📋 Deployment Plan:"
 echo "  1. growksh-website-iam-$ENVIRONMENT (IAM roles)"
 echo "  2. growksh-website-database-$ENVIRONMENT (DynamoDB)"
-echo "  3. growksh-website-cognito-$ENVIRONMENT (Cognito)"
-echo "  4. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
-echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
-echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
-echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
-echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+echo "  3. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
+echo "  4. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+echo "  5. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas) - EXPORTS ARNs"
+echo "  6. growksh-website-cognito-$ENVIRONMENT (Cognito) - IMPORTS Lambda ARNs"
+echo "  7. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+echo "  8. growksh-website-api-$ENVIRONMENT (API Gateway)"
 echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
 echo ""
 
@@ -209,14 +209,8 @@ deploy_stack \
   "growksh-website-database-$ENVIRONMENT" \
   "$TEMPLATE_DIR/01-database-stack.yaml"
 
-# Stage 3: Cognito (no dependencies)
-echo "Stage 3️⃣: Cognito"
-deploy_stack \
-  "growksh-website-cognito-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/02-cognito-stack.yaml"
-
-# Stage 4: WAF (us-east-1, no dependencies, before CDN)
-echo "Stage 4️⃣: WAF (us-east-1)"
+# Stage 3: WAF (us-east-1, no dependencies, before CDN)
+echo "Stage 3️⃣: WAF (us-east-1)"
 if [[ $ENVIRONMENT == feature-* ]]; then
   PARAM_FILE="$PARAM_DIR/ephemeral-03-waf-stack.json"
 else
@@ -228,8 +222,8 @@ deploy_stack \
   "$PARAM_FILE" \
   "us-east-1"
 
-# Stage 5: Lambda Code Bucket (no dependencies)
-echo "Stage 5️⃣: Lambda Code Bucket"
+# Stage 4: Lambda Code Bucket (no dependencies)
+echo "Stage 4️⃣: Lambda Code Bucket"
 deploy_stack \
   "growksh-website-lambda-code-bucket-$ENVIRONMENT" \
   "$TEMPLATE_DIR/04-lambda-code-bucket-stack.yaml"
@@ -273,7 +267,7 @@ while [ $attempt -le $max_attempts ]; do
 done
 echo ""
 
-# Stage 5.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Lambda stacks)
+# Stage 5.5: Build and upload Lambda functions (AFTER bucket exists, BEFORE Cognito Lambdas)
 # Always build for ephemeral/feature branches, or for dev/prod if explicitly requested via BUILD_LAMBDAS
 if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]] || [[ "$ENVIRONMENT" == "dev" ]] || [[ "$ENVIRONMENT" == "prod" ]]; then
   echo "🔨 Building and uploading Lambda functions..."
@@ -290,8 +284,26 @@ if [[ $ENVIRONMENT == feature-* ]] || [[ ! -z "$BUILD_LAMBDAS" ]] || [[ "$ENVIRO
   echo ""
 fi
 
-# Stage 6: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
-echo "Stage 6️⃣: Storage & CDN"
+# Stage 6: Cognito Lambda Triggers (MUST deploy BEFORE Cognito in Stage 7)
+echo "Stage 6️⃣: Cognito Lambda Triggers"
+if [[ $ENVIRONMENT == feature-* ]]; then
+  PARAM_FILE="$PARAM_DIR/ephemeral-07-cognito-lambdas.json"
+else
+  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-07-cognito-lambdas.json"
+fi
+deploy_stack \
+  "growksh-website-cognito-lambdas-$ENVIRONMENT" \
+  "$TEMPLATE_DIR/07-cognito-lambdas-stack.yaml" \
+  "$PARAM_FILE"
+
+# Stage 7: Cognito (depends on Stage 6 Cognito Lambdas for ARN exports)
+echo "Stage 7️⃣: Cognito"
+deploy_stack \
+  "growksh-website-cognito-$ENVIRONMENT" \
+  "$TEMPLATE_DIR/02-cognito-stack.yaml"
+
+# Stage 8: Storage & CDN (depends on nothing, but Lambda bucket should exist first)
+echo "Stage 8️⃣: Storage & CDN"
 if [[ $ENVIRONMENT == feature-* ]]; then
   PARAM_FILE="$PARAM_DIR/ephemeral-05-storage-cdn.json"
 else
@@ -383,20 +395,8 @@ deploy_stack \
   "growksh-website-api-$ENVIRONMENT" \
   "$TEMPLATE_DIR/06-api-gateway-stack.yaml"
 
-# Stage 8: Cognito Lambda Triggers (depends on Cognito, IAM, Database, Lambda code bucket)
-echo "Stage 8️⃣: Cognito Lambda Triggers"
-if [[ $ENVIRONMENT == feature-* ]]; then
-  PARAM_FILE="$PARAM_DIR/ephemeral-07-cognito-lambdas.json"
-else
-  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-07-cognito-lambdas.json"
-fi
-deploy_stack \
-  "growksh-website-cognito-lambdas-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/07-cognito-lambdas-stack.yaml" \
-  "$PARAM_FILE"
-
-# Stage 9: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database, Lambda code bucket)
-echo "Stage 9️⃣: API Lambda Functions"
+# Stage 10: API Lambda Functions (depends on API Gateway, IAM, Cognito, Database, Lambda code bucket)
+echo "Stage 🔟: API Lambda Functions"
 if [[ $ENVIRONMENT == feature-* ]]; then
   PARAM_FILE="$PARAM_DIR/ephemeral-08-api-lambdas.json"
 else
@@ -416,6 +416,19 @@ if [ "$DEPLOYMENT_FAILED" = true ]; then
 else
   echo "✅ All stacks deployed successfully!"
   echo "═══════════════════════════════════════════════════"
+fi
+echo ""
+
+# Post-deployment: Update runtime configuration with deployment-specific values
+echo "🔄 Post-deployment: Updating runtime configuration..."
+if [ -f "infra/scripts/update-runtime-config.sh" ]; then
+  chmod +x infra/scripts/update-runtime-config.sh
+  ./infra/scripts/update-runtime-config.sh "$ENVIRONMENT" || {
+    echo "⚠️  Warning: Runtime configuration update failed, but deployment completed"
+    echo "   You may need to manually update public/runtime-config.js and invalidate CloudFront"
+  }
+else
+  echo "⚠️  Runtime config update script not found, skipping"
 fi
 echo ""
 echo "📊 Stack Status:"

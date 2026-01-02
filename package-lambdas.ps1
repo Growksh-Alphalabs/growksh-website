@@ -21,9 +21,25 @@ $APILambdas = @{
         "source" = "aws-lambda\auth"
         "files" = @("verify-email.js", "package.json", "package-lock.json")
     }
+    "check-user" = @{
+        "source" = "aws-lambda\auth"
+        "files" = @("check-user.js", "package.json", "package-lock.json")
+    }
     "check-admin" = @{
         "source" = "aws-lambda\auth"
-        "files" = @("define-auth-challenge.js", "package.json", "package-lock.json")
+        "files" = @("check-admin.js", "package.json", "package-lock.json")
+    }
+    "user-status" = @{
+        "source" = "aws-lambda\auth"
+        "files" = @("user-status.js", "package.json", "package-lock.json")
+    }
+    "user-details" = @{
+        "source" = "aws-lambda\auth"
+        "files" = @("user-details.js", "package.json", "package-lock.json")
+    }
+    "resend-verification" = @{
+        "source" = "aws-lambda\auth"
+        "files" = @("resend-verification.js", "package.json", "package-lock.json")
     }
 }
 

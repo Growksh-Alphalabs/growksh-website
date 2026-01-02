@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk')
-const crypto = require('crypto')
+const nodeCrypto = require('crypto')
 
 const dynamo = new AWS.DynamoDB.DocumentClient()
 const TABLE = process.env.CONTACTS_TABLE
@@ -19,6 +19,26 @@ function response(statusCode, body) {
   }
 }
 
+function parseJsonBody(event) {
+  if (!event || event.body == null) return {}
+
+  let raw = event.body
+  if (event.isBase64Encoded && typeof raw === 'string') {
+    raw = Buffer.from(raw, 'base64').toString('utf8')
+  }
+
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw)
+    } catch {
+      throw new Error('Invalid JSON body')
+    }
+  }
+
+  if (typeof raw === 'object') return raw
+  return {}
+}
+
 exports.handler = async (event) => {
   console.log('Received event:', JSON.stringify(event, null, 2))
 
@@ -34,14 +54,20 @@ exports.handler = async (event) => {
   }
 
   try {
-    const body = event.body ? JSON.parse(event.body) : {}
+    let body = {}
+    try {
+      body = parseJsonBody(event)
+    } catch (e) {
+      return response(400, { error: e.message || 'Invalid request body' })
+    }
+
     const { name, email, phone, interest, message } = body
 
     if (!name || !email || !message) {
       return response(400, { error: 'Missing required fields: name, email, message' })
     }
 
-    const id = crypto.randomBytes(8).toString('hex')
+    const id = nodeCrypto.randomBytes(8).toString('hex')
     const item = {
       id,
       name,

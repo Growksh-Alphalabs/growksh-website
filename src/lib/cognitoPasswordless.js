@@ -1,7 +1,11 @@
 import { CognitoIdentityProviderClient, InitiateAuthCommand, RespondToAuthChallengeCommand } from '@aws-sdk/client-cognito-identity-provider'
 
 // instantiate client once for reuse; region will be picked from env if available
-const REGION = process.env.VITE_AWS_REGION || process.env.AWS_REGION || 'ap-south-1'
+const REGION = (
+  (typeof window !== 'undefined' && window.__GROWKSH_RUNTIME_CONFIG__ && window.__GROWKSH_RUNTIME_CONFIG__.VITE_AWS_REGION) ||
+  import.meta.env.VITE_AWS_REGION ||
+  'ap-south-1'
+)
 const client = new CognitoIdentityProviderClient({ region: REGION })
 
 /**

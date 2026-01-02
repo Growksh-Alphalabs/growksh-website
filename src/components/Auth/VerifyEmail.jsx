@@ -7,7 +7,6 @@ export default function VerifyEmail() {
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('verifying') // verifying | success | error
   const [message, setMessage] = useState('Verifying your email...')
-  const [email, setEmail] = useState('')
 
   useEffect(() => {
     const verifyEmail = async () => {
@@ -23,11 +22,17 @@ export default function VerifyEmail() {
           return
         }
 
-        setEmail(emailParam)
-
         // Call the backend verification endpoint
-        let apiBase = import.meta.env.VITE_API_URL || ''
-        if (apiBase.endsWith('/contact')) apiBase = apiBase.replace(/\/contact$/, '')
+        const runtime = (typeof window !== 'undefined' && window.__GROWKSH_RUNTIME_CONFIG__) || {}
+        const apiUrl = (runtime.VITE_API_URL || import.meta.env.VITE_API_URL || '').toString().trim()
+
+        if (!apiUrl) {
+          throw new Error('API_URL is not configured')
+        }
+
+        let apiBase = apiUrl.replace(/\/+$/, '')
+        // CloudFormation exports already include the complete URL with stage
+        // So we should NOT add /Prod or any other stage
 
         const response = await fetch(
           `${apiBase}/auth/verify-email?email=${encodeURIComponent(
@@ -65,7 +70,7 @@ export default function VerifyEmail() {
   }, [searchParams, navigate])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">

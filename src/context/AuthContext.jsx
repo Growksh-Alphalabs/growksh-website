@@ -55,6 +55,10 @@ export function AuthProvider({ children }) {
           })
           setIsAuthenticated(true)
 
+          if (attributes && Object.prototype.hasOwnProperty.call(attributes, 'email_verified')) {
+            console.info('[AuthContext] email_verified:', attributes.email_verified)
+          }
+
           // Extract admin status from ID token
           const idToken = localStorage.getItem('idToken')
           const adminStatus = extractAdminStatusFromToken(idToken)

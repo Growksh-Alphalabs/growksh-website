@@ -8,6 +8,15 @@ Parameters:
 
     Description: Environment name
 
+  EnableTriggers:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: Whether to attach custom auth Lambda triggers to the user pool (requires cognito-lambdas stack exports)
+
+Conditions:
+  AttachTriggers: !Equals [!Ref EnableTriggers, 'true']
+
 Resources:
   UserPool:
     Type: AWS::Cognito::UserPool
@@ -38,6 +47,21 @@ Resources:
       UserAttributeUpdateSettings:
         AttributesRequireVerificationBeforeUpdate:
           - email
+      LambdaConfig: !If
+        - AttachTriggers
+        - PreSignUp: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pre-sign-up-arn'
+          CustomMessage: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-custom-message-arn'
+          DefineAuthChallenge: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-define-auth-challenge-arn'
+          CreateAuthChallenge: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-create-auth-challenge-arn'
+          VerifyAuthChallengeResponse: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-verify-auth-challenge-arn'
+          PostConfirmation: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-post-confirmation-arn'
+        - !Ref 'AWS::NoValue'
 
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
@@ -61,6 +85,12 @@ Outputs:
     Export:
       Name: !Sub 'growksh-website-${Environment}-pool-id'
 
+  UserPoolIdForRuntime:
+    Description: Cognito User Pool ID (for runtime-config)
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cognito-user-pool-id'
+
   UserPoolArn:
     Description: Cognito User Pool ARN
     Value: !GetAtt UserPool.Arn
@@ -72,3 +102,9 @@ Outputs:
     Value: !Ref UserPoolClient
     Export:
       Name: !Sub 'growksh-website-client-${Environment}-id'
+
+  UserPoolClientIdForRuntime:
+    Description: Cognito User Pool Client ID (for runtime-config)
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-cognito-client-id'

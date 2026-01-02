@@ -2,9 +2,10 @@ import React from 'react'
 import { COLORS } from '../../constants/colors'
 import heroImg from '../../assets/Website images/Wealthcraft - hero section.png'
 import wealthcraftLogo from '../../assets/Website images/Wealthcraft logo1.png'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 export default function Hero() {
+  const navigate = useNavigate()
   const bgStyle = {
     backgroundImage: `url(${heroImg})`,
     backgroundSize: 'cover',
@@ -123,11 +124,8 @@ export default function Hero() {
 
                     // perform navigation then scroll
                     try {
-                      // use router navigate by importing the hook and calling it
-                      const { useNavigate } = await import('react-router-dom')
-                      const nav = useNavigate()
-                      nav(startPath)
-                    } catch (e) {
+                      navigate(startPath)
+                    } catch {
                       // fallback to history push
                       window.history.pushState({}, '', startPath)
                       window.dispatchEvent(new PopStateEvent('popstate'))
