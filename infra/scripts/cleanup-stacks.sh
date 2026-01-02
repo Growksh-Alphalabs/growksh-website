@@ -138,8 +138,9 @@ empty_bucket() {
 
 delete_stack() {
   local stack_name=$1
+  local stack_region=${2:-$REGION}  # Use provided region or default to REGION variable
 
-  echo "🗑️  Deleting stack: $stack_name"
+  echo "🗑️  Deleting stack: $stack_name (region: $stack_region)"
 
   # Empty S3 buckets before deletion (so CloudFormation can delete them)
   if [[ $stack_name == *"storage-cdn"* ]]; then
@@ -158,19 +159,19 @@ delete_stack() {
   echo "📋 Stack events:"
   aws cloudformation describe-stack-events \
     --stack-name "$stack_name" \
-    --region "$REGION" \
+    --region "$stack_region" \
     --query 'StackEvents[?contains(ResourceStatusReason, `Error`) || contains(ResourceStatusReason, `Failed`) || ResourceStatus == `CREATE_FAILED` || ResourceStatus == `UPDATE_FAILED`]' \
     --output table 2>/dev/null || true
   echo ""
 
   aws cloudformation delete-stack \
     --stack-name "$stack_name" \
-    --region "$REGION" 2>/dev/null || true
+    --region "$stack_region" 2>/dev/null || true
 
   echo "⏳ Waiting for stack deletion..."
   aws cloudformation wait stack-delete-complete \
     --stack-name "$stack_name" \
-    --region "$REGION" 2>/dev/null || true
+    --region "$stack_region" 2>/dev/null || true
 
   echo "✅ Stack deleted: $stack_name"
   echo ""
@@ -231,10 +232,12 @@ for stack in $STACKS; do
   fi
 done
 
-echo "Stage 7️⃣: Delete WAF"
+echo "Stage 7️⃣: Delete WAF (us-east-1)"
 for stack in $STACKS; do
   if [[ $stack == *"-waf-"* ]]; then
-    delete_stack "$stack"
+    # WAF stacks are in us-east-1, not the default region
+    echo "  Deleting: $stack (from us-east-1)"
+    delete_stack "$stack" "us-east-1"
   fi
 done
 

@@ -189,12 +189,21 @@ echo "📋 Deployment Plan:"
 echo "  1. growksh-website-iam-$ENVIRONMENT (IAM roles)"
 echo "  2. growksh-website-database-$ENVIRONMENT (DynamoDB)"
 echo "  3. growksh-website-cognito-$ENVIRONMENT (Cognito)"
-echo "  4. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
-echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
-echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
-echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
-echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
-echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != feature-* ]]; then
+  echo "  4. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
+  echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+  echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+  echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
+  echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+  echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+else
+  echo "  4. ⏭️  (skipping WAF for dev/ephemeral to reduce costs)"
+  echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+  echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+  echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
+  echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+  echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+fi
 echo ""
 
 # Stage 1: IAM (no dependencies)
@@ -215,18 +224,23 @@ deploy_stack \
   "growksh-website-cognito-$ENVIRONMENT" \
   "$TEMPLATE_DIR/02-cognito-stack.yaml"
 
-# Stage 4: WAF (us-east-1, no dependencies, before CDN)
-echo "Stage 4️⃣: WAF (us-east-1)"
-if [[ $ENVIRONMENT == feature-* ]]; then
-  PARAM_FILE="$PARAM_DIR/ephemeral-03-waf-stack.json"
+# Stage 4: WAF (us-east-1, no dependencies, before CDN) - Skip for dev/ephemeral to reduce costs
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != feature-* ]]; then
+  echo "Stage 4️⃣: WAF (us-east-1)"
+  if [[ $ENVIRONMENT == feature-* ]]; then
+    PARAM_FILE="$PARAM_DIR/ephemeral-03-waf-stack.json"
+  else
+    PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+  fi
+  deploy_stack \
+    "growksh-website-waf-$ENVIRONMENT" \
+    "$TEMPLATE_DIR/03-waf-stack.yaml" \
+    "$PARAM_FILE" \
+    "us-east-1"
 else
-  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+  echo "Stage 4️⃣: WAF - ⏭️  SKIPPED (dev/ephemeral environment - costs reduced by not using WAF)"
 fi
-deploy_stack \
-  "growksh-website-waf-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/03-waf-stack.yaml" \
-  "$PARAM_FILE" \
-  "us-east-1"
+echo ""
 
 # Stage 5: Lambda Code Bucket (no dependencies)
 echo "Stage 5️⃣: Lambda Code Bucket"
