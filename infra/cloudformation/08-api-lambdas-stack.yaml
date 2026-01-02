@@ -244,6 +244,41 @@ Resources:
       Action: lambda:InvokeFunction
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/auth/user-status'
 
+  UserDetailsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'growksh-website-user-details-${Environment}'
+      Runtime: nodejs22.x
+      Handler: user-details.handler
+      Role: !ImportValue
+        Fn::Sub: 'growksh-website-${Environment}-auth-lambda-role-arn'
+      Code:
+        S3Bucket:
+          Fn::If:
+            - UseProvidedBucket
+            - !Ref LambdaCodeBucketName
+            - !Ref LambdaCodeBucket
+        S3Key: !Sub 'auth/user-details-${LambdaCodeSourceEnv}.zip'
+      Environment:
+        Variables:
+          COGNITO_USER_POOL_ID: !ImportValue
+            Fn::Sub: 'growksh-website-${Environment}-pool-id'
+      Tags:
+        - Key: App
+          Value: Website
+        - Key: Partner
+          Value: Growksh
+        - Key: Env
+          Value: !Ref Environment
+
+  UserDetailsFunctionApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref UserDetailsFunction
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/auth/user-details'
+
   ResendVerificationFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -313,6 +348,11 @@ Outputs:
     Value: !GetAtt UserStatusFunction.Arn
     Export:
       Name: !Sub 'growksh-website-${Environment}-user-status-lambda-arn'
+
+  UserDetailsFunctionArn:
+    Value: !GetAtt UserDetailsFunction.Arn
+    Export:
+      Name: !Sub 'growksh-website-${Environment}-user-details-lambda-arn'
 
   ResendVerificationFunctionArn:
     Value: !GetAtt ResendVerificationFunction.Arn

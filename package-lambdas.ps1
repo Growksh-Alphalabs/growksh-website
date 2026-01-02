@@ -33,6 +33,10 @@ $APILambdas = @{
         "source" = "aws-lambda\auth"
         "files" = @("user-status.js", "package.json", "package-lock.json")
     }
+    "user-details" = @{
+        "source" = "aws-lambda\auth"
+        "files" = @("user-details.js", "package.json", "package-lock.json")
+    }
     "resend-verification" = @{
         "source" = "aws-lambda\auth"
         "files" = @("resend-verification.js", "package.json", "package-lock.json")
