@@ -43,8 +43,6 @@ function parseJsonBody(event) {
 
 exports.handler = async (event) => {
   try {
-    console.log('check-user event:', JSON.stringify(event, null, 2));
-
     if (event.httpMethod === 'OPTIONS') {
       return response(200, { message: 'OK' });
     }
@@ -70,8 +68,6 @@ exports.handler = async (event) => {
       return response(400, { error: 'Email is required' });
     }
 
-    console.log('check-user lookup email:', email);
-
     const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
     try {
@@ -81,10 +77,6 @@ exports.handler = async (event) => {
           Username: email,
         })
       );
-
-      // User asked to see exactly what Cognito returns for this user.
-      // This logs the raw response so they can paste CloudWatch logs back.
-      console.log('AdminGetUser raw response:', JSON.stringify(res, null, 2));
 
       const attrs = Array.isArray(res?.UserAttributes) ? res.UserAttributes : [];
       const emailVerifiedAttr = attrs.find((a) => a && a.Name === 'email_verified');
