@@ -71,13 +71,28 @@ exports.handler = async (event) => {
     const client = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
 
     try {
-      await client.send(
+      const res = await client.send(
         new AdminGetUserCommand({
           UserPoolId: userPoolId,
           Username: email,
         })
       );
-      return response(200, { exists: true });
+
+      const attrs = Array.isArray(res?.UserAttributes) ? res.UserAttributes : [];
+      const emailVerifiedAttr = attrs.find((a) => a && a.Name === 'email_verified');
+      const email_verified_raw =
+        emailVerifiedAttr && typeof emailVerifiedAttr.Value === 'string'
+          ? emailVerifiedAttr.Value
+          : undefined;
+      const email_verified =
+        typeof email_verified_raw === 'string'
+          ? email_verified_raw.trim().toLowerCase()
+          : undefined;
+
+      return response(200, {
+        exists: true,
+        ...(email_verified ? { email_verified } : {}),
+      });
     } catch (e) {
       if (e && (e.name === 'UserNotFoundException' || e.__type === 'UserNotFoundException')) {
         return response(200, { exists: false });

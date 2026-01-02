@@ -51,6 +51,19 @@ export default function Login() {
           navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
           return
         }
+
+        // Only block when the backend explicitly tells us the user is unverified.
+        // If the field is missing (older deployments), do NOT block here.
+        const emailVerified =
+          typeof existsRes?.email_verified === 'string'
+            ? existsRes.email_verified.trim().toLowerCase()
+            : undefined
+
+        if (emailVerified === 'false') {
+          setErrorMessage('Please verify your email before logging in.')
+          setLoading(false)
+          return
+        }
       } catch {
         // Ignore missing endpoint / deployment differences.
       }
