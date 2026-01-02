@@ -255,6 +255,89 @@ export async function checkUserExists(email) {
 }
 
 /**
+ * Get the current user's verification status at runtime.
+ * Requires an AccessToken (stored in localStorage after login).
+ * Returns: { authenticated: boolean, email?: string, email_verified?: string }
+ */
+export async function getUserStatus() {
+  if (isFakeAuthEnabled()) {
+    return { authenticated: true, email_verified: 'true' }
+  }
+
+  const accessToken = (typeof localStorage !== 'undefined' && localStorage.getItem('accessToken')) || ''
+  if (!accessToken) {
+    return { authenticated: false }
+  }
+
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    apiUrl = await getApiUrlAsync()
+  }
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+  const url = `${apiBase}/auth/user-status`
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `User status failed with status ${response.status}`)
+  }
+  return data
+}
+
+/**
+ * Resend magic-link verification email for an unverified user.
+ * Returns: { ok: boolean, sent?: boolean, alreadyVerified?: boolean }
+ */
+export async function resendVerification(email) {
+  if (isFakeAuthEnabled()) {
+    return { ok: true, sent: true }
+  }
+
+  const safeEmail = (email || '').toString().trim()
+  if (!safeEmail) {
+    throw new Error('Email is required')
+  }
+
+  let apiUrl = getApiUrl()
+  if (!apiUrl) {
+    apiUrl = await getApiUrlAsync()
+  }
+  if (!apiUrl) {
+    throw new Error(
+      'API_URL is not configured. Set VITE_API_URL (in .env.local for dev or public/runtime-config.js for deployments).'
+    )
+  }
+
+  const apiBase = normalizeApiGatewayBase(apiUrl)
+  const url = `${apiBase}/auth/resend-verification`
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: safeEmail }),
+  })
+
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `Resend verification failed with status ${response.status}`)
+  }
+
+  return data
+}
+
+/**
  * Initiate passwordless authentication (sends OTP)
  * @param {string} email - User's email
  * @returns {Promise<Object>} Auth session object

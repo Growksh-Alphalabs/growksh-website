@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { initiateAuth, verifyOTP, checkUserExists } from '../../lib/cognito'
+import { initiateAuth, verifyOTP, checkUserExists, resendVerification } from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
@@ -60,7 +60,15 @@ export default function Login() {
             : undefined
 
         if (emailVerified === 'false') {
-          setErrorMessage('Please verify your email before logging in.')
+          try {
+            await resendVerification(email)
+          } catch (e) {
+            console.warn('Failed to resend verification (non-fatal):', e)
+          }
+
+          setErrorMessage(
+            'Please verify your email before logging in. We just sent you a magic link again.'
+          )
           setLoading(false)
           return
         }
