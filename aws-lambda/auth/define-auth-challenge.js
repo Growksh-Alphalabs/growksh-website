@@ -11,21 +11,6 @@
 exports.handler = async (event) => {
   console.log('DefineAuthChallenge event:', JSON.stringify(event, null, 2));
 
-  // This handler is intended for Cognito triggers. If invoked with a different event
-  // shape (e.g., API Gateway), do nothing rather than throwing.
-  if (!event || !event.request || !event.response) {
-    console.log('DefineAuthChallenge: unsupported event shape (skipping)');
-    return event;
-  }
-
-  const emailVerified = event?.request?.userAttributes?.email_verified;
-  if (emailVerified !== 'true') {
-    console.log('Blocking auth: email not verified');
-    event.response.issueTokens = false;
-    event.response.failAuthentication = true;
-    return event;
-  }
-
   const session = event.request.session || [];
 
   // If the user has successfully answered the custom challenge, Cognito will

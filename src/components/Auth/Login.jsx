@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { initiateAuth, verifyOTP, checkUserExists, resendVerificationLink } from '../../lib/cognito'
+import { initiateAuth, verifyOTP, checkUserExists } from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
 
@@ -14,7 +14,6 @@ export default function Login() {
   const [session, setSession] = useState('')
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [showResendVerification, setShowResendVerification] = useState(false)
 
   // Auto-populate email from query params
   const [searchParams] = useSearchParams()
@@ -30,7 +29,6 @@ export default function Login() {
     setLoading(true)
     setErrorMessage('')
     setMessage('')
-    setShowResendVerification(false)
 
     try {
       if (!email.trim()) {
@@ -51,12 +49,6 @@ export default function Login() {
         const existsRes = await checkUserExists(email)
         if (existsRes && existsRes.exists === false) {
           navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
-          return
-        }
-
-        if (existsRes && existsRes.exists === true && existsRes.email_verified !== 'true') {
-          setErrorMessage('Please verify your email before logging in.')
-          setShowResendVerification(true)
           return
         }
       } catch {
@@ -91,28 +83,6 @@ export default function Login() {
         errorMsg ||
           'Failed to initiate login. Please check your email and try again.'
       )
-
-      // If backend check-user isn't available, Cognito trigger enforcement may fail auth here.
-      // Show resend option so user can request the magic link.
-      setShowResendVerification(true)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleResendVerification = async () => {
-    setLoading(true)
-    setErrorMessage('')
-    setMessage('')
-    try {
-      const res = await resendVerificationLink(email)
-      if (res && res.sent) {
-        setMessage(`Verification link sent to ${email}. Please check your email.`)
-      } else {
-        setMessage(res?.message || 'Unable to send verification link')
-      }
-    } catch (err) {
-      setErrorMessage(err?.message || 'Failed to resend verification link')
     } finally {
       setLoading(false)
     }
@@ -243,18 +213,6 @@ export default function Login() {
             {errorMessage && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-700">{errorMessage}</p>
-                {showResendVerification && (
-                  <div className="mt-3">
-                    <button
-                      type="button"
-                      onClick={handleResendVerification}
-                      disabled={loading || !email}
-                      className="text-sm font-semibold text-slate-700 hover:underline disabled:opacity-50"
-                    >
-                      Send magic link again
-                    </button>
-                  </div>
-                )}
               </div>
             )}
 
