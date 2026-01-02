@@ -15,6 +15,7 @@ dist-ssr
 
 # Generated Lambda build artifacts
 *-feature-*.zip
+*.zip
 
 # Editor directories and files
 .vscode/*
