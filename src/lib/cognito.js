@@ -220,14 +220,17 @@ export async function signup(userData) {
  * Returns: { exists: boolean }
  */
 export async function checkUserExists(email) {
+  console.info('[cognito.checkUserExists] Checking if user exists:', email);
+  
   if (isFakeAuthEnabled()) {
+    console.info('[cognito.checkUserExists] Using FAKE AUTH mode, returning exists=true');
     return { exists: true }
   }
 
   // Try sync config first, then async fallback
   let apiUrl = getApiUrl()
   if (!apiUrl) {
-    console.warn('[CheckUser] API URL not in sync config, attempting async load...')
+    console.warn('[cognito.checkUserExists] API URL not in sync config, attempting async load...')
     apiUrl = await getApiUrlAsync()
   }
 
@@ -240,6 +243,8 @@ export async function checkUserExists(email) {
   const apiBase = normalizeApiGatewayBase(apiUrl)
 
   const url = `${apiBase}/auth/check-user`
+  console.info('[cognito.checkUserExists] Calling endpoint:', url);
+  
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -247,6 +252,9 @@ export async function checkUserExists(email) {
   })
 
   const data = await response.json().catch(() => ({}))
+  
+  console.info('[cognito.checkUserExists] Response status:', response.status, 'data:', data);
+  
   if (!response.ok) {
     throw new Error(data.error || data.message || `Check user failed with status ${response.status}`)
   }
@@ -260,14 +268,20 @@ export async function checkUserExists(email) {
  * Returns: { authenticated: boolean, email?: string, email_verified?: string }
  */
 export async function getUserStatus() {
+  console.info('[cognito.getUserStatus] Fetching runtime user status...');
+  
   if (isFakeAuthEnabled()) {
+    console.info('[cognito.getUserStatus] Using FAKE AUTH mode, returning email_verified=true');
     return { authenticated: true, email_verified: 'true' }
   }
 
   const accessToken = (typeof localStorage !== 'undefined' && localStorage.getItem('accessToken')) || ''
   if (!accessToken) {
+    console.warn('[cognito.getUserStatus] No accessToken found in localStorage');
     return { authenticated: false }
   }
+
+  console.info('[cognito.getUserStatus] Found accessToken, calling /auth/user-status...');
 
   let apiUrl = getApiUrl()
   if (!apiUrl) {
@@ -282,6 +296,8 @@ export async function getUserStatus() {
   const apiBase = normalizeApiGatewayBase(apiUrl)
   const url = `${apiBase}/auth/user-status`
 
+  console.info('[cognito.getUserStatus] Calling endpoint:', url);
+  
   const response = await fetch(url, {
     method: 'GET',
     headers: {
@@ -290,6 +306,9 @@ export async function getUserStatus() {
   })
 
   const data = await response.json().catch(() => ({}))
+  
+  console.info('[cognito.getUserStatus] Response status:', response.status, 'data:', data);
+  
   if (!response.ok) {
     throw new Error(data.error || data.message || `User status failed with status ${response.status}`)
   }
@@ -301,7 +320,10 @@ export async function getUserStatus() {
  * Returns: { ok: boolean, sent?: boolean, alreadyVerified?: boolean }
  */
 export async function resendVerification(email) {
+  console.info('[cognito.resendVerification] Attempting to resend verification for:', email);
+  
   if (isFakeAuthEnabled()) {
+    console.info('[cognito.resendVerification] Using FAKE AUTH mode, returning sent=true');
     return { ok: true, sent: true }
   }
 
@@ -323,6 +345,8 @@ export async function resendVerification(email) {
   const apiBase = normalizeApiGatewayBase(apiUrl)
   const url = `${apiBase}/auth/resend-verification`
 
+  console.info('[cognito.resendVerification] Calling endpoint:', url);
+
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -330,6 +354,9 @@ export async function resendVerification(email) {
   })
 
   const data = await response.json().catch(() => ({}))
+  
+  console.info('[cognito.resendVerification] Response status:', response.status, 'data:', data);
+  
   if (!response.ok) {
     throw new Error(data.error || data.message || `Resend verification failed with status ${response.status}`)
   }
@@ -343,12 +370,15 @@ export async function resendVerification(email) {
  * @returns {Promise<Object>} Auth session object
  */
 export async function initiateAuth(email) {
+  console.info('[cognito.initiateAuth] Starting for email:', email);
+  
   if (isFakeAuthEnabled()) {
+    console.info('[cognito.initiateAuth] Using FAKE AUTH mode');
     return new Promise((resolve) => {
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       const session = 'fake-session-' + Math.random().toString(36).substring(7);
       pending.set(email, { otp, session });
-      console.log('[FAKE AUTH] Generated OTP:', otp);
+      console.info('[cognito.initiateAuth] [FAKE AUTH] Generated OTP:', otp);
       resolve({
         challenge: true,
         session,
@@ -359,23 +389,29 @@ export async function initiateAuth(email) {
 
   const clientId = getClientId()
   if (!getUserPoolId() || !clientId) {
+    console.error('[cognito.initiateAuth] Missing userPoolId or clientId');
     return Promise.reject(new Error(missingMsg));
   }
 
+  console.info('[cognito.initiateAuth] Calling Cognito InitiateAuth...');
   const res = await cognitoIdpRequest('InitiateAuth', {
     AuthFlow: 'CUSTOM_AUTH',
     ClientId: clientId,
     AuthParameters: { USERNAME: email },
   })
 
+  console.info('[cognito.initiateAuth] InitiateAuth response:', res);
+
   // If Cognito ever decides to return tokens immediately, support that too.
   if (res.AuthenticationResult) {
+    console.info('[cognito.initiateAuth] Got tokens immediately');
     return {
       success: true,
       AuthenticationResult: res.AuthenticationResult,
     };
   }
 
+  console.info('[cognito.initiateAuth] Challenge required, session:', res.Session);
   return {
     challenge: true,
     session: res.Session || '',
@@ -393,11 +429,15 @@ export async function initiateAuth(email) {
  * @returns {Promise<Object>} Authentication result with tokens
  */
 export async function verifyOTP({ email, otp, session }) {
+  console.info('[cognito.verifyOTP] Starting OTP verification for:', email);
+  
   if (isFakeAuthEnabled()) {
+    console.info('[cognito.verifyOTP] Using FAKE AUTH mode');
     return new Promise((resolve, reject) => {
       const stored = pending.get(email);
       if (stored && otp === stored.otp) {
         pending.delete(email);
+        console.info('[cognito.verifyOTP] [FAKE AUTH] OTP verified successfully');
         resolve({
           success: true,
           AuthenticationResult: {
@@ -407,6 +447,7 @@ export async function verifyOTP({ email, otp, session }) {
           },
         });
       } else {
+        console.error('[cognito.verifyOTP] [FAKE AUTH] Invalid OTP');
         reject(new Error('Invalid OTP'));
       }
     });
@@ -414,15 +455,18 @@ export async function verifyOTP({ email, otp, session }) {
 
   const clientId = getClientId()
   if (!getUserPoolId() || !clientId) {
+    console.error('[cognito.verifyOTP] Missing userPoolId or clientId');
     return Promise.reject(new Error(missingMsg));
   }
 
   if (!session) {
+    console.error('[cognito.verifyOTP] Missing session');
     throw new Error(
       'Missing Cognito session. Call initiateAuth(email) first and pass its returned session into verifyOTP.'
     );
   }
 
+  console.info('[cognito.verifyOTP] Calling Cognito RespondToAuthChallenge...');
   const res = await cognitoIdpRequest('RespondToAuthChallenge', {
     ChallengeName: 'CUSTOM_CHALLENGE',
     ClientId: clientId,
@@ -430,7 +474,10 @@ export async function verifyOTP({ email, otp, session }) {
     ChallengeResponses: { USERNAME: email, ANSWER: otp },
   })
 
+  console.info('[cognito.verifyOTP] RespondToAuthChallenge response:', res);
+
   if (res.AuthenticationResult) {
+    console.info('[cognito.verifyOTP] Authentication successful, tokens received');
     return {
       success: true,
       AuthenticationResult: res.AuthenticationResult,
@@ -438,6 +485,7 @@ export async function verifyOTP({ email, otp, session }) {
   }
 
   // If Cognito wants another round of challenge, propagate the new session.
+  console.info('[cognito.verifyOTP] Challenge not complete, another round required');
   return {
     challenge: true,
     session: res.Session || '',

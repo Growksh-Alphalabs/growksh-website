@@ -67,12 +67,17 @@ export default function Login() {
         return
       }
 
+      console.info('[Login.handleEmailSubmit] Starting login flow for email:', email)
+
       // If the backend supports it, check whether the email is registered.
       // If the endpoint is not deployed, we silently skip and proceed with Cognito initiateAuth.
       try {
+        console.info('[Login.handleEmailSubmit] Calling /auth/check-user endpoint...')
         const existsRes = await checkUserExists(email)
-        console.info('[Login] check-user response:', existsRes)
+        console.info('[Login.handleEmailSubmit] check-user response:', existsRes)
+        
         if (existsRes && existsRes.exists === false) {
+          console.info('[Login.handleEmailSubmit] User does not exist, redirecting to signup')
           navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
           return
         }
@@ -80,13 +85,15 @@ export default function Login() {
         // Only block when the backend explicitly tells us the user is unverified.
         // If the field is missing (older deployments), do NOT block here.
         const emailVerified = safeLower(existsRes?.email_verified)
-        console.info('[Login] pre-auth email_verified:', emailVerified)
+        console.info('[Login.handleEmailSubmit] pre-auth email_verified status:', emailVerified)
 
         if (emailVerified === 'false') {
+          console.warn('[Login.handleEmailSubmit] User is unverified (email_verified=false), sending magic link')
           try {
             await resendVerification(email)
+            console.info('[Login.handleEmailSubmit] Magic link sent successfully')
           } catch (e) {
-            console.warn('Failed to resend verification (non-fatal):', e)
+            console.warn('[Login.handleEmailSubmit] Failed to resend verification (non-fatal):', e.message)
           }
 
           setErrorMessage(
@@ -95,21 +102,20 @@ export default function Login() {
           setLoading(false)
           return
         }
-      } catch {
+      } catch (err) {
         // Ignore missing endpoint / deployment differences.
+        console.warn('[Login.handleEmailSubmit] check-user endpoint not available (non-fatal):', err.message)
       }
 
-      console.log('Initiating auth for:', email)
+      console.info('[Login.handleEmailSubmit] Calling initiateAuth to get OTP...')
       const result = await initiateAuth(email)
-      console.log({result});
-      
-      console.log('Auth initiated:', result)
+      console.info('[Login.handleEmailSubmit] initiateAuth result:', result)
 
       setSession(result.session)
       setStage('otp')
       setMessage(`OTP sent to ${email}. Please check your email.`)
     } catch (error) {
-      console.error('Auth error:', error)
+      console.error('[Login.handleEmailSubmit] Error:', error)
 
       // Check if user is not registered
       const errorMsg = error.message || ''
@@ -151,61 +157,75 @@ export default function Login() {
         return
       }
 
-      console.log('Verifying OTP for:', email)
+      console.info('[Login.handleOTPSubmit] Starting OTP verification for:', email)
       const result = await verifyOTP({
         email,
         otp,
         session,
       })
 
-      console.log('OTP verified, result:', result)
+      console.info('[Login.handleOTPSubmit] OTP response received:', result)
+
+      // Cognito may fail the auth at the trigger level if unverified
+      if (!result.AuthenticationResult) {
+        console.error('[Login.handleOTPSubmit] No AuthenticationResult in response (likely blocked by trigger)')
+        setErrorMessage('Authentication failed. Please verify your email and try again.')
+        setLoading(false)
+        return
+      }
 
       // Store tokens in localStorage
-      if (result.AuthenticationResult) {
-        const { IdToken, AccessToken, RefreshToken } = result.AuthenticationResult
-        if (IdToken) localStorage.setItem('idToken', IdToken)
-        if (AccessToken) localStorage.setItem('accessToken', AccessToken)
-        if (RefreshToken) {
-          localStorage.setItem('refreshToken', RefreshToken)
-        }
-        localStorage.setItem('userEmail', email)
-
-        const idTokenEmailVerified = getEmailVerifiedFromIdToken(IdToken)
-        console.info('[Login] idToken email_verified:', idTokenEmailVerified)
-
-        let runtimeEmailVerified
-        try {
-          const status = await getUserStatus()
-          console.info('[Login] user-status response:', status)
-          runtimeEmailVerified = safeLower(status?.email_verified)
-        } catch (e) {
-          console.warn('[Login] user-status check failed (falling back to idToken):', e)
-        }
-
-        const effectiveEmailVerified = runtimeEmailVerified ?? idTokenEmailVerified
-        console.info('[Login] effective email_verified:', effectiveEmailVerified)
-
-        if (effectiveEmailVerified === 'false') {
-          try {
-            await resendVerification(email)
-          } catch (e) {
-            console.warn('[Login] resendVerification failed (non-fatal):', e)
-          }
-
-          await signOut()
-          setStage('email')
-          setOtp('')
-          setSession('')
-          setErrorMessage(
-            'Please verify your email before logging in. We just sent you a magic link again.'
-          )
-          setLoading(false)
-          return
-        }
-
-        // Re-check auth state immediately to update navbar
-        await checkAuth()
+      const { IdToken, AccessToken, RefreshToken } = result.AuthenticationResult
+      console.info('[Login.handleOTPSubmit] Storing tokens in localStorage')
+      
+      if (IdToken) localStorage.setItem('idToken', IdToken)
+      if (AccessToken) localStorage.setItem('accessToken', AccessToken)
+      if (RefreshToken) {
+        localStorage.setItem('refreshToken', RefreshToken)
       }
+      localStorage.setItem('userEmail', email)
+
+      const idTokenEmailVerified = getEmailVerifiedFromIdToken(IdToken)
+      console.info('[Login.handleOTPSubmit] idToken email_verified:', idTokenEmailVerified)
+
+      let runtimeEmailVerified = undefined
+      try {
+        console.info('[Login.handleOTPSubmit] Calling /auth/user-status endpoint...')
+        const status = await getUserStatus()
+        console.info('[Login.handleOTPSubmit] user-status response:', status)
+        runtimeEmailVerified = safeLower(status?.email_verified)
+      } catch (e) {
+        console.warn('[Login.handleOTPSubmit] user-status check failed (falling back to idToken):', e.message)
+      }
+
+      const effectiveEmailVerified = runtimeEmailVerified ?? idTokenEmailVerified
+      console.info('[Login.handleOTPSubmit] effective email_verified:', effectiveEmailVerified)
+
+      if (effectiveEmailVerified === 'false') {
+        console.error('[Login.handleOTPSubmit] BLOCKING: user is unverified (email_verified=false)')
+        
+        try {
+          console.info('[Login.handleOTPSubmit] Resending verification email...')
+          await resendVerification(email)
+          console.info('[Login.handleOTPSubmit] Verification email sent successfully')
+        } catch (e) {
+          console.warn('[Login.handleOTPSubmit] resendVerification failed (non-fatal):', e.message)
+        }
+
+        await signOut()
+        setStage('email')
+        setOtp('')
+        setSession('')
+        setErrorMessage(
+          'Please verify your email before logging in. We just sent you a magic link again.'
+        )
+        setLoading(false)
+        return
+      }
+
+      console.info('[Login.handleOTPSubmit] Verification check passed, allowing login')
+      // Re-check auth state immediately to update navbar
+      await checkAuth()
 
       setStage('success')
       setMessage('Logged in successfully!')
@@ -215,7 +235,7 @@ export default function Login() {
         navigate('/')
       }, 1000)
     } catch (error) {
-      console.error('OTP verification error:', error)
+      console.error('[Login.handleOTPSubmit] Error during OTP submission:', error)
       setErrorMessage(error.message || 'Invalid OTP. Please try again.')
     } finally {
       setLoading(false)

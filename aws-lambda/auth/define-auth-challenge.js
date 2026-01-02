@@ -39,37 +39,47 @@ async function getEmailVerifiedFallback({ userPoolId, username }) {
 }
 
 exports.handler = async (event) => {
-  console.log('DefineAuthChallenge event:', JSON.stringify(event, null, 2));
+  console.log('[DefineAuthChallenge] event:', JSON.stringify(event, null, 2));
 
   const session = event.request.session || [];
+  const userName = event?.userName || 'unknown';
 
   // If the user has successfully answered the custom challenge, Cognito will
   // include a session entry with challengeResult=true.
   const lastChallenge = session.length ? session[session.length - 1] : null;
 
+  console.info('[DefineAuthChallenge] userName:', userName, 'lastChallenge:', JSON.stringify(lastChallenge));
+
   if (lastChallenge && lastChallenge.challengeName === 'CUSTOM_CHALLENGE' && lastChallenge.challengeResult === true) {
+    console.info('[DefineAuthChallenge] OTP successfully verified, checking email_verified...');
+    
     // Enforce verified email before issuing tokens.
     // Cognito sometimes omits email_verified in trigger userAttributes, so we fall back to AdminGetUser.
     const inEvent = normalizeBoolString(event?.request?.userAttributes?.email_verified);
+    console.info('[DefineAuthChallenge] email_verified from event:', inEvent);
 
     let emailVerified = inEvent;
     if (!emailVerified) {
+      console.info('[DefineAuthChallenge] email_verified missing in event, fetching via AdminGetUser...');
       emailVerified = await getEmailVerifiedFallback({
         userPoolId: process.env.COGNITO_USER_POOL_ID,
-        username: event?.userName,
+        username: userName,
       });
+      console.info('[DefineAuthChallenge] email_verified from AdminGetUser:', emailVerified);
     }
 
     if (emailVerified !== 'true') {
-      console.log('DefineAuthChallenge: blocking token issuance (email not verified).', {
-        userName: event?.userName,
+      console.error('[DefineAuthChallenge] BLOCKING: email_verified is not "true"', {
+        userName,
         emailVerified,
+        inEvent,
       });
       event.response.issueTokens = false;
       event.response.failAuthentication = true;
       return event;
     }
 
+    console.info('[DefineAuthChallenge] email_verified is "true", issuing tokens for:', userName);
     event.response.issueTokens = true;
     event.response.failAuthentication = false;
     return event;
@@ -79,13 +89,17 @@ exports.handler = async (event) => {
   const attempts = session.filter((s) => s.challengeName === 'CUSTOM_CHALLENGE').length;
   const maxAttempts = 3;
 
+  console.info('[DefineAuthChallenge] OTP attempts:', attempts, 'maxAttempts:', maxAttempts);
+
   if (attempts >= maxAttempts) {
+    console.error('[DefineAuthChallenge] BLOCKING: max OTP attempts exceeded');
     event.response.issueTokens = false;
     event.response.failAuthentication = true;
     return event;
   }
 
   // Ask Cognito to present a custom challenge (OTP)
+  console.info('[DefineAuthChallenge] asking for CUSTOM_CHALLENGE');
   event.response.issueTokens = false;
   event.response.failAuthentication = false;
   event.response.challengeName = 'CUSTOM_CHALLENGE';
