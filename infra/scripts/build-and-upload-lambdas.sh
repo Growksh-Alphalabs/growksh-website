@@ -131,7 +131,6 @@ build_lambda "auth" "signup" "$LAMBDA_DIR/auth" "signup.js"
 build_lambda "auth" "verify-email" "$LAMBDA_DIR/auth" "verify-email.js"
 build_lambda "auth" "check-user" "$LAMBDA_DIR/auth" "check-user.js"
 build_lambda "auth" "resend-verification" "$LAMBDA_DIR/auth" "resend-verification.js"
-build_lambda "auth" "list-users" "$LAMBDA_DIR/auth" "list-users.js"
 build_lambda "auth" "check-admin" "$LAMBDA_DIR/auth" "define-auth-challenge.js"
 
 # Build Contact Lambda function

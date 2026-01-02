@@ -51,7 +51,6 @@ Resources:
                   - cognito-idp:AdminGetUser
                   - cognito-idp:AdminSetUserPassword
                   - cognito-idp:AdminUpdateUserAttributes
-                  - cognito-idp:ListUsers
                 Resource: !Sub 'arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/*'
         - PolicyName: SESAccess
           PolicyDocument:
