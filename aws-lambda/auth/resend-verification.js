@@ -135,7 +135,10 @@ exports.handler = async (event) => {
     }
 
     const emailVerified = normalizeBoolString(attrValue(user?.UserAttributes, 'email_verified'));
+    console.info(`[resend-verification] email=${email}, email_verified=${emailVerified}`);
+    
     if (emailVerified === 'true') {
+      console.info(`[resend-verification] user already verified, skipping send`);
       return response(200, { ok: true, sent: false, alreadyVerified: true });
     }
 

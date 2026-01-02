@@ -89,6 +89,8 @@ exports.handler = async (event) => {
           ? email_verified_raw.trim().toLowerCase()
           : undefined;
 
+      console.info(`[check-user] email=${email}, email_verified=${email_verified}`);
+
       return response(200, {
         exists: true,
         ...(email_verified ? { email_verified } : {}),
