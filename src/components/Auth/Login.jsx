@@ -54,12 +54,7 @@ export default function Login() {
           return
         }
 
-        const isVerified =
-          existsRes &&
-          existsRes.exists === true &&
-          String(existsRes.email_verified || '').trim().toLowerCase() === 'true'
-
-        if (existsRes && existsRes.exists === true && !isVerified) {
+        if (existsRes && existsRes.exists === true && existsRes.email_verified !== 'true') {
           setErrorMessage('Please verify your email before logging in.')
           setShowResendVerification(true)
           return

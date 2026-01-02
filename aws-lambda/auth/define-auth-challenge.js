@@ -8,46 +8,6 @@
  * - If answer is wrong too many times, fail authentication
  */
 
-const {
-  CognitoIdentityProviderClient,
-  AdminGetUserCommand,
-} = require('@aws-sdk/client-cognito-identity-provider');
-
-let cognitoClient = null;
-
-function getCognitoClient() {
-  if (!cognitoClient) {
-    cognitoClient = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION });
-  }
-  return cognitoClient;
-}
-
-function normalizeBoolString(value) {
-  if (value == null) return '';
-  return String(value).trim().toLowerCase();
-}
-
-async function fetchEmailVerifiedFromCognito(email) {
-  const userPoolId = process.env.COGNITO_USER_POOL_ID;
-  if (!userPoolId || !email) return '';
-
-  try {
-    const client = getCognitoClient();
-    const res = await client.send(
-      new AdminGetUserCommand({
-        UserPoolId: userPoolId,
-        Username: email,
-      })
-    );
-    const attrs = Array.isArray(res?.UserAttributes) ? res.UserAttributes : [];
-    const emailVerifiedAttr = attrs.find((a) => a && a.Name === 'email_verified');
-    return normalizeBoolString(emailVerifiedAttr && emailVerifiedAttr.Value);
-  } catch (e) {
-    console.error('DefineAuthChallenge: AdminGetUser failed:', e);
-    return '';
-  }
-}
-
 exports.handler = async (event) => {
   console.log('DefineAuthChallenge event:', JSON.stringify(event, null, 2));
 
@@ -58,14 +18,7 @@ exports.handler = async (event) => {
     return event;
   }
 
-  const email = event?.request?.userAttributes?.email;
-  let emailVerified = normalizeBoolString(event?.request?.userAttributes?.email_verified);
-
-  // Some Cognito trigger events may omit email_verified. In that case, look it up.
-  if (!emailVerified) {
-    emailVerified = await fetchEmailVerifiedFromCognito(email);
-  }
-
+  const emailVerified = event?.request?.userAttributes?.email_verified;
   if (emailVerified !== 'true') {
     console.log('Blocking auth: email not verified');
     event.response.issueTokens = false;

@@ -111,10 +111,6 @@ Resources:
             - !Ref LambdaCodeBucketName
             - !Ref LambdaCodeBucket
         S3Key: !Sub 'auth/define-auth-challenge-${LambdaCodeSourceEnv}.zip'
-      Environment:
-        Variables:
-          COGNITO_USER_POOL_ID: !ImportValue
-            Fn::Sub: 'growksh-website-${Environment}-pool-id'
       Tags:
         - Key: App
           Value: Website
