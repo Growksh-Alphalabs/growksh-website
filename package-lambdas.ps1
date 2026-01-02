@@ -1,9 +1,13 @@
 #!/usr/bin/env powershell
-# Script to package Lambda functions and upload to S3
+# Script to package Lambda functions and (optionally) upload to S3
 
-$S3Bucket = "growksh-website-lambda-code-dev"
-$AWSRegion = "ap-south-1"
-$Environment = "dev"
+param(
+    [string]$S3Bucket = "growksh-website-lambda-code-dev",
+    [string]$AWSRegion = "ap-south-1",
+    [string]$Environment = "dev",
+    [switch]$SkipUpload,
+    [switch]$KeepZips
+)
 
 Write-Host "Lambda Packaging and Upload Script" -ForegroundColor Cyan
 
@@ -73,14 +77,42 @@ function Package-Lambda {
     Write-Host "Packaging: $Name" -ForegroundColor Yellow
 
     $TempDir = Join-Path $env:TEMP "lambda-$Name-$([guid]::NewGuid().ToString().Substring(0,8))"
-    $ZipPath = "$Name-$Environment.zip"
+    $BuildDir = Join-Path $PSScriptRoot ".build\\lambda\\$Environment"
+    $ZipPath = Join-Path $BuildDir "$Name-$Environment.zip"
 
     try {
         New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
 
-        # Copy source files (aws-sdk is built-in to Lambda)
-        Get-ChildItem -Path $SourceDir -File | Where-Object { $_.Name -match '\.js$' -or $_.Name -eq 'package.json' } | ForEach-Object {
-            Copy-Item -Path $_.FullName -Destination (Join-Path $TempDir $_.Name) -Force
+        if (!(Test-Path $BuildDir)) {
+            New-Item -ItemType Directory -Path $BuildDir -Force | Out-Null
+        }
+
+        # Copy only the files needed for this Lambda
+        foreach ($f in $Files) {
+            $src = Join-Path $SourceDir $f
+            if (Test-Path $src) {
+                Copy-Item -Path $src -Destination (Join-Path $TempDir $f) -Force
+            }
+        }
+
+        # Install production dependencies into the package (required for aws-sdk v3 + aws-jwt-verify)
+        if (Test-Path (Join-Path $TempDir "package.json")) {
+            Push-Location $TempDir
+            try {
+                if (Test-Path (Join-Path $TempDir "package-lock.json")) {
+                    npm ci --omit=dev | Out-Null
+                    if ($LASTEXITCODE -ne 0) {
+                        # Lockfile may be out of sync; fall back to install.
+                        npm install --omit=dev | Out-Null
+                    }
+                }
+                else {
+                    npm install --omit=dev | Out-Null
+                }
+            }
+            finally {
+                Pop-Location
+            }
         }
 
         if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
@@ -98,14 +130,16 @@ function Package-Lambda {
     }
 }
 
-# Check S3 bucket
-Write-Host "Verifying S3 bucket: $S3Bucket" -ForegroundColor Cyan
-aws s3api head-bucket --bucket $S3Bucket --region $AWSRegion 2>&1 | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "S3 bucket not found" -ForegroundColor Red
-    exit 1
+if (-not $SkipUpload) {
+    # Check S3 bucket
+    Write-Host "Verifying S3 bucket: $S3Bucket" -ForegroundColor Cyan
+    aws s3api head-bucket --bucket $S3Bucket --region $AWSRegion 2>&1 | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "S3 bucket not found" -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "S3 bucket exists`n" -ForegroundColor Green
 }
-Write-Host "S3 bucket exists`n" -ForegroundColor Green
 
 # Package API Lambdas
 Write-Host "Packaging API Lambda Functions" -ForegroundColor Cyan
@@ -122,12 +156,19 @@ foreach ($name in $APILambdas.Keys) {
 Write-Host "`nUploading API Lambda ZIPs to S3" -ForegroundColor Cyan
 foreach ($item in $APIZips) {
     Write-Host "Uploading: $($item.Path)" -ForegroundColor Yellow
+    if ($SkipUpload) {
+        Write-Host "SkipUpload enabled; keeping ZIP locally" -ForegroundColor DarkYellow
+        continue
+    }
     # Contact Lambda goes to contact/ folder, auth Lambdas go to auth/ folder
     $folder = if ($item.Name -eq "contact") { "contact" } else { "auth" }
-    aws s3 cp $item.Path "s3://$S3Bucket/$folder/$($item.Path)" --region $AWSRegion 2>&1 | Out-Null
+    $keyName = Split-Path -Leaf $item.Path
+    aws s3 cp $item.Path "s3://$S3Bucket/$folder/$keyName" --region $AWSRegion 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Uploaded successfully" -ForegroundColor Green
-        Remove-Item $item.Path -Force
+        if (-not $KeepZips) {
+            Remove-Item $item.Path -Force
+        }
     }
 }
 
@@ -146,13 +187,24 @@ foreach ($name in $CognitoLambdas.Keys) {
 Write-Host "`nUploading Cognito Lambda ZIPs to S3" -ForegroundColor Cyan
 foreach ($item in $CognitoZips) {
     Write-Host "Uploading: $($item.Path)" -ForegroundColor Yellow
-    aws s3 cp $item.Path "s3://$S3Bucket/auth/$($item.Path)" --region $AWSRegion 2>&1 | Out-Null
+    if ($SkipUpload) {
+        Write-Host "SkipUpload enabled; keeping ZIP locally" -ForegroundColor DarkYellow
+        continue
+    }
+    $keyName = Split-Path -Leaf $item.Path
+    aws s3 cp $item.Path "s3://$S3Bucket/auth/$keyName" --region $AWSRegion 2>&1 | Out-Null
     if ($LASTEXITCODE -eq 0) {
         Write-Host "Uploaded successfully" -ForegroundColor Green
-        Remove-Item $item.Path -Force
+        if (-not $KeepZips) {
+            Remove-Item $item.Path -Force
+        }
     }
 }
 
 Write-Host "`nComplete!" -ForegroundColor Green
 Write-Host "API Lambdas: $($APIZips.Count) uploaded" -ForegroundColor Green
 Write-Host "Cognito Lambdas: $($CognitoZips.Count) uploaded" -ForegroundColor Green
+
+if ($SkipUpload -or $KeepZips) {
+    Write-Host "ZIP output folder: $(Join-Path $PSScriptRoot \".build\\lambda\\$Environment\")" -ForegroundColor Cyan
+}
