@@ -1,8 +1,32 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { initiateAuth, verifyOTP, checkUserExists, resendVerification } from '../../lib/cognito'
+import {
+  initiateAuth,
+  verifyOTP,
+  checkUserExists,
+  resendVerification,
+  getUserStatus,
+  signOut,
+} from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
+
+function safeLower(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : undefined
+}
+
+function getEmailVerifiedFromIdToken(idToken) {
+  if (!idToken || typeof idToken !== 'string') return undefined
+  const parts = idToken.split('.')
+  if (parts.length !== 3) return undefined
+  try {
+    const payloadB64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(payloadB64))
+    return safeLower(payload?.email_verified?.toString())
+  } catch {
+    return undefined
+  }
+}
 
 export default function Login() {
   const navigate = useNavigate()
@@ -47,6 +71,7 @@ export default function Login() {
       // If the endpoint is not deployed, we silently skip and proceed with Cognito initiateAuth.
       try {
         const existsRes = await checkUserExists(email)
+        console.info('[Login] check-user response:', existsRes)
         if (existsRes && existsRes.exists === false) {
           navigate(`/auth/signup?email=${encodeURIComponent(email)}`)
           return
@@ -54,10 +79,8 @@ export default function Login() {
 
         // Only block when the backend explicitly tells us the user is unverified.
         // If the field is missing (older deployments), do NOT block here.
-        const emailVerified =
-          typeof existsRes?.email_verified === 'string'
-            ? existsRes.email_verified.trim().toLowerCase()
-            : undefined
+        const emailVerified = safeLower(existsRes?.email_verified)
+        console.info('[Login] pre-auth email_verified:', emailVerified)
 
         if (emailVerified === 'false') {
           try {
@@ -136,8 +159,6 @@ export default function Login() {
       })
 
       console.log('OTP verified, result:', result)
-      setStage('success')
-      setMessage('Logged in successfully!')
 
       // Store tokens in localStorage
       if (result.AuthenticationResult) {
@@ -149,9 +170,45 @@ export default function Login() {
         }
         localStorage.setItem('userEmail', email)
 
+        const idTokenEmailVerified = getEmailVerifiedFromIdToken(IdToken)
+        console.info('[Login] idToken email_verified:', idTokenEmailVerified)
+
+        let runtimeEmailVerified
+        try {
+          const status = await getUserStatus()
+          console.info('[Login] user-status response:', status)
+          runtimeEmailVerified = safeLower(status?.email_verified)
+        } catch (e) {
+          console.warn('[Login] user-status check failed (falling back to idToken):', e)
+        }
+
+        const effectiveEmailVerified = runtimeEmailVerified ?? idTokenEmailVerified
+        console.info('[Login] effective email_verified:', effectiveEmailVerified)
+
+        if (effectiveEmailVerified === 'false') {
+          try {
+            await resendVerification(email)
+          } catch (e) {
+            console.warn('[Login] resendVerification failed (non-fatal):', e)
+          }
+
+          await signOut()
+          setStage('email')
+          setOtp('')
+          setSession('')
+          setErrorMessage(
+            'Please verify your email before logging in. We just sent you a magic link again.'
+          )
+          setLoading(false)
+          return
+        }
+
         // Re-check auth state immediately to update navbar
         await checkAuth()
       }
+
+      setStage('success')
+      setMessage('Logged in successfully!')
 
       // Redirect after 1 second (auth state is already updated)
       setTimeout(() => {

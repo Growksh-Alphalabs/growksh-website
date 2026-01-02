@@ -1,8 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { initiateAuth, verifyOTP } from '../../lib/cognito'
+import { initiateAuth, verifyOTP, getUserStatus, resendVerification, signOut } from '../../lib/cognito'
 import { useAuth } from '../../context/AuthContext'
 import Logo from '../../assets/Website images/Growksh Logo 1.png'
+
+function safeLower(value) {
+  return typeof value === 'string' ? value.trim().toLowerCase() : undefined
+}
+
+function getEmailVerifiedFromIdToken(idToken) {
+  if (!idToken || typeof idToken !== 'string') return undefined
+  const parts = idToken.split('.')
+  if (parts.length !== 3) return undefined
+  try {
+    const payloadB64 = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(atob(payloadB64))
+    return safeLower(payload?.email_verified?.toString())
+  } catch {
+    return undefined
+  }
+}
 
 export default function AdminLogin() {
   const navigate = useNavigate()
@@ -96,6 +113,39 @@ export default function AdminLogin() {
         }
         localStorage.setItem('userEmail', email)
 
+        const idTokenEmailVerified = getEmailVerifiedFromIdToken(IdToken)
+        console.info('[AdminLogin] idToken email_verified:', idTokenEmailVerified)
+
+        let runtimeEmailVerified
+        try {
+          const status = await getUserStatus()
+          console.info('[AdminLogin] user-status response:', status)
+          runtimeEmailVerified = safeLower(status?.email_verified)
+        } catch (e) {
+          console.warn('[AdminLogin] user-status check failed (falling back to idToken):', e)
+        }
+
+        const effectiveEmailVerified = runtimeEmailVerified ?? idTokenEmailVerified
+        console.info('[AdminLogin] effective email_verified:', effectiveEmailVerified)
+
+        if (effectiveEmailVerified === 'false') {
+          try {
+            await resendVerification(email)
+          } catch (e) {
+            console.warn('[AdminLogin] resendVerification failed (non-fatal):', e)
+          }
+
+          await signOut()
+          setStage('email')
+          setOtp('')
+          setSession('')
+          setErrorMessage(
+            'Please verify your email before logging in. We just sent you a magic link again.'
+          )
+          setLoading(false)
+          return
+        }
+
         // Re-check auth state to update context (including admin status)
         await checkAuth()
 
@@ -136,7 +186,7 @@ export default function AdminLogin() {
           <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
             <div className="flex items-start">
               <svg
-                className="h-6 w-6 text-green-500 mt-0.5 flex-shrink-0"
+                className="h-6 w-6 text-green-500 mt-0.5 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -160,7 +210,7 @@ export default function AdminLogin() {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start">
               <svg
-                className="h-6 w-6 text-red-500 mt-0.5 flex-shrink-0"
+                className="h-6 w-6 text-red-500 mt-0.5 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
