@@ -93,7 +93,7 @@ exports.handler = async (event) => {
 
       return response(200, {
         exists: true,
-        ...(email_verified ? { email_verified } : {}),
+        email_verified: email_verified || 'false',
       });
     } catch (e) {
       if (e && (e.name === 'UserNotFoundException' || e.__type === 'UserNotFoundException')) {

@@ -78,7 +78,7 @@ exports.handler = async (event) => {
     return response(200, {
       authenticated: true,
       ...(email ? { email } : {}),
-      ...(email_verified ? { email_verified } : {}),
+      email_verified: email_verified || 'false',
     });
   } catch (e) {
     // Cognito throws NotAuthorizedException for expired/invalid access tokens.

@@ -141,6 +141,8 @@ exports.handler = async (event) => {
       console.info(`[resend-verification] user already verified, skipping send`);
       return response(200, { ok: true, sent: false, alreadyVerified: true });
     }
+    
+    console.info(`[resend-verification] user is unverified (${emailVerified}), sending magic link email`);
 
     const name = attrValue(user?.UserAttributes, 'name') || (email.includes('@') ? email.split('@')[0] : 'User');
     const link = buildMagicLink(email, verifyBaseUrl, verifySecret);
