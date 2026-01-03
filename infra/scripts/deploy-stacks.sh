@@ -189,12 +189,21 @@ echo "📋 Deployment Plan:"
 echo "  1. growksh-website-iam-$ENVIRONMENT (IAM roles)"
 echo "  2. growksh-website-database-$ENVIRONMENT (DynamoDB)"
 echo "  3. growksh-website-cognito-$ENVIRONMENT (Cognito)"
-echo "  4. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
-echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
-echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
-echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
-echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
-echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != feature-* ]]; then
+  echo "  4. growksh-website-waf-$ENVIRONMENT (WAF, us-east-1)"
+  echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+  echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+  echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
+  echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+  echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+else
+  echo "  4. ⏭️  (skipping WAF for dev/ephemeral to reduce costs)"
+  echo "  5. growksh-website-lambda-code-bucket-$ENVIRONMENT (Lambda code bucket)"
+  echo "  6. growksh-website-storage-cdn-$ENVIRONMENT (S3 + CloudFront)"
+  echo "  7. growksh-website-api-$ENVIRONMENT (API Gateway)"
+  echo "  8. growksh-website-cognito-lambdas-$ENVIRONMENT (Cognito Lambdas)"
+  echo "  9. growksh-website-api-lambdas-$ENVIRONMENT (API Lambdas)"
+fi
 echo ""
 
 # Stage 1: IAM (no dependencies)
@@ -215,18 +224,23 @@ deploy_stack \
   "growksh-website-cognito-$ENVIRONMENT" \
   "$TEMPLATE_DIR/02-cognito-stack.yaml"
 
-# Stage 4: WAF (us-east-1, no dependencies, before CDN)
-echo "Stage 4️⃣: WAF (us-east-1)"
-if [[ $ENVIRONMENT == feature-* ]]; then
-  PARAM_FILE="$PARAM_DIR/ephemeral-03-waf-stack.json"
+# Stage 4: WAF (us-east-1, no dependencies, before CDN) - Skip for dev/ephemeral to reduce costs
+if [[ "$ENVIRONMENT" != "dev" && "$ENVIRONMENT" != feature-* ]]; then
+  echo "Stage 4️⃣: WAF (us-east-1)"
+  if [[ $ENVIRONMENT == feature-* ]]; then
+    PARAM_FILE="$PARAM_DIR/ephemeral-03-waf-stack.json"
+  else
+    PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+  fi
+  deploy_stack \
+    "growksh-website-waf-$ENVIRONMENT" \
+    "$TEMPLATE_DIR/03-waf-stack.yaml" \
+    "$PARAM_FILE" \
+    "us-east-1"
 else
-  PARAM_FILE="$PARAM_DIR/${ENVIRONMENT}-03-waf-stack.json"
+  echo "Stage 4️⃣: WAF - ⏭️  SKIPPED (dev/ephemeral environment - costs reduced by not using WAF)"
 fi
-deploy_stack \
-  "growksh-website-waf-$ENVIRONMENT" \
-  "$TEMPLATE_DIR/03-waf-stack.yaml" \
-  "$PARAM_FILE" \
-  "us-east-1"
+echo ""
 
 # Stage 5: Lambda Code Bucket (no dependencies)
 echo "Stage 5️⃣: Lambda Code Bucket"
@@ -413,18 +427,28 @@ if [ "$DEPLOYMENT_FAILED" = true ]; then
   echo "❌ Deployment FAILED - some stacks did not deploy"
   echo "═══════════════════════════════════════════════════"
   exit 1
+fi
+echo ""
+echo "📊 Stack Status:"
+# Use list-stacks with built-in filters instead of describe-stacks to avoid timeout
+aws cloudformation list-stacks \
+  --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE \
+  --region "$REGION" \
+  --query "StackSummaries[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
+  --output table 2>/dev/null || echo "Status check completed"
+
+echo ""
+
+echo ""
+
+# Final check: If DEPLOYMENT_FAILED wasn't set by deploy_stack errors, assume success
+if [ "$DEPLOYMENT_FAILED" = true ]; then
+  echo "❌ Deployment FAILED - some stacks encountered errors"
+  echo "═══════════════════════════════════════════════════"
 else
   echo "✅ All stacks deployed successfully!"
   echo "═══════════════════════════════════════════════════"
 fi
-echo ""
-echo "📊 Stack Status:"
-aws cloudformation describe-stacks \
-  --query "Stacks[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
-  --region "$REGION" \
-  --output table || echo "⚠️  Could not retrieve stack status"
-
-echo ""
 
 # Check if deployment failed and exit with error code
 if [ "$DEPLOYMENT_FAILED" = true ]; then
@@ -437,10 +461,12 @@ if [ "$DEPLOYMENT_FAILED" = true ]; then
   echo "📋 Detailed Error Information:"
   echo "======================================"
 
-  failed_stacks=$(aws cloudformation describe-stacks \
-    --query "Stacks[?contains(StackName, '$ENVIRONMENT') && StackStatus like 'CREATE_FAILED|UPDATE_FAILED|ROLLBACK_COMPLETE|UPDATE_ROLLBACK_COMPLETE'].StackName" \
+  # Use list-stacks with built-in status filters (faster, no timeout risk)
+  failed_stacks=$(aws cloudformation list-stacks \
+    --stack-status-filter CREATE_FAILED UPDATE_FAILED ROLLBACK_COMPLETE UPDATE_ROLLBACK_COMPLETE \
     --region "$REGION" \
-    --output text)
+    --query "StackSummaries[?contains(StackName, '$ENVIRONMENT')].StackName" \
+    --output text 2>/dev/null || echo "")
 
   error_captured=false
 

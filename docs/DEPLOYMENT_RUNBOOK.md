@@ -63,6 +63,8 @@ The Growksh Website infrastructure consists of 9 CloudFormation stacks deployed 
 │ • 03-waf-stack.yaml (us-east-1 region) │
 │   - AWS WAFv2 Web ACL                   │
 │   - DDoS and bot protection             │
+│   ⚠️  SKIPPED for dev & ephemeral       │
+│       (cost optimization)               │
 │ • 04-lambda-code-bucket-stack.yaml      │
 │   - S3 bucket for Lambda code           │
 │   - Lifecycle policies                  │
@@ -119,8 +121,10 @@ The Growksh Website infrastructure consists of 9 CloudFormation stacks deployed 
 - **Stack Name Pattern**: `growksh-website-{component}-dev`
 - **S3 Bucket**: `growksh-website-assets-dev`
 - **CloudFront**: Auto-created and invalidated
+- **WAF**: ❌ **NOT DEPLOYED** (disabled to reduce costs - minimal traffic, no public domain)
+- **CloudFront Pricing**: Pay-as-you-go (typical cost: $0.10-1/month with minimal traffic)
 - **Duration**: ~10-15 minutes
-- **Cost**: ~$30-50/month
+- **Cost**: ~$15-20/month (no WAF, pay-as-you-go CDN)
 
 ### Production Environment (`prod`)
 - **Branch**: `main`
@@ -129,8 +133,10 @@ The Growksh Website infrastructure consists of 9 CloudFormation stacks deployed 
 - **Stack Name Pattern**: `growksh-website-{component}-prod`
 - **S3 Bucket**: `growksh-website-assets-prod`
 - **CloudFront**: Auto-created and invalidated
+- **WAF**: ✅ **DEPLOYED** (required for CloudFront Free plan - mandatory for production)
+- **CloudFront Pricing**: Free plan ($0/month for up to 50GB data transfer, requires WAF)
 - **Duration**: ~10-15 minutes
-- **Cost**: ~$50-100/month
+- **Cost**: ~$50/month (WAF: ~$5/month + CloudFront free plan)
 
 ### Ephemeral Environment (feature branches)
 - **Branch**: `feature/*`
@@ -139,8 +145,10 @@ The Growksh Website infrastructure consists of 9 CloudFormation stacks deployed 
 - **Stack Name Pattern**: `growksh-website-feature-{hash}-{component}`
 - **S3 Bucket**: `growksh-website-feature-{hash}-assets`
 - **CloudFront**: Auto-created
+- **WAF**: ❌ **NOT DEPLOYED** (temporary environment, no public domain, auto-deleted on PR close)
+- **CloudFront Pricing**: Pay-as-you-go (minimal cost during PR lifetime)
 - **Duration**: ~10-15 minutes
-- **Cost**: $0 after cleanup (deleted on PR close)
+- **Cost**: $0-1 after cleanup (deleted on PR close)
 - **Auto-Cleanup**: Yes (on PR close)
 
 ---
@@ -214,13 +222,15 @@ Stage 1️⃣: IAM Roles
 
 ### Post-Deployment Configuration
 
-After CloudFormation stacks are deployed, complete these manual steps:
+After CloudFormation stacks are deployed, complete these optional manual steps:
 
-#### 1. Enable CloudFront Free Plan (Production Only)
+#### 1. CloudFront Pricing Plan Configuration
+
+##### For Production (prod) - Enable Free Plan
 
 **Why**: Reduces CloudFront costs from pay-as-you-go to $0/month (includes 50GB free data transfer/month)
 
-**Prerequisites**: AWS WAF Web ACL must be attached (✅ already configured by CloudFormation)
+**Prerequisites**: AWS WAF Web ACL must be attached (✅ automatically configured by CloudFormation for prod)
 
 **Steps**:
 1. Go to [CloudFront Console](https://console.aws.amazon.com/cloudfront/)
@@ -239,6 +249,22 @@ aws cloudfront get-distribution \
   --query 'Distribution.DistributionConfig.PriceClass' \
   --region ap-south-1
 ```
+
+##### For Development (dev) - Use Pay-as-You-Go
+
+**Why**: Dev has minimal traffic (no public domain attached), so pay-as-you-go pricing is cheaper than maintaining WAF ($5/month)
+
+**Cost**: Typically $0.10-1/month with minimal traffic (no action needed - already configured)
+
+**Note**: WAF is intentionally NOT deployed for dev to reduce costs. CloudFront remains unprotected but acceptable for internal development use.
+
+##### For Ephemeral (feature branches) - Use Pay-as-You-Go
+
+**Why**: Ephemeral environments are temporary (auto-deleted on PR close), no public domain, minimal traffic
+
+**Cost**: Typically $0.01-0.10 per feature branch (deleted when PR closes)
+
+**Note**: WAF is intentionally NOT deployed for ephemeral environments. These are test environments for development features.
 
 #### 2. Configure Custom Domains (If Using Custom Domain)
 
