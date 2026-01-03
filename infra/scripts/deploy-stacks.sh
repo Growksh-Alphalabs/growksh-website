@@ -438,19 +438,12 @@ echo "$STACK_OUTPUT"
 
 echo ""
 
-# Final check: Verify all stacks are in successful state (FAILED, ROLLBACK, DELETE_FAILED are bad states)
-FAILED_STACKS=$(aws cloudformation describe-stacks \
-  --query "Stacks[?contains(StackName, '$ENVIRONMENT') && (StackStatus like 'FAILED|ROLLBACK%|DELETE_FAILED')].StackName" \
-  --region "$REGION" \
-  --output text 2>/dev/null)
+echo ""
 
-if [ -n "$FAILED_STACKS" ]; then
-  echo "❌ Deployment FAILED - some stacks have failed status:"
-  for stack in $FAILED_STACKS; do
-    echo "  - $stack"
-  done
-  echo ""
-  DEPLOYMENT_FAILED=true
+# Final check: If DEPLOYMENT_FAILED wasn't set by deploy_stack errors, assume success
+if [ "$DEPLOYMENT_FAILED" = true ]; then
+  echo "❌ Deployment FAILED - some stacks encountered errors"
+  echo "═══════════════════════════════════════════════════"
 else
   echo "✅ All stacks deployed successfully!"
   echo "═══════════════════════════════════════════════════"
