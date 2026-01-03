@@ -430,16 +430,17 @@ if [ "$DEPLOYMENT_FAILED" = true ]; then
 fi
 echo ""
 echo "📊 Stack Status:"
-aws cloudformation describe-stacks \
+STACK_OUTPUT=$(aws cloudformation describe-stacks \
   --query "Stacks[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
   --region "$REGION" \
-  --output table || echo "⚠️  Could not retrieve stack status"
+  --output table 2>/dev/null)
+echo "$STACK_OUTPUT"
 
 echo ""
 
-# Final check: Verify all stacks are in successful state
+# Final check: Verify all stacks are in successful state (FAILED, ROLLBACK, DELETE_FAILED are bad states)
 FAILED_STACKS=$(aws cloudformation describe-stacks \
-  --query "Stacks[?contains(StackName, '$ENVIRONMENT') && (StackStatus like 'CREATE_FAILED|UPDATE_FAILED|ROLLBACK_COMPLETE|UPDATE_ROLLBACK_COMPLETE|DELETE_FAILED')].StackName" \
+  --query "Stacks[?contains(StackName, '$ENVIRONMENT') && (StackStatus like 'FAILED|ROLLBACK%|DELETE_FAILED')].StackName" \
   --region "$REGION" \
   --output text 2>/dev/null)
 
