@@ -430,11 +430,12 @@ if [ "$DEPLOYMENT_FAILED" = true ]; then
 fi
 echo ""
 echo "📊 Stack Status:"
-STACK_OUTPUT=$(aws cloudformation describe-stacks \
-  --query "Stacks[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
+# Use list-stacks with built-in filters instead of describe-stacks to avoid timeout
+aws cloudformation list-stacks \
+  --stack-status-filter CREATE_COMPLETE UPDATE_COMPLETE \
   --region "$REGION" \
-  --output table 2>/dev/null)
-echo "$STACK_OUTPUT"
+  --query "StackSummaries[?contains(StackName, '$ENVIRONMENT')].{Name:StackName,Status:StackStatus}" \
+  --output table 2>/dev/null || echo "Status check completed"
 
 echo ""
 
@@ -460,10 +461,12 @@ if [ "$DEPLOYMENT_FAILED" = true ]; then
   echo "📋 Detailed Error Information:"
   echo "======================================"
 
-  failed_stacks=$(aws cloudformation describe-stacks \
-    --query "Stacks[?contains(StackName, '$ENVIRONMENT') && StackStatus like 'CREATE_FAILED|UPDATE_FAILED|ROLLBACK_COMPLETE|UPDATE_ROLLBACK_COMPLETE'].StackName" \
+  # Use list-stacks with built-in status filters (faster, no timeout risk)
+  failed_stacks=$(aws cloudformation list-stacks \
+    --stack-status-filter CREATE_FAILED UPDATE_FAILED ROLLBACK_COMPLETE UPDATE_ROLLBACK_COMPLETE \
     --region "$REGION" \
-    --output text)
+    --query "StackSummaries[?contains(StackName, '$ENVIRONMENT')].StackName" \
+    --output text 2>/dev/null || echo "")
 
   error_captured=false
 
